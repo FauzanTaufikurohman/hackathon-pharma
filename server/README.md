@@ -79,7 +79,11 @@ Remove-Item Env:DB_CONNECTION,Env:DB_DATABASE
 
 ## Kontrak dan branch
 
-Lihat [kontrak paket](docs/vendor-packages-api.md). Branch bertahap: server/vendor-packages → server/vendor-dashboard → server/vendor-shipment-detail-monitor. Tiap branch berisi client dan server lengkap; branch berikutnya mewarisi fondasi branch sebelumnya. Merge berurutan, jangan hapus folder lain.
+Lihat [kontrak paket](docs/vendor-packages-api.md), [dashboard](docs/vendor-dashboard-api.md), dan [monitor](docs/vendor-monitor-api.md). Branch lokal bertahap: server/vendor-packages → server/vendor-dashboard → server/vendor-shipment-detail-monitor. Tiap branch berisi client dan server lengkap; branch berikutnya mewarisi fondasi branch sebelumnya. Merge berurutan, jangan hapus folder lain. Nama push server/vendor-* terblokir selama remote masih punya branch bernama server; jangan menghapus branch tim tanpa izin.
+
+Pada branch monitor, uji tab dengan GET /vendor/shipments/PHA-260104; telemetry/events/issues/reports tersedia sebagai endpoint terpisah. Backend vendor tidak memberi hak create shipment, pemeriksaan atau approval.
+
+Pengujian saat implementasi: SQLite in-memory dan PostgreSQL 12.4 lokal terpisah. Untuk deployment baru gunakan versi PostgreSQL yang masih mendapat dukungan. Tidak ada data Odoo yang dipakai atau diubah.
 
 .env diabaikan Git. OPENAI_API_KEY diisi privat dengan key baru setelah key yang terekspos dicabut; OPENAI_MODEL=gpt-4.1-mini sudah disiapkan. API baca vendor tidak memanggil OpenAI atau mengirim data farmasi ke provider AI.
 
