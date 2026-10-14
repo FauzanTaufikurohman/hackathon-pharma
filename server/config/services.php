@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'pharma' => ['dispatcher_phone' => env('PHARMA_DISPATCHER_PHONE')],
 
     'openai' => [
         'key' => env('OPENAI_API_KEY'),

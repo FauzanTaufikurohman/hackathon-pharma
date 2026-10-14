@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourierDashboardController;
 use App\Http\Controllers\CourierDeliveryController;
+use App\Http\Controllers\CourierHandoverController;
 use App\Http\Controllers\CourierIncomingController;
 use App\Http\Controllers\CourierIssuesController;
 use App\Http\Controllers\CourierTasksController;
@@ -18,6 +19,12 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/courier/dashboard', [CourierDashboardController::class, 'show']);
         Route::get('/courier/tasks', [CourierTasksController::class, 'index']);
+        Route::get('/courier/tasks/{awb}/handover', [CourierHandoverController::class, 'show']);
+        Route::post('/courier/tasks/{awb}/handover', [CourierHandoverController::class, 'store']);
+        Route::get('/courier/tasks/{awb}/proof/photo', [CourierHandoverController::class, 'photo'])->name('courier.proof.photo');
+        Route::get('/courier/tasks/{awb}/proof/signature', [CourierHandoverController::class, 'signature'])->name('courier.proof.signature');
+        Route::get('/courier/tasks/{awb}/share-summary', [CourierHandoverController::class, 'shareSummary']);
+        Route::get('/courier/reports/{report}/download', [CourierHandoverController::class, 'download'])->whereNumber('report')->name('courier.report.download');
         Route::get('/courier/tasks/{awb}/issues', [CourierIssuesController::class, 'index']);
         Route::post('/courier/tasks/{awb}/issues', [CourierIssuesController::class, 'store']);
         Route::post('/courier/tasks/{awb}/confirm-return', [CourierIssuesController::class, 'confirmReturn']);
