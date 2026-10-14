@@ -351,3 +351,21 @@ export interface AdminAvailableCourier {
   credential_cpob: string
   vehicle_icon: string
 }
+
+export interface AdminIncidentData {
+  ticket_id: string
+  awb: string
+  destination: string
+  reporter_name: string
+  reported_at: string
+  category: string
+  category_label: string
+  description: string
+  photo_url: string
+  gps_coords: string
+  hash: string
+  default_action: 'return' | 'recheck' | 'resume'
+  default_reason: string
+  signing_officer: string
+  officer_title: string
+}

@@ -1,4 +1,4 @@
-import type { Shipment, FaskesFacility, OperationalMetrics, AuditEvent, BapReport, CourierProfile, CourierMetrics, CourierTaskItem, CheckerProfile, CheckerQueueItem, CheckerHistoryItem, AdminProfile, AdminShipmentItem, AdminApprovalShipment, AdminAvailableCourier } from '../types/shipment'
+import type { Shipment, FaskesFacility, OperationalMetrics, AuditEvent, BapReport, CourierProfile, CourierMetrics, CourierTaskItem, CheckerProfile, CheckerQueueItem, CheckerHistoryItem, AdminProfile, AdminShipmentItem, AdminApprovalShipment, AdminAvailableCourier, AdminIncidentData } from '../types/shipment'
 
 export const currentFacility: FaskesFacility = {
   facility_id: 'RSMS-FARM-09',
@@ -914,6 +914,25 @@ export const mockAdminCouriers: AdminAvailableCourier[] = [
     vehicle_icon: 'two_wheeler',
   },
 ]
+
+export const mockAdminIncidentData: AdminIncidentData = {
+  ticket_id: '#ISSUE-8841',
+  awb: 'PHA-260104',
+  destination: 'RS Medika Sehat',
+  reporter_name: 'Bambang Suryono (KURIR-007)',
+  reported_at: '15:15 WIB',
+  category: 'seal',
+  category_label: 'seal (Segel Rusak / Terbuka)',
+  description: '“Saat tiba dan akan diserahterimakan di instalasi farmasi RS Medika Sehat, ditemukan segel tamper-evident nomor SL-8891 robek sebagian dan pengait boks pendingin sedikit longgar saat penurunan dari armada.”',
+  photo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOQhqD8mNsu-0oq7wCae-kBwwB1TDb19uegqcaiiCHdbrG3xahgdGoFKfgg1ZWXBzPM6KBW3jb5s7HZ3ts-eUxK9liYXrkmo8v7ya9VPDQZI6o8yVHz8JKdL0OHkkSi_UmaoJ4kXS1RXDEOOjz5TU1jdWOVyqw0dciDD5EnXZzeaj2vk3xfOke3iJopRCI0D8hzbrQsCM-HcQqdmH8FFEnY0k2alrRBKdygDiaJWJLzz6f3w9E0oCLjw',
+  gps_coords: 'GPS: -6.1844, 106.8453 (Salemba)',
+  hash: 'SHA-256: 7f8a9...b3c4 Verified',
+  default_action: 'return',
+  default_reason: 'Segel fisik terbukti tidak utuh dan berpotensi merusak sterilitas biologis sesuai regulasi BPOM CDOB Bab 5. DILARANG serahkan kargo ke pihak rumah sakit. Segera kunci ulang cooler box dan bawa kembali kargo ke Hub Cawang untuk investigasi karantina dan penerbitan Berita Acara.',
+  signing_officer: 'dr. Ardiansyah, Apt.',
+  officer_title: 'QA Lead CDOB',
+}
+
 
 
 

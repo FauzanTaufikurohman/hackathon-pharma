@@ -10,6 +10,7 @@ import CheckerHistoryView from '../views/checker/CheckerHistoryView.vue'
 import CheckerExamView from '../views/checker/CheckerExamView.vue'
 import AdminShipmentsView from '../views/admin/AdminShipmentsView.vue'
 import AdminApprovalsView from '../views/admin/AdminApprovalsView.vue'
+import AdminLiveMonitorView from '../views/admin/AdminLiveMonitorView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -95,7 +96,8 @@ const router = createRouter({
     {
       path: '/admin/live-monitor-kendala',
       name: 'admin-monitor',
-      redirect: '/admin/manajemen-pengiriman',
+      component: AdminLiveMonitorView,
+      alias: ['/admin/monitor', '/admin/live-monitor', '/admin/kendala'],
     },
     {
       path: '/admin/laporan-audit-log',
