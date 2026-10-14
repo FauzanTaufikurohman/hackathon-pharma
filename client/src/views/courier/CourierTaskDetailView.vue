@@ -23,6 +23,12 @@ import CourierDeliveryRecipientCard from '../../components/courier/CourierDelive
 import CourierDeliveryTelemetryPanel from '../../components/courier/CourierDeliveryTelemetryPanel.vue'
 import CourierDeliveryIssueBanner from '../../components/courier/CourierDeliveryIssueBanner.vue'
 
+// Tab 3: Lapor Kendala Components
+import CourierIssueNoticeBanner from '../../components/courier/CourierIssueNoticeBanner.vue'
+import CourierIssueReportForm from '../../components/courier/CourierIssueReportForm.vue'
+import CourierIssueDecisionCard from '../../components/courier/CourierIssueDecisionCard.vue'
+import CourierIssueAuditLogStrip from '../../components/courier/CourierIssueAuditLogStrip.vue'
+
 import CourierFooter from '../../components/courier/CourierFooter.vue'
 import NotificationToast from '../../components/vendor/NotificationToast.vue'
 
@@ -151,6 +157,29 @@ function handleGoHandover() {
 function handleOpenIssueForm() {
   handleTabChange(3)
 }
+
+// Tab 3 Actions
+const isHeld = ref(true)
+const isReturning = ref(false)
+
+function handleIssueSubmit(payload: { category: string; description: string }) {
+  isHeld.value = true
+  task.value.status = 'hold'
+  task.value.status_label = 'Ditahan (HELD)'
+  toastRef.value?.show(
+    'Laporan Kendala Terkirim!',
+    `AWB ${task.value.awb} berhasil dikunci ke status HELD. Menunggu instruksi resmi Admin QA.`
+  )
+}
+
+function handleConfirmReturn() {
+  isReturning.value = true
+  task.value.status = 'hold'
+  toastRef.value?.show(
+    'Instruksi Retur Dikonfirmasi!',
+    `Status pengiriman diperbarui menjadi returning. Rute navigasi diarahkan kembali ke Hub Cawang.`
+  )
+}
 </script>
 
 <template>
@@ -266,22 +295,30 @@ function handleOpenIssueForm() {
           </div>
         </div>
 
-        <!-- TAB 3: LAPOR KENDALA (Placeholder for next feature) -->
-        <div v-else-if="activeTab === 3" class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-surface-container/60 text-center space-y-4">
-          <div class="w-16 h-16 rounded-full bg-error-container text-error flex items-center justify-center mx-auto shadow-xs">
-            <span class="material-symbols-outlined text-[32px]">report_problem</span>
+        <!-- TAB 3: LAPOR KENDALA -->
+        <div v-else-if="activeTab === 3" class="flex flex-col w-full space-y-6">
+          <!-- Top Notice Banner: Cold-Chain BPOM Protocol Alert -->
+          <CourierIssueNoticeBanner />
+
+          <!-- Main Content Split Grid: 2 Columns -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <!-- Left Card: Form Lapor Kendala Baru (issues table) -->
+            <CourierIssueReportForm
+              :awb="task.awb"
+              :is-held="isHeld"
+              @submit-issue="handleIssueSubmit"
+            />
+
+            <!-- Right Card: Status Penahanan & Keputusan Admin (decisions table) -->
+            <CourierIssueDecisionCard
+              :awb="task.awb"
+              :is-returning="isReturning"
+              @confirm-return="handleConfirmReturn"
+            />
           </div>
-          <h2 class="font-headline-lg font-bold text-on-surface">Form Lapor Kendala</h2>
-          <p class="font-body-md text-on-surface-variant max-w-lg mx-auto">
-            Halaman pelaporan insiden cold-chain &amp; eskalasi dispatcher akan dibuka pada langkah navigasi berikutnya.
-          </p>
-          <button
-            type="button"
-            @click="handleTabChange(2)"
-            class="px-5 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
-          >
-            ← Kembali ke Pengantaran &amp; Monitor
-          </button>
+
+          <!-- Bottom: Active Investigation Log / Audit Trail Strip -->
+          <CourierIssueAuditLogStrip />
         </div>
 
         <!-- TAB 4: SERAH TERIMA & LAPORAN (Placeholder for subsequent feature) -->
