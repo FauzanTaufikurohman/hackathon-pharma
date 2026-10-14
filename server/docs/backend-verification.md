@@ -33,3 +33,33 @@ Data seed adalah contoh, bukan produk obat nyata, sensor IoT nyata, pemeriksaan 
 API data vendor siap diintegrasikan. Halaman frontend masih mock dan tab monitoring/arsip masih placeholder; integrator tim perlu memakai tiga kontrak API yang tersedia.
 
 Gateway Telegram/WhatsApp, AI Vision/anomaly, simulator operasional, endpoint Admin/Checker/Kurir, PDF/A/QR publik serta sertifikasi regulatory bukan hasil implementasi tiga modul ini. Jangan menyatakan workflow end-to-end seluruh Pharma sudah berjalan berdasarkan pengujian API vendor saja.
+
+## Pembaruan courier — 15 Oktober 2026
+
+Bagian di atas adalah hasil historis vendor. Enam modul courier kini ditambahkan di server/, tanpa mengubah client maupun membuat folder source baru. Implementasi Admin/Checker dan integrasi UI belum termasuk pekerjaan ini.
+
+### Pengujian otomatis
+
+Pada branch server-courier-handover-report, seluruh suite vendor + courier lulus: **45 tes, 254 assertions** pada SQLite in-memory dan PostgreSQL pharma_v2_test. Tes meliputi isolasi courier, role/ability/akun nonaktif, dashboard kosong/suhu stale, filter/pagination, approval dan kapasitas, checklist, foto inspeksi nyata untuk non-demo, penugasan tidak cocok, versi stale, retry payload, penolakan tugas, urutan berangkat/tiba, telemetry, hold suhu >=3 menit, signal loss >15 menit, kendala, keputusan retur Admin, POD wajib foto, suhu/segel tidak aman, PDF nyata, signature privat, penguncian kiriman, dan bukti immutable pada model.
+
+Lock DB dan request receipt mencegah pemrosesan mutasi yang sama berulang. Ini bukan hasil load test multi-host atau jaminan tidak ada bug. Larangan update/delete pada bukti/audit berlaku lewat model Eloquent, bukan klaim DBA tidak dapat mengubah database.
+
+### Smoke test HTTP nyata
+
+API http://127.0.0.1:8180/api/v1 memakai PostgreSQL lokal pharma_v2. Resi PHA-COUR-001 adalah demo; gambar lampiran uji hanya fixture, bukan foto penerimaan obat.
+
+| Skenario | Hasil |
+| --- | --- |
+| Login satria@pharma.test | role courier, Bearer Sanctum |
+| Dashboard + list assigned | hanya tugas akun sendiri |
+| Terima tugas + retry UUID sama | accepted; replayed=true |
+| Berangkat | in_transit |
+| Kirim telemetry | tersimpan, is_simulated=true |
+| Konfirmasi tiba | arrived |
+| POD multipart + foto fixture | completed |
+| Unduh laporan | application/pdf, 25.030 bytes |
+| Unduh foto privat | 200, butuh Bearer pemilik |
+| Logout lalu panggil dashboard | 401 |
+| Notifikasi | queued, bukan sent |
+
+Suhu/GPS dari endpoint adalah data yang dikirim perangkat atau simulator, bukan bukti sensor terkalibrasi. UI frontend pada branch client tetap perlu dihubungkan oleh integrator.
