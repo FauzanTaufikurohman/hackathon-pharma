@@ -21,7 +21,7 @@ const handleTabClick = (tab: number) => {
   if (tab === 1) {
     router.push('/checker')
   } else if (tab === 2) {
-    // Tab 2: Form Initial Exam
+    router.push('/checker/form-initial-exam')
   } else if (tab === 3) {
     router.push('/checker/riwayat')
   }

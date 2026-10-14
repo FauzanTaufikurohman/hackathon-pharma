@@ -7,6 +7,7 @@ import CourierTasksView from '../views/courier/CourierTasksView.vue'
 import CourierTaskDetailView from '../views/courier/CourierTaskDetailView.vue'
 import CheckerQueueView from '../views/checker/CheckerQueueView.vue'
 import CheckerHistoryView from '../views/checker/CheckerHistoryView.vue'
+import CheckerExamView from '../views/checker/CheckerExamView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -58,6 +59,12 @@ const router = createRouter({
       name: 'checker-queue',
       component: CheckerQueueView,
       alias: ['/checker/antrean', '/checker/queue', '/pemeriksa'],
+    },
+    {
+      path: '/checker/form-initial-exam',
+      name: 'checker-exam',
+      component: CheckerExamView,
+      alias: ['/checker/exam', '/checker/initial-exam'],
     },
     {
       path: '/checker/riwayat',

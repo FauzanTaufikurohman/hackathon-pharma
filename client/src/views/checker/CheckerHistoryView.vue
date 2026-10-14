@@ -94,7 +94,7 @@ const handleTabChange = (tab: number) => {
   if (tab === 1) {
     router.push('/checker')
   } else if (tab === 2) {
-    triggerToast('Membuka Form Initial Exam...')
+    router.push('/checker/form-initial-exam')
   } else if (tab === 3) {
     triggerToast('Menampilkan Riwayat Pemeriksaan & Status Persetujuan Admin')
   }
