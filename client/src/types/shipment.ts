@@ -97,3 +97,149 @@ export interface OperationalMetrics {
   next_arrival_time: string
   next_arrival_item: string
 }
+
+export type AuditEventType = 'inspect' | 'approve' | 'depart' | 'deliver'
+
+export interface AuditEvent {
+  id: number
+  shipment_id: number
+  type: AuditEventType
+  title: string
+  timestamp: string
+  actor_name: string
+  recipient_name?: string
+  recipient_dept?: string
+  temperature?: number
+  seal_status?: string
+  fleet_info?: string
+  route_info?: string
+  decision?: 'approved' | 'held' | 'rejected'
+  justification?: string
+  location_note?: string
+  metadata_str?: string
+}
+
+export interface BapReport {
+  id: number
+  tracking_number: string
+  status_label: string
+  temperature_min: number
+  temperature_max: number
+  safe_profile_label: string
+  revision: number
+  revision_label: string
+  recipient_officer: string
+  recipient_nipa: string
+  audit_transaction_id: string
+  digital_signature_verified: boolean
+  cooler_box_id: string
+  cooler_box_desc: string
+}
+
+export interface CourierProfile {
+  id: number
+  courier_code: string
+  name: string
+  role_label: string
+  shift_name: string
+  hub_base: string
+  duty_active: boolean
+  cooler_box_code: string
+  current_cooler_temp: number
+  ble_sync: boolean
+  battery_pct: number
+  avatar_url: string
+}
+
+export interface CourierMetrics {
+  new_tasks_count: number
+  on_route_count: number
+  issues_hold_count: number
+  completed_today_count: number
+}
+
+export type CourierTaskStatus = 'assigned' | 'in_transit' | 'hold' | 'delivered'
+
+export interface CourierTaskItem {
+  id: number
+  awb: string
+  status: CourierTaskStatus
+  status_label: string
+  category_label: string
+  is_urgent?: boolean
+  urgent_badge?: string
+  temperature_profile_label: string
+  item_title: string
+  batch_number: string
+  probe_temp_str: string
+  seal_str: string
+  battery_pct?: number
+  origin_name: string
+  origin_time: string
+  destination_name: string
+  destination_eta: string
+  destination_address: string
+  cooler_box_desc: string
+  tolerance_label: string
+  route_progress_note?: string
+  recipient_person?: string
+  pod_number?: string
+  cta_label: string
+  cta_type: 'accept_reject' | 'monitor' | 'view_pod'
+  hint_text: string
+  // Detail page fields
+  waybill_number?: string
+  coldbox_id?: string
+  weight_str?: string
+  origin_detail?: string
+  destination_detail?: string
+  handover_person?: string
+  scheduled_at_str?: string
+  sla_warning?: string
+  route_distance_km?: number
+  route_eta_str?: string
+  route_traffic_note?: string
+  commodity_name?: string
+  temp_min?: number
+  temp_max?: number
+  temp_actual?: number
+  handling_instructions?: string
+  inspector_name?: string
+  inspector_id_code?: string
+  inspector_status?: string
+}
+
+export interface CheckerProfile {
+  name: string
+  id_code: string
+  hub_name: string
+  gate_name: string
+  is_active: boolean
+  avatar_url: string
+}
+
+export interface CheckerQueueItem {
+  id: number
+  awb: string
+  status: 'inspection' | 'recheck' | 'scheduled'
+  status_label: string
+  category_type: 'vaccine' | 'recheck' | 'scheduled'
+  commodity_title: string
+  package_desc: string
+  temp_range_label: string
+  batch_id: string
+  origin_label: string
+  destination_label: string
+  instruction_title: string
+  instruction_desc: string
+  sla_target_str: string
+  sla_status_str: string
+  cta_label: string
+  cta_icon: string
+  cta_type: 'exam' | 'recheck' | 'manifest'
+  inspector_note: string
+  accent_color: 'primary' | 'tertiary' | 'secondary'
+}
+
+
+
