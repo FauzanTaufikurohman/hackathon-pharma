@@ -42,6 +42,19 @@ Bagian di atas adalah hasil historis vendor. Enam modul courier kini ditambahkan
 
 Pada branch server-courier-handover-report, seluruh suite vendor + courier lulus: **45 tes, 254 assertions** pada SQLite in-memory dan PostgreSQL pharma_v2_test. Tes meliputi isolasi courier, role/ability/akun nonaktif, dashboard kosong/suhu stale, filter/pagination, approval dan kapasitas, checklist, foto inspeksi nyata untuk non-demo, penugasan tidak cocok, versi stale, retry payload, penolakan tugas, urutan berangkat/tiba, telemetry, hold suhu >=3 menit, signal loss >15 menit, kendala, keputusan retur Admin, POD wajib foto, suhu/segel tidak aman, PDF nyata, signature privat, penguncian kiriman, dan bukti immutable pada model.
 
+Setiap branch juga diuji sendiri pada kedua database, bukan hanya branch terakhir:
+
+| Branch | Tes lulus | Assertions |
+| --- | ---: | ---: |
+| server-courier-dashboard | 30 | 151 |
+| server-courier-incoming-task | 36 | 177 |
+| server-courier-task-list | 37 | 187 |
+| server-courier-delivery-monitor | 40 | 211 |
+| server-courier-issue-report | 42 | 225 |
+| server-courier-handover-report | 45 | 254 |
+
+Composer audit pada dependency terpasang tidak menemukan advisory keamanan. Tidak ada perubahan client terhadap main 8080399 pada keenam branch.
+
 Lock DB dan request receipt mencegah pemrosesan mutasi yang sama berulang. Ini bukan hasil load test multi-host atau jaminan tidak ada bug. Larangan update/delete pada bukti/audit berlaku lewat model Eloquent, bukan klaim DBA tidak dapat mengubah database.
 
 ### Smoke test HTTP nyata
