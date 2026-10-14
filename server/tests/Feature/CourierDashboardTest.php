@@ -46,4 +46,14 @@ class CourierDashboardTest extends TestCase
         $this->withToken($login->json('token'))->getJson('/api/v1/courier/dashboard')->assertOk()->assertJsonPath('data.priority_task', null);
         $this->withToken($login->json('token'))->getJson('/api/v1/vendor/packages')->assertForbidden();
     }
+
+    public function test_stale_temperature_is_not_presented_as_current(): void
+    {
+        $courier = User::factory()->create(['role' => 'courier']);
+        $shipment = Shipment::factory()->assignedTo($courier, 'in_transit')->create();
+        $shipment->telemetry()->create(['temperature' => 4, 'recorded_at' => now()->subHour()]);
+        Sanctum::actingAs($courier, ['courier']);
+        $this->getJson('/api/v1/courier/dashboard')->assertOk()
+            ->assertJsonPath('data.profile.current_cooler_temp', null)->assertJsonPath('data.profile.telemetry_stale', true);
+    }
 }
