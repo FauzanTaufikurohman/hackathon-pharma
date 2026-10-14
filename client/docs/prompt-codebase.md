@@ -1,0 +1,1 @@
+struktur folder frontend partials mudah dikembangkan, rapi, source code sederhana tanpa pengurangan fungsional. gampang untuk integrasinya  
