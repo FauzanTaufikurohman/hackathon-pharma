@@ -1,4 +1,4 @@
-import type { Shipment, FaskesFacility, OperationalMetrics } from '../types/shipment'
+import type { Shipment, FaskesFacility, OperationalMetrics, AuditEvent, BapReport } from '../types/shipment'
 
 export const currentFacility: FaskesFacility = {
   facility_id: 'RSMS-FARM-09',
@@ -290,3 +290,67 @@ export const mockShipments: Shipment[] = [
     updated_at: '2026-10-14 08:30:00',
   },
 ]
+
+export const mockAuditEvents: AuditEvent[] = [
+  {
+    id: 104,
+    shipment_id: 100,
+    type: 'deliver',
+    title: 'Event: deliver (Sudah Diterima)',
+    timestamp: '14 Okt 2026, 15:18 WIB',
+    actor_name: 'Kurir Bambang Suryono',
+    recipient_name: 'Apt. Sarah Nadia, S.Farm',
+    recipient_dept: 'Instalasi Farmasi',
+    temperature: 4.4,
+    seal_status: 'Utuh',
+  },
+  {
+    id: 103,
+    shipment_id: 100,
+    type: 'depart',
+    title: 'Event: depart (Dalam Perjalanan)',
+    timestamp: '14 Okt 2026, 13:45 WIB',
+    actor_name: 'Kurir Bambang Suryono',
+    fleet_info: 'Armada Reefer Berinsulasi B 9482 PBF (IoT Active)',
+    temperature: 4.3,
+    route_info: 'Tol Cikampek Menuju Jakarta',
+  },
+  {
+    id: 102,
+    shipment_id: 100,
+    type: 'approve',
+    title: 'Event: approve (Siap Ditugaskan)',
+    timestamp: '14 Okt 2026, 11:30 WIB',
+    actor_name: 'Admin Operasional Farhan',
+    decision: 'approved',
+    justification: 'Checklist fisik & kalibrasi suhu 4.2°C lolos verifikasi standar CPOB.',
+  },
+  {
+    id: 101,
+    shipment_id: 100,
+    type: 'inspect',
+    title: 'Event: inspect (Menunggu Persetujuan)',
+    timestamp: '14 Okt 2026, 10:15 WIB',
+    actor_name: 'Checker Gudang Hendra',
+    location_note: 'Validasi awal cold-room hub Cikarang',
+    metadata_str: 'Suhu: 4.2°C • { passed: true, packaging: true, seal: true }',
+  },
+]
+
+export const mockBapReport: BapReport = {
+  id: 1,
+  tracking_number: 'PHA-260104',
+  status_label: 'DELIVERED (Selesai)',
+  temperature_min: 4.1,
+  temperature_max: 4.5,
+  safe_profile_label: '(100% Sesuai Profil Cold 2–8°C)',
+  revision: 1,
+  revision_label: 'Revisi 1 (Dokumen Final)',
+  recipient_officer: 'Apt. Sarah Nadia, S.Farm',
+  recipient_nipa: 'NIPA: 19890412/APJ-RSMS',
+  audit_transaction_id: 'TXN-8829-CP-20261014',
+  digital_signature_verified: true,
+  cooler_box_id: 'Cooler Box V-09',
+  cooler_box_desc: 'Cooler Box V-09 diserahkan dalam keadaan tersegel micro-barcode tanpa insiden deforstasi.',
+}
+

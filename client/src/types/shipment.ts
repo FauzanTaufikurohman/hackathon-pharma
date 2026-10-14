@@ -97,3 +97,42 @@ export interface OperationalMetrics {
   next_arrival_time: string
   next_arrival_item: string
 }
+
+export type AuditEventType = 'inspect' | 'approve' | 'depart' | 'deliver'
+
+export interface AuditEvent {
+  id: number
+  shipment_id: number
+  type: AuditEventType
+  title: string
+  timestamp: string
+  actor_name: string
+  recipient_name?: string
+  recipient_dept?: string
+  temperature?: number
+  seal_status?: string
+  fleet_info?: string
+  route_info?: string
+  decision?: 'approved' | 'held' | 'rejected'
+  justification?: string
+  location_note?: string
+  metadata_str?: string
+}
+
+export interface BapReport {
+  id: number
+  tracking_number: string
+  status_label: string
+  temperature_min: number
+  temperature_max: number
+  safe_profile_label: string
+  revision: number
+  revision_label: string
+  recipient_officer: string
+  recipient_nipa: string
+  audit_transaction_id: string
+  digital_signature_verified: boolean
+  cooler_box_id: string
+  cooler_box_desc: string
+}
+

@@ -15,6 +15,11 @@ import CourierCard from '../../components/telemetry/CourierCard.vue'
 import TemperatureTelemetryChart from '../../components/telemetry/TemperatureTelemetryChart.vue'
 import FieldIssueCard from '../../components/telemetry/FieldIssueCard.vue'
 import DeliveryHandoverFooter from '../../components/telemetry/DeliveryHandoverFooter.vue'
+import AuditSubHeaderBanner from '../../components/audit/AuditSubHeaderBanner.vue'
+import AuditTrailTimeline from '../../components/audit/AuditTrailTimeline.vue'
+import BapCertificateCard from '../../components/audit/BapCertificateCard.vue'
+import PackagingAssuranceCard from '../../components/audit/PackagingAssuranceCard.vue'
+import { mockAuditEvents, mockBapReport } from '../../data/mockShipments'
 import NotificationToast from '../../components/vendor/NotificationToast.vue'
 
 const route = useRoute()
@@ -74,6 +79,27 @@ function handleDownloadLogPdf() {
   toastRef.value?.show(
     'Mengunduh Data Log Suhu (.PDF)',
     'Laporan PDF data suhu sedang diunduh sesuai standar CDOB BPOM.'
+  )
+}
+
+function handleDownloadBap(filename: string) {
+  toastRef.value?.show(
+    'Berita Acara Terunduh',
+    `Berkas ${filename} berhasil diunduh dan terverifikasi tanda tangan digital APJ.`
+  )
+}
+
+function handleShareTelegram(chatId: string) {
+  toastRef.value?.show(
+    'Notifikasi Telegram Terkirim',
+    `Salinan dokumen BAP dan ringkasan audit telah dikirimkan ke ${chatId}.`
+  )
+}
+
+function handlePrintBap() {
+  toastRef.value?.show(
+    'Mencetak Dokumen BAP',
+    'Menyiapkan salinan fisik untuk arsip kepatuhan BPOM.'
   )
 }
 </script>
@@ -172,27 +198,39 @@ function handleDownloadLogPdf() {
       />
     </div>
 
-    <!-- TAB 3: Laporan & Riwayat Audit (Dokumen BAP & CPOB) Placeholder -->
-    <div v-else-if="activeTab === 3" class="space-y-6">
-      <div class="bg-surface-container-lowest rounded-2xl p-8 border border-surface-container shadow-xs text-center flex flex-col items-center justify-center gap-4">
-        <div class="w-16 h-16 rounded-2xl bg-primary-fixed flex items-center justify-center text-primary shadow-xs">
-          <span class="material-symbols-outlined text-[36px]">verified</span>
+    <!-- TAB 3: Laporan & Riwayat Audit (Dokumen BAP & CPOB) -->
+    <div v-else-if="activeTab === 3" class="flex flex-col w-full">
+      <!-- Top Banner: Delivered Confirmation -->
+      <AuditSubHeaderBanner
+        :tracking-number="shipment.tracking_number"
+        :recipient-name="shipment.recipient_name"
+        delivered-time="14 Okt 2026, 15:18 WIB"
+        :final-temperature="4.4"
+        :audit-transaction-id="mockBapReport.audit_transaction_id"
+      />
+
+      <!-- 2-Column Balanced Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <!-- Kolom Kiri: Immutable Events Ledger -->
+        <AuditTrailTimeline :events="mockAuditEvents" />
+
+        <!-- Kolom Kanan: BAP Summary & Download Actions -->
+        <div class="flex flex-col gap-6">
+          <!-- BAP Certificate Summary Card -->
+          <BapCertificateCard
+            :bap="mockBapReport"
+            :tracking-number="shipment.tracking_number"
+            @download-bap="handleDownloadBap"
+            @share-telegram="handleShareTelegram"
+            @print-bap="handlePrintBap"
+          />
+
+          <!-- Inspection Assurance Info Box -->
+          <PackagingAssuranceCard
+            :cooler-box-id="mockBapReport.cooler_box_id"
+            :description="mockBapReport.cooler_box_desc"
+          />
         </div>
-        <div class="max-w-md">
-          <h2 class="font-headline-md text-headline-md font-extrabold text-on-surface">
-            Laporan &amp; Riwayat Audit Digital
-          </h2>
-          <p class="font-body-md text-body-md text-on-surface-variant mt-1">
-            Arsip dokumen Berita Acara Penerimaan (BAP) PDF/A berstandar CPOB &amp; GDP terenkripsi dengan hash verifikasi.
-          </p>
-        </div>
-        <button
-          type="button"
-          class="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer"
-        >
-          <span class="material-symbols-outlined text-[18px]">download</span>
-          <span>Unduh BAP Resmi Resi {{ shipment.tracking_number }}</span>
-        </button>
       </div>
     </div>
 
@@ -200,3 +238,4 @@ function handleDownloadLogPdf() {
     <NotificationToast ref="toastRef" />
   </div>
 </template>
+
