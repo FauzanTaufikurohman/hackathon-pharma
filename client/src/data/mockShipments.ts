@@ -1,4 +1,4 @@
-import type { Shipment, FaskesFacility, OperationalMetrics, AuditEvent, BapReport, CourierProfile, CourierMetrics, CourierTaskItem, CheckerProfile, CheckerQueueItem, CheckerHistoryItem, AdminProfile, AdminShipmentItem } from '../types/shipment'
+import type { Shipment, FaskesFacility, OperationalMetrics, AuditEvent, BapReport, CourierProfile, CourierMetrics, CourierTaskItem, CheckerProfile, CheckerQueueItem, CheckerHistoryItem, AdminProfile, AdminShipmentItem, AdminApprovalShipment, AdminAvailableCourier } from '../types/shipment'
 
 export const currentFacility: FaskesFacility = {
   facility_id: 'RSMS-FARM-09',
@@ -825,6 +825,96 @@ export const mockAdminShipments: AdminShipmentItem[] = [
     action_type: 'view_epod',
   },
 ]
+
+export const mockAdminApprovalShipments: AdminApprovalShipment[] = [
+  {
+    id: 1,
+    awb: 'PHA-260104',
+    batch_number: '#MCV-2026-X12',
+    status: 'pending_approval',
+    status_label: 'pending_approval (Menunggu Persetujuan Admin)',
+    commodity: 'Vaksin Meningococcal Konjugat ACYW',
+    koli: '2 Koli',
+    origin_hub: 'BioFarma Bandung Hub',
+    destination: 'RS Medika Sehat Jakarta',
+    checker_name: 'Hendra Wijaya',
+    checker_id: 'CHK-012',
+    submitted_at: 'Hari ini, 09:45 WIB',
+    packaging_ok: true,
+    seal_ok: true,
+    seal_code: 'SL-8891',
+    label_ok: true,
+    temp_manual: 4.2,
+    temp_ocr: 4.2,
+    ocr_match: true,
+    temp_min: 2.0,
+    temp_max: 8.0,
+    photo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCxuar_gkKNnrQ2YYPrdC6_pxpvKN6S9z0F6DDBYsN2iXJnjh9XsDp5dPbpCooeA84BNGsugnK-ugVX60aJZFiOuHwe-XybSzfBFiYU3T1hoMONFGeutpQWZXqvW4IquIgUXxBhBUNn1euer6Kzqx7Xga2RUwmvfkCHzr-GuM6HbFTehMztM3jvmXrzvM_sjNo1s40AIOA76jdSYJi9l86nya1SbZDLHZa1wyxk6NADnAq2o0rF0KpjYg',
+    checker_note: '“Kemasan boks vacuum panel utuh dan bersih, nomor segel SL-8891 cocok dengan manifest, suhu digital terkalibrasi stabil pada 4.2°C. Siap dirilis.”',
+    passed: true,
+    default_admin_reason: 'Seluruh checklist fisik dan suhu 4.2°C sesuai standar CPOB BPOM. Segel utuh, kargo dinyatakan layak rilis dan siap dialokasikan ke kurir armada reefer van.',
+  },
+  {
+    id: 2,
+    awb: 'PHA-260109',
+    batch_number: '#VRB-2026-R02',
+    status: 'pending_approval',
+    status_label: 'pending_approval (Menunggu Persetujuan Admin)',
+    commodity: 'Vaksin Rabies Verorab (50 Vial)',
+    koli: '1 Koli',
+    origin_hub: 'BioFarma Pasteur Hub',
+    destination: 'RSPI Sulianti Saroso Jakarta',
+    checker_name: 'Bambang Haryanto',
+    checker_id: 'CHK-009',
+    submitted_at: 'Hari ini, 10:10 WIB',
+    packaging_ok: true,
+    seal_ok: true,
+    seal_code: 'SL-8895',
+    label_ok: true,
+    temp_manual: 3.8,
+    temp_ocr: 3.8,
+    ocr_match: true,
+    temp_min: 2.0,
+    temp_max: 8.0,
+    photo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCxuar_gkKNnrQ2YYPrdC6_pxpvKN6S9z0F6DDBYsN2iXJnjh9XsDp5dPbpCooeA84BNGsugnK-ugVX60aJZFiOuHwe-XybSzfBFiYU3T1hoMONFGeutpQWZXqvW4IquIgUXxBhBUNn1euer6Kzqx7Xga2RUwmvfkCHzr-GuM6HbFTehMztM3jvmXrzvM_sjNo1s40AIOA76jdSYJi9l86nya1SbZDLHZa1wyxk6NADnAq2o0rF0KpjYg',
+    checker_note: '“Segel barcode SL-8895 terverifikasi utuh, display LCD 3.8°C dalam batas stabil cold-chain 2-8°C.”',
+    passed: true,
+    default_admin_reason: 'Inspeksi fisik dan parameter suhu 3.8°C terverifikasi sesuai standar CPOB. Siap didelegasikan ke kurir pendingin.',
+  },
+]
+
+export const mockAdminCouriers: AdminAvailableCourier[] = [
+  {
+    id: 'courier-1',
+    code: 'KURIR-007',
+    initials: 'BS',
+    name: 'Bambang Suryono',
+    vehicle_type: 'Reefer Van Dedicated',
+    plate_number: 'B 9482 PBF',
+    chiller_temp: 4.2,
+    battery_pct: 96,
+    active_tasks: 0,
+    active_tasks_desc: '0 Tugas Aktif (Standby)',
+    rating: 4.98,
+    credential_cpob: '★ 4.98 • CPOB Aktif',
+    vehicle_icon: 'airport_shuttle',
+  },
+  {
+    id: 'courier-2',
+    code: 'KURIR-015',
+    initials: 'DK',
+    name: 'Dedi Kurniawan',
+    vehicle_type: 'Motor Satria Coldbox',
+    plate_number: 'B 6124 TBT',
+    chiller_temp: 4.8,
+    active_tasks: 1,
+    active_tasks_desc: '1 Tugas (On-Route Menteng)',
+    rating: 4.89,
+    credential_cpob: '★ 4.89 • CPOB Basic',
+    vehicle_icon: 'two_wheeler',
+  },
+]
+
 
 
 

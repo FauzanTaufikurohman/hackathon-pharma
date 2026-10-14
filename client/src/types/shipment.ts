@@ -308,5 +308,46 @@ export interface AdminShipmentItem {
   action_type: 'review_qc' | 'monitor_gps' | 'open_ticket' | 'detail' | 'view_epod'
 }
 
+export interface AdminApprovalShipment {
+  id: number
+  awb: string
+  batch_number: string
+  status: 'pending_approval' | 'approved' | 'held'
+  status_label: string
+  commodity: string
+  koli: string
+  origin_hub: string
+  destination: string
+  checker_name: string
+  checker_id: string
+  submitted_at: string
+  packaging_ok: boolean
+  seal_ok: boolean
+  seal_code: string
+  label_ok: boolean
+  temp_manual: number
+  temp_ocr: number
+  ocr_match: boolean
+  temp_min: number
+  temp_max: number
+  photo_url: string
+  checker_note: string
+  passed: boolean
+  default_admin_reason: string
+}
 
-
+export interface AdminAvailableCourier {
+  id: string
+  code: string
+  initials: string
+  name: string
+  vehicle_type: string
+  plate_number: string
+  chiller_temp: number
+  battery_pct?: number
+  active_tasks: number
+  active_tasks_desc: string
+  rating: number
+  credential_cpob: string
+  vehicle_icon: string
+}

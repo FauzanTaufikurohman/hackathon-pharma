@@ -9,6 +9,7 @@ import CheckerQueueView from '../views/checker/CheckerQueueView.vue'
 import CheckerHistoryView from '../views/checker/CheckerHistoryView.vue'
 import CheckerExamView from '../views/checker/CheckerExamView.vue'
 import AdminShipmentsView from '../views/admin/AdminShipmentsView.vue'
+import AdminApprovalsView from '../views/admin/AdminApprovalsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -88,7 +89,8 @@ const router = createRouter({
     {
       path: '/admin/approval-qc-kurir',
       name: 'admin-approvals',
-      redirect: '/admin/manajemen-pengiriman',
+      component: AdminApprovalsView,
+      alias: ['/admin/approval', '/admin/approvals', '/admin/qc-kurir'],
     },
     {
       path: '/admin/live-monitor-kendala',
