@@ -82,12 +82,15 @@ class CourierShipmentService
         $latest = $this->owned($user)->with('latestTelemetry')->whereIn('status', ['accepted', 'in_transit', 'arrived', 'returning'])
             ->orderByDesc('updated_at')->first()?->latestTelemetry;
 
+        $stale = ! $latest || ! $latest->recorded_at->between(now()->subMinutes(15), now()->addMinute());
+
         return [
             'id' => $user->id, 'courier_code' => $profile['courier_code'] ?? 'COUR-'.$user->id,
             'name' => $user->name, 'role_label' => 'Satria Pharma', 'shift_name' => $profile['shift_name'] ?? null,
             'hub_base' => $profile['hub_base'] ?? null, 'duty_active' => $user->is_active,
             'cooler_box_code' => $profile['cooler_box_code'] ?? null,
-            'current_cooler_temp' => $latest?->temperature, 'ble_sync' => null,
+            'current_cooler_temp' => $stale ? null : $latest?->temperature, 'ble_sync' => null,
+            'telemetry_stale' => $stale, 'telemetry_recorded_at' => $latest?->recorded_at->toISOString(),
             'battery_pct' => $latest?->battery_pct, 'avatar_url' => $profile['avatar_url'] ?? null,
             'capacity_kg' => $profile['capacity_kg'] ?? null,
         ];
