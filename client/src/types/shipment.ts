@@ -45,6 +45,13 @@ export interface Shipment {
   version: number
   recipient_ready: boolean | null
   completed_at?: string | null
+  category?: 'transit' | 'qc' | 'delivered'
+  route_display?: string
+  status_label?: string
+  temp_label?: string
+  estimate_label?: string
+  action_type?: 'live' | 'warehouse' | 'gps' | 'pod'
+  action_label?: string
   created_at: string
   updated_at: string
 }

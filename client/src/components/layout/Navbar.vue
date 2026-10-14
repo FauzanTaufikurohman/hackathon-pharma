@@ -38,15 +38,15 @@ function handleHeaderSearch() {
         <nav class="flex items-center gap-1 bg-surface-container-low p-1 rounded-full">
           <router-link
             to="/"
-            class="px-4 py-1.5 rounded-full text-label-md font-semibold transition-all duration-200"
-            :class="route.path === '/' || route.path === '/vendor' ? 'bg-primary-fixed text-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
+            class="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-label-md font-bold transition-all duration-200"
+            :class="route.path === '/' || route.path === '/vendor' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
           >
             Beranda
           </router-link>
           <router-link
             to="/paket-saya"
-            class="px-4 py-1.5 rounded-full text-label-md font-semibold transition-all duration-200"
-            :class="route.path === '/paket-saya' ? 'bg-primary-fixed text-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
+            class="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-label-md font-bold transition-all duration-200"
+            :class="route.path === '/paket-saya' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
           >
             Paket Saya
           </router-link>
