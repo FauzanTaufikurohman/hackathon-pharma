@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { mockCourierTasks } from '../../data/mockShipments'
 import type { CourierTaskItem } from '../../types/shipment'
 import CourierTaskDetailNavbar from '../../components/courier/CourierTaskDetailNavbar.vue'
+
+// Tab 1: Tugas Masuk Components
 import CourierIncomingUrgencyBanner from '../../components/courier/CourierIncomingUrgencyBanner.vue'
 import CourierIncomingCardHeader from '../../components/courier/CourierIncomingCardHeader.vue'
 import CourierIncomingTelemetryGrid from '../../components/courier/CourierIncomingTelemetryGrid.vue'
@@ -13,6 +15,14 @@ import CourierIncomingPreTripChecklist from '../../components/courier/CourierInc
 import CourierIncomingActionFooter from '../../components/courier/CourierIncomingActionFooter.vue'
 import CourierIncomingRejectModal from '../../components/courier/CourierIncomingRejectModal.vue'
 import CourierIncomingSuccessBanner from '../../components/courier/CourierIncomingSuccessBanner.vue'
+
+// Tab 2: Pengantaran & Monitor Components
+import CourierDeliveryStepper from '../../components/courier/CourierDeliveryStepper.vue'
+import CourierDeliveryMapCard from '../../components/courier/CourierDeliveryMapCard.vue'
+import CourierDeliveryRecipientCard from '../../components/courier/CourierDeliveryRecipientCard.vue'
+import CourierDeliveryTelemetryPanel from '../../components/courier/CourierDeliveryTelemetryPanel.vue'
+import CourierDeliveryIssueBanner from '../../components/courier/CourierDeliveryIssueBanner.vue'
+
 import CourierFooter from '../../components/courier/CourierFooter.vue'
 import NotificationToast from '../../components/vendor/NotificationToast.vue'
 
@@ -34,15 +44,27 @@ const task = computed<CourierTaskItem>(() => {
 // Active Tab (1: Tugas Masuk, 2: Pengantaran & Monitor, 3: Lapor Kendala, 4: Serah Terima & Laporan)
 const activeTab = ref<number>(Number(route.query.tab) || 1)
 
-// Checklist state
+// Synchronize tab with route query
+watch(
+  () => route.query.tab,
+  newTab => {
+    if (newTab) {
+      activeTab.value = Number(newTab)
+    }
+  }
+)
+
+// Tab 1: Checklist & Action state
 const check1 = ref(false)
 const check2 = ref(false)
 const check3 = ref(false)
-
-// Accept / Processing states
 const isProcessing = ref(false)
-const isAccepted = ref(task.value.status === 'in_transit')
+const isAccepted = ref(task.value.status === 'in_transit' || task.value.status === 'delivered')
 const isRejectModalOpen = ref(false)
+
+// Tab 2: Delivery & Arrival state
+const hasArrived = ref(false)
+const arrivedTime = ref('14:50')
 
 function handleTabChange(tabNumber: number) {
   activeTab.value = tabNumber
@@ -60,17 +82,11 @@ function handleTabChange(tabNumber: number) {
   const tabName = tabLabels[tabNumber] || 'Tugas Masuk'
   toastRef.value?.show(
     `Navigasi Satria: ${tabName}`,
-    `Beralih ke tampilan ${tabName} untuk resi ${task.value.awb}...`
+    `Beralih ke tampilan ${tabName} untuk kargo ${task.value.awb}...`
   )
-
-  if (tabNumber === 2) {
-    // If user clicks Tab 2 directly
-    router.push(`/vendor/monitor/${task.value.awb}?screen=2`)
-  } else if (tabNumber === 4) {
-    router.push(`/vendor/monitor/${task.value.awb}?screen=3`)
-  }
 }
 
+// Tab 1 Actions
 function handleAcceptTask() {
   const allChecked = check1.value && check2.value && check3.value
   if (!allChecked) {
@@ -90,7 +106,7 @@ function handleAcceptTask() {
 
     toastRef.value?.show(
       'Tugas Berhasil Diterima!',
-      `Resi ${task.value.awb} telah tersinkron ke Pengantaran & Monitor.`
+      `Resi ${task.value.awb} telah tersinkron ke Pengantaran & Monitor. Silakan mulai navigasi.`
     )
   }, 700)
 }
@@ -112,7 +128,28 @@ function handleRejectSubmit(payload: { category: string; notes: string }) {
 }
 
 function handleNavigateMonitor() {
-  router.push(`/vendor/monitor/${task.value.awb}?screen=2`)
+  handleTabChange(2)
+}
+
+// Tab 2 Actions
+function handleConfirmArrived() {
+  hasArrived.value = true
+  arrivedTime.value = new Date().toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  toastRef.value?.show(
+    'Status Diperbarui: ARRIVED',
+    `Kendaraan Satria telah tiba di lokasi ${task.value.destination_name || 'RS Medika Sehat Jakarta'}. Siap lanjut ke serah terima fisik.`
+  )
+}
+
+function handleGoHandover() {
+  handleTabChange(4)
+}
+
+function handleOpenIssueForm() {
+  handleTabChange(3)
 }
 </script>
 
@@ -128,7 +165,8 @@ function handleNavigateMonitor() {
     <!-- Main Workspace Content -->
     <main class="w-full pt-16 flex-1 bg-surface">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <div class="flex flex-col w-full space-y-6">
+        <!-- TAB 1: TUGAS MASUK -->
+        <div v-if="activeTab === 1" class="flex flex-col w-full space-y-6">
           <!-- 1. Top Excursion / Urgency Countdown Banner -->
           <CourierIncomingUrgencyBanner
             :hub-location="task.origin_detail || 'Hub Cawang Staging #02'"
@@ -174,10 +212,99 @@ function handleNavigateMonitor() {
             @navigate-monitor="handleNavigateMonitor"
           />
         </div>
+
+        <!-- TAB 2: PENGANTARAN & MONITOR -->
+        <div v-else-if="activeTab === 2" class="flex flex-col w-full space-y-6">
+          <!-- Sequential Control Card: Changing Status & 3-Step Flow -->
+          <CourierDeliveryStepper
+            :task="task"
+            :has-arrived="hasArrived"
+            :arrived-time="arrivedTime"
+            @confirm-arrived="handleConfirmArrived"
+            @go-handover="handleGoHandover"
+          />
+
+          <!-- Split Main Layout: 2/3 Map & Navigation + 1/3 Telemetry Monitoring -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column: Navigation View & Contact Details -->
+            <div class="lg:col-span-2 space-y-6">
+              <!-- Active Route Map Visualizer -->
+              <CourierDeliveryMapCard
+                speed="28.4 km/h"
+                distance-remaining="4.2 KM"
+                current-position="Tol Cawang KM 12 → Exit Kuningan/Salemba"
+                traffic-status="Trafik: Lancar Terkendali"
+                :destination-query="task.destination_name || 'RS Medika Sehat Jakarta Salemba'"
+              />
+
+              <!-- Recipient Contact & Pharmacy Card -->
+              <CourierDeliveryRecipientCard
+                :facility-name="task.destination_name || 'RS Medika Sehat Jakarta'"
+                :facility-address="task.destination_detail || 'Gedung Farmasi & Logistik Medik, Lantai 1 (Pintu Masuk Loading Dock Barat)'"
+                apj-name="Apt. Siti Rahma, S.Farm"
+                apj-sip="SIP: 19880412/SIPA-DKI/2022"
+                api-phone="0812-9842-1100"
+              />
+            </div>
+
+            <!-- Right Column: Running Monitor Telemetry Panel & Issue Banner -->
+            <div class="space-y-6">
+              <!-- Live Telemetry Monitor Card -->
+              <CourierDeliveryTelemetryPanel
+                :current-temp="4.5"
+                probe-id="SENS-IOT-771"
+                :battery-pct="96"
+                protocol="BLE 5.2 / CPOB"
+                ping-cycle="Tiap 30 Detik"
+              />
+
+              <!-- Field Issue Shortcut Banner -->
+              <CourierDeliveryIssueBanner
+                @open-issue-form="handleOpenIssueForm"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: LAPOR KENDALA (Placeholder for next feature) -->
+        <div v-else-if="activeTab === 3" class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-surface-container/60 text-center space-y-4">
+          <div class="w-16 h-16 rounded-full bg-error-container text-error flex items-center justify-center mx-auto shadow-xs">
+            <span class="material-symbols-outlined text-[32px]">report_problem</span>
+          </div>
+          <h2 class="font-headline-lg font-bold text-on-surface">Form Lapor Kendala</h2>
+          <p class="font-body-md text-on-surface-variant max-w-lg mx-auto">
+            Halaman pelaporan insiden cold-chain &amp; eskalasi dispatcher akan dibuka pada langkah navigasi berikutnya.
+          </p>
+          <button
+            type="button"
+            @click="handleTabChange(2)"
+            class="px-5 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
+          >
+            ← Kembali ke Pengantaran &amp; Monitor
+          </button>
+        </div>
+
+        <!-- TAB 4: SERAH TERIMA & LAPORAN (Placeholder for subsequent feature) -->
+        <div v-else-if="activeTab === 4" class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-surface-container/60 text-center space-y-4">
+          <div class="w-16 h-16 rounded-full bg-secondary-container text-secondary flex items-center justify-center mx-auto shadow-xs">
+            <span class="material-symbols-outlined text-[32px]">assignment_turned_in</span>
+          </div>
+          <h2 class="font-headline-lg font-bold text-on-surface">Serah Terima &amp; Laporan BAP</h2>
+          <p class="font-body-md text-on-surface-variant max-w-lg mx-auto">
+            Modul digital handover, scan barcode obat, dan tanda tangan APJ akan dibuka pada langkah navigasi berikutnya.
+          </p>
+          <button
+            type="button"
+            @click="handleTabChange(2)"
+            class="px-5 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
+          >
+            ← Kembali ke Pengantaran &amp; Monitor
+          </button>
+        </div>
       </div>
     </main>
 
-    <!-- Rejection Modal Dialog -->
+    <!-- Rejection Modal Dialog (Tab 1) -->
     <CourierIncomingRejectModal
       :is-open="isRejectModalOpen"
       :awb="task.awb"
