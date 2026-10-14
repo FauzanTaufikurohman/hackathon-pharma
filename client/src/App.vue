@@ -1,47 +1,21 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import Navbar from './components/layout/Navbar.vue'
+import Footer from './components/layout/Footer.vue'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+  <div class="min-h-screen flex flex-col bg-surface font-sans text-on-surface antialiased selection:bg-primary-fixed selection:text-primary">
+    <!-- Sticky Navigation Bar -->
+    <Navbar />
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
+    <!-- Main Content Area with Top Padding for fixed Navbar -->
+    <main class="w-full flex-1 pt-16 bg-surface">
+      <div class="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-space-xl">
+        <router-view />
+      </div>
+    </main>
 
-  <main>
-    <TheWelcome />
-  </main>
+    <!-- Global Footer -->
+    <Footer />
+  </div>
 </template>
-
-<style scoped>
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
