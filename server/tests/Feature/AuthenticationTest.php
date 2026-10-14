@@ -10,6 +10,24 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_vendor_token_without_vendor_ability_is_denied(): void
+    {
+        $vendor = User::factory()->create();
+        $token = $vendor->createToken('restricted', ['profile'])->plainTextToken;
+        $this->withToken($token)->getJson('/api/v1/vendor/packages')->assertForbidden();
+    }
+
+    public function test_browser_origin_can_login_with_bearer_without_cookie_csrf(): void
+    {
+        $user = User::factory()->create(['email' => 'browser@example.test', 'password' => 'secret-test']);
+        $login = $this->withHeaders(['Origin' => 'http://localhost:5173'])->postJson('/api/v1/auth/login', [
+            'email' => $user->email, 'password' => 'secret-test',
+        ]);
+        $login->assertOk();
+        auth()->forgetGuards();
+        $this->withToken($login->json('token'))->getJson('/api/v1/vendor/packages')->assertOk();
+    }
+
     public function test_login_issues_expiring_token_without_leaking_password(): void
     {
         User::factory()->create(['email' => 'vendor@example.test', 'password' => 'secret-test']);

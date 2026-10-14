@@ -11,5 +11,5 @@ return [
     'allowed_headers' => ['Accept', 'Content-Type', 'Authorization', 'X-XSRF-TOKEN', 'X-Requested-With'],
     'exposed_headers' => ['Content-Disposition', 'X-Report-SHA256'],
     'max_age' => 600,
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 ];

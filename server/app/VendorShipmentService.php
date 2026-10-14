@@ -28,6 +28,7 @@ class VendorShipmentService
     public function owned(User $user): Builder
     {
         abort_unless(in_array($user->role, ['buyer', 'vendor'], true), 403, 'Halaman ini khusus vendor atau penerima.');
+        abort_unless($user->tokenCan('vendor'), 403, 'Token tidak memiliki akses vendor.');
 
         return Shipment::query()->where('buyer_id', $user->id);
     }
