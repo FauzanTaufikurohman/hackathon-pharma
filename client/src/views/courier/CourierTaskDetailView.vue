@@ -29,6 +29,13 @@ import CourierIssueReportForm from '../../components/courier/CourierIssueReportF
 import CourierIssueDecisionCard from '../../components/courier/CourierIssueDecisionCard.vue'
 import CourierIssueAuditLogStrip from '../../components/courier/CourierIssueAuditLogStrip.vue'
 
+// Tab 4: Serah Terima & Laporan Components
+import CourierHandoverBanner from '../../components/courier/CourierHandoverBanner.vue'
+import CourierHandoverEpodCard from '../../components/courier/CourierHandoverEpodCard.vue'
+import CourierHandoverCargoSummaryCard from '../../components/courier/CourierHandoverCargoSummaryCard.vue'
+import CourierHandoverTimelineCard from '../../components/courier/CourierHandoverTimelineCard.vue'
+import CourierHandoverReportCard from '../../components/courier/CourierHandoverReportCard.vue'
+
 import CourierFooter from '../../components/courier/CourierFooter.vue'
 import NotificationToast from '../../components/vendor/NotificationToast.vue'
 
@@ -180,6 +187,21 @@ function handleConfirmReturn() {
     `Status pengiriman diperbarui menjadi returning. Rute navigasi diarahkan kembali ke Hub Cawang.`
   )
 }
+
+// Tab 4 Actions
+function handleDownloadBapPdf() {
+  toastRef.value?.show(
+    'Mengunduh Salinan Dokumen BAP',
+    `Memproses file BAP-PHA-20261014-8891.pdf terenkripsi SHA-256 untuk resi ${task.value.awb}...`
+  )
+}
+
+function handleShareWhatsappDispatcher() {
+  const text = encodeURIComponent(
+    `Laporan Tugas Selesai (DELIVERED):\nAWB: ${task.value.awb}\nPenerima: Apt. Siti Rahma, S.Farm (RS Medika Sehat Jakarta)\nSuhu Serah Terima: 4.4°C\nSegel Fisik: SL-8891 (Utuh)\nWaktu Selesai: 14 Okt 2026, 15:18 WIB\ne-POD: BAP-PHA-20261014-8891 (Valid CDOB BPOM)`
+  )
+  window.open(`https://wa.me/6281288889999?text=${text}`, '_blank')
+}
 </script>
 
 <template>
@@ -321,22 +343,51 @@ function handleConfirmReturn() {
           <CourierIssueAuditLogStrip />
         </div>
 
-        <!-- TAB 4: SERAH TERIMA & LAPORAN (Placeholder for subsequent feature) -->
-        <div v-else-if="activeTab === 4" class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-surface-container/60 text-center space-y-4">
-          <div class="w-16 h-16 rounded-full bg-secondary-container text-secondary flex items-center justify-center mx-auto shadow-xs">
-            <span class="material-symbols-outlined text-[32px]">assignment_turned_in</span>
+        <!-- TAB 4: SERAH TERIMA & LAPORAN -->
+        <div v-else-if="activeTab === 4" class="flex flex-col w-full space-y-6">
+          <!-- Top Confirmation Banner -->
+          <CourierHandoverBanner
+            :awb="task.awb"
+            completion-time="14 Okt 2026, 15:18 WIB"
+          />
+
+          <!-- Main Split 2-Column Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+            <!-- Left Column: e-POD Validation Form -->
+            <CourierHandoverEpodCard
+              :awb="task.awb"
+              completion-time="15:18 WIB"
+              :temp-reading="4.4"
+              seal-code="SL-8891"
+              pharmacist-name="Apt. Siti Rahma, S.Farm"
+              pharmacist-nipa="19890412/APJ-RSMS"
+              :facility-name="task.destination_name || 'RS Medika Sehat Jakarta'"
+            />
+
+            <!-- Right Column: Riwayat Tugas & Dokumen Laporan -->
+            <div class="space-y-6">
+              <!-- Cargo Summary Card -->
+              <CourierHandoverCargoSummaryCard
+                :cargo-name="task.commodity_name || 'Vaksin Meningococcal Konjugat ACYW'"
+                :batch-number="task.batch_number || '#MCV-2026-X12'"
+                expiry-date="Nov 2027"
+                colli-count="2 Koli Terverifikasi"
+                :origin-hub="task.origin_name || 'Hub Pharma Cawang (DC)'"
+                :destination-facility="task.destination_name || 'RS Medika Sehat Jakarta'"
+              />
+
+              <!-- Mini Audit Log Ledger (Chain of Custody) -->
+              <CourierHandoverTimelineCard />
+
+              <!-- Official Report Download Card -->
+              <CourierHandoverReportCard
+                bap-number="BAP-PHA-20261014-8891"
+                pdf-size="1.8 MB"
+                @download-pdf="handleDownloadBapPdf"
+                @share-whatsapp="handleShareWhatsappDispatcher"
+              />
+            </div>
           </div>
-          <h2 class="font-headline-lg font-bold text-on-surface">Serah Terima &amp; Laporan BAP</h2>
-          <p class="font-body-md text-on-surface-variant max-w-lg mx-auto">
-            Modul digital handover, scan barcode obat, dan tanda tangan APJ akan dibuka pada langkah navigasi berikutnya.
-          </p>
-          <button
-            type="button"
-            @click="handleTabChange(2)"
-            class="px-5 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
-          >
-            ← Kembali ke Pengantaran &amp; Monitor
-          </button>
         </div>
       </div>
     </main>
