@@ -5,6 +5,7 @@ import VendorMonitorView from '../views/vendor/VendorMonitorView.vue'
 import CourierHomeView from '../views/courier/CourierHomeView.vue'
 import CourierTasksView from '../views/courier/CourierTasksView.vue'
 import CourierTaskDetailView from '../views/courier/CourierTaskDetailView.vue'
+import CheckerQueueView from '../views/checker/CheckerQueueView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -48,6 +49,14 @@ const router = createRouter({
       name: 'courier-task-detail',
       component: CourierTaskDetailView,
       alias: ['/courier/task/:awb', '/kurir/tugas/:awb'],
+    },
+
+    // Checker Role Routes
+    {
+      path: '/checker',
+      name: 'checker-queue',
+      component: CheckerQueueView,
+      alias: ['/checker/antrean', '/checker/queue', '/pemeriksa'],
     },
 
     // Fallback redirect

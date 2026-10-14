@@ -8,10 +8,18 @@ import CourierFooter from './components/courier/CourierFooter.vue'
 
 const route = useRoute()
 const isCourier = computed(() => route.path.startsWith('/courier') || route.path.startsWith('/kurir'))
+const isChecker = computed(() => route.path.startsWith('/checker') || route.path.startsWith('/pemeriksa'))
 </script>
 
 <template>
+  <!-- Checker Role Layout -->
+  <div v-if="isChecker" class="min-h-screen bg-surface font-sans text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+    <router-view />
+  </div>
+
+  <!-- Courier or Vendor Role Layout -->
   <div
+    v-else
     class="min-h-screen flex flex-col font-sans text-on-surface antialiased"
     :class="isCourier ? 'bg-[#F8FAFC]' : 'bg-surface selection:bg-primary-fixed selection:text-primary'"
   >

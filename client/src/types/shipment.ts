@@ -209,5 +209,37 @@ export interface CourierTaskItem {
   inspector_status?: string
 }
 
+export interface CheckerProfile {
+  name: string
+  id_code: string
+  hub_name: string
+  gate_name: string
+  is_active: boolean
+  avatar_url: string
+}
+
+export interface CheckerQueueItem {
+  id: number
+  awb: string
+  status: 'inspection' | 'recheck' | 'scheduled'
+  status_label: string
+  category_type: 'vaccine' | 'recheck' | 'scheduled'
+  commodity_title: string
+  package_desc: string
+  temp_range_label: string
+  batch_id: string
+  origin_label: string
+  destination_label: string
+  instruction_title: string
+  instruction_desc: string
+  sla_target_str: string
+  sla_status_str: string
+  cta_label: string
+  cta_icon: string
+  cta_type: 'exam' | 'recheck' | 'manifest'
+  inspector_note: string
+  accent_color: 'primary' | 'tertiary' | 'secondary'
+}
+
 
 
