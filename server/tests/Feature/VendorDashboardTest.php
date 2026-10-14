@@ -26,7 +26,7 @@ class VendorDashboardTest extends TestCase
         TelemetrySample::create(['shipment_id' => $shipment->id, 'temperature' => 4, 'recorded_at' => now()]);
         TelemetrySample::create(['shipment_id' => $held->id, 'temperature' => 12, 'recorded_at' => now()]);
         ShipmentIssue::create(['shipment_id' => $held->id, 'type' => 'temperature', 'description' => 'Tinggi']);
-        Sanctum::actingAs($vendor);
+        Sanctum::actingAs($vendor, ['vendor']);
         $this->getJson('/api/v1/vendor/dashboard')->assertOk()
             ->assertJsonPath('data.metrics.active_shipments_count', 2)
             ->assertJsonPath('data.metrics.critical_count', 1)
@@ -38,7 +38,7 @@ class VendorDashboardTest extends TestCase
     public function test_empty_or_stale_telemetry_does_not_claim_compliance(): void
     {
         $vendor = User::factory()->create();
-        Sanctum::actingAs($vendor);
+        Sanctum::actingAs($vendor, ['vendor']);
         $this->getJson('/api/v1/vendor/dashboard')->assertOk()
             ->assertJsonPath('data.priority_shipment', null)
             ->assertJsonPath('data.metrics.compliance_rate', null);
@@ -55,7 +55,7 @@ class VendorDashboardTest extends TestCase
         $courier = User::factory()->create(['role' => 'courier']);
         User::factory()->create(['role' => 'admin']);
         $shipment = Shipment::factory()->create(['buyer_id' => $vendor->id, 'courier_id' => $courier->id, 'status' => 'in_transit']);
-        Sanctum::actingAs($vendor);
+        Sanctum::actingAs($vendor, ['vendor']);
         $payload = ['recipient_ready' => true, 'version' => 1, 'request_id' => (string) Str::uuid()];
         $this->putJson('/api/v1/vendor/shipments/'.$shipment->tracking_number.'/readiness', $payload)
             ->assertOk()->assertJsonPath('data.version', 2)->assertJsonPath('data.status', 'in_transit');
@@ -71,7 +71,7 @@ class VendorDashboardTest extends TestCase
         $vendor = User::factory()->create();
         $own = Shipment::factory()->create(['buyer_id' => $vendor->id]);
         $other = Shipment::factory()->create();
-        Sanctum::actingAs($vendor);
+        Sanctum::actingAs($vendor, ['vendor']);
         $payload = ['recipient_ready' => true, 'version' => 9, 'request_id' => (string) Str::uuid()];
         $this->getJson('/api/v1/vendor/dashboard?awb='.$other->tracking_number)->assertNotFound();
         $this->putJson('/api/v1/vendor/shipments/'.$other->tracking_number.'/readiness', $payload)->assertNotFound();
@@ -87,7 +87,7 @@ class VendorDashboardTest extends TestCase
     {
         $vendor = User::factory()->create();
         $own = Shipment::factory()->create(['buyer_id' => $vendor->id]);
-        Sanctum::actingAs($vendor);
+        Sanctum::actingAs($vendor, ['vendor']);
         $payload = ['recipient_ready' => true, 'version' => 1, 'request_id' => (string) Str::uuid()];
         $url = '/api/v1/vendor/shipments/'.$own->tracking_number.'/readiness';
         $this->putJson($url, $payload)->assertOk();
