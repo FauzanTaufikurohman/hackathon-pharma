@@ -32,7 +32,7 @@ Status internal memakai nama pendek frontend. Padanan FRD: CREATED_AWAITING_EXAM
 
 401: token hilang/kedaluwarsa; 403: role tidak berhak; 422: parameter tidak valid; 429: batas request. Login dibatasi 5 percobaan/menit per email+IP dan 30/menit per IP. Token berlaku satu hari. Jangan simpan password atau token dalam URL, log, Git atau contoh publik.
 
-API mendukung Sanctum cookie stateful dengan CSRF untuk integrasi SPA, tetapi endpoint login saat ini menerbitkan Bearer token; tidak membuat sesi cookie. Simpan token sementara di memori frontend dan kirim header Authorization. Gunakan HTTPS di cloud.
+API ini stateless memakai Bearer token Sanctum; login tidak membuat sesi cookie. Simpan token sementara di memori frontend dan kirim header Authorization. fetch tidak perlu credentials:include atau request CSRF. Cookie SPA belum diaktifkan; jika tim memilih cookie authentication, tambahkan login sesi + CSRF sebagai satu perubahan teruji. Gunakan HTTPS di cloud.
 
 Client belum diubah. Tombol refresh harus memanggil API ulang; toast sukses baru muncul setelah respons berhasil. Tombol unduh harus mengambil response sebagai Blob, bukan menampilkan toast saja.
 
