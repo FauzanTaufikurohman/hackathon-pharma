@@ -71,6 +71,12 @@ class CourierIssuesController extends Controller
                 return ['issue_id' => $issue->id, 'workflow_status' => $shipment->status, 'version' => $shipment->version, 'notification_status' => 'queued'];
             });
 
+            foreach ($paths as $path) {
+                if (! ShipmentIssue::where('photo_path', $path)->exists()) {
+                    $evidence->remove($path);
+                }
+            }
+
             return response()->json($result);
         } catch (Throwable $exception) {
             foreach ($paths as $path) {
