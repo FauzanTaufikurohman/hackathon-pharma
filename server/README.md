@@ -1,58 +1,86 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Menjalankan backend Anteraja Pharma v2
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend vendor memakai Laravel 13, PHP 8.4, PostgreSQL lokal dan Sanctum 4. Client Vue milik tim tidak diubah. API prefix: /api/v1.
 
-## About Laravel
+## Setup pada komputer baru
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Sediakan PHP 8.4 dengan pdo_pgsql, pdo_sqlite, mbstring, openssl, fileinfo, gd dan zip; Composer 2; PostgreSQL lokal. Jalankan dari folder server:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```powershell
+composer install
+Copy-Item .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Isi DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD di .env sesuai PostgreSQL kamu. Buat database pharma_v2 terlebih dahulu menggunakan pgAdmin atau createdb. Jangan memakai database proyek lain.
 
-## Contributing
+```powershell
+php artisan migrate
+php artisan db:seed
+php artisan serve --host=127.0.0.1 --port=8180
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+APP_URL harus sesuai alamat backend; FRONTEND_URL sesuai origin client. Seeder hanya di local/testing dan tidak menimpa kiriman yang sudah ada. Data demo diberi is_demo=true; lokasi/suhu contoh ditandai is_simulated=true.
 
-## Code of Conduct
+## Command pada laptop Evan
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+PHP portable disiapkan di Backups/Pharma-v2-runtime, bukan dalam repo. PostgreSQL Pharma v2 berjalan di 127.0.0.1:5544, terpisah dari Odoo. .env lokal sudah terisi; jangan menimpanya dengan .env.example.
 
-## Security Vulnerabilities
+```powershell
+cd "D:\Work & Organization\Work\Maxy Academy\Modules\Hackathon\anteraja-pharma-v2\server"
+& "D:\Work & Organization\Work\Maxy Academy\Modules\Backups\Pharma-v2-runtime\php84\php.exe" artisan serve --host=127.0.0.1 --port=8180
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Buka terminal kedua untuk client; ini masih frontend mock sampai integrator tim menyambungkan endpoint:
 
-## License
+```powershell
+cd "D:\Work & Organization\Work\Maxy Academy\Modules\Hackathon\anteraja-pharma-v2\client"
+npm install
+npm run dev
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Akun demo lokal
+
+| Email | Role | Password |
+| --- | --- | --- |
+| vendor@pharma.test | buyer/vendor penerima | PharmaVendor!2026 |
+| vendor.lain@pharma.test | buyer lain, tes isolasi | PharmaVendor!2026 |
+| admin@pharma.test | admin | PharmaAdmin!2026 |
+| checker@pharma.test | checker | PharmaChecker!2026 |
+| satria@pharma.test | courier | PharmaKurir!2026 |
+
+Password demo ditentukan di database/seeders/DatabaseSeeder.php. Seeder tidak mereset password akun existing. Jangan pakai akun demo di produksi.
+
+## Uji endpoint dengan PowerShell
+
+```powershell
+$api = 'http://127.0.0.1:8180/api/v1'
+$login = Invoke-RestMethod "$api/auth/login" -Method Post -ContentType 'application/json' -Body '{"email":"vendor@pharma.test","password":"PharmaVendor!2026"}'
+$headers = @{ Authorization = "Bearer $($login.token)"; Accept = 'application/json' }
+Invoke-RestMethod "$api/vendor/packages?category=all&per_page=20" -Headers $headers
+Invoke-WebRequest "$api/vendor/packages/export" -Headers $headers -OutFile "$env:TEMP\rekap-pharma.pdf"
+```
+
+## Tes dan format
+
+```powershell
+php artisan test --compact
+php vendor/bin/pint --dirty --format agent
+```
+
+Default tes memakai SQLite in-memory. Untuk uji PostgreSQL buat database terpisah berakhiran _test, jangan database aplikasi:
+
+```powershell
+$env:DB_CONNECTION='pgsql'
+$env:DB_DATABASE='pharma_v2_test'
+php artisan test --compact
+Remove-Item Env:DB_CONNECTION,Env:DB_DATABASE
+```
+
+## Kontrak dan branch
+
+Lihat [kontrak paket](docs/vendor-packages-api.md). Branch bertahap: server/vendor-packages → server/vendor-dashboard → server/vendor-shipment-detail-monitor. Tiap branch berisi client dan server lengkap; branch berikutnya mewarisi fondasi branch sebelumnya. Merge berurutan, jangan hapus folder lain.
+
+.env diabaikan Git. OPENAI_API_KEY diisi privat dengan key baru setelah key yang terekspos dicabut; OPENAI_MODEL=gpt-4.1-mini sudah disiapkan. API baca vendor tidak memanggil OpenAI atau mengirim data farmasi ke provider AI.
+
+Panduan [Sanctum resmi](https://laravel.com/docs/13.x/sanctum) dipakai untuk instalasi dan autentikasi.
