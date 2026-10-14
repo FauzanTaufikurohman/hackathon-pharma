@@ -52,8 +52,28 @@ export interface Shipment {
   estimate_label?: string
   action_type?: 'live' | 'warehouse' | 'gps' | 'pod'
   action_label?: string
+  batch_number?: string
+  weight_kg?: number
+  package_type?: string
+  tolerance_threshold?: string
+  inspection?: Inspection
   created_at: string
   updated_at: string
+}
+
+export interface Inspection {
+  id: number
+  shipment_id: number
+  packaging: boolean
+  seal: boolean
+  label: boolean
+  note: string
+  temperature: number
+  passed: boolean
+  sensor_device?: string
+  hub_name?: string
+  checker_name?: string
+  inspected_at?: string
 }
 
 export interface FaskesFacility {
