@@ -369,3 +369,48 @@ export interface AdminIncidentData {
   signing_officer: string
   officer_title: string
 }
+
+export interface AdminAuditEvent {
+  id: string
+  time: string
+  date: string
+  awb: string
+  actor: string
+  role: string
+  event_type: 'decide' | 'issue' | 'telemetry' | 'depart' | 'accept' | 'assign' | 'approve' | 'inspect' | 'temp_excursion' | string
+  from_status?: string
+  to_status?: string
+  description: string
+  is_new?: boolean
+}
+
+export interface AdminBotGatewayLog {
+  id: string
+  recipient: string
+  channel: 'whatsapp' | 'telegram' | 'webhook' | string
+  channel_label: string
+  time: string
+  title: string
+  payload_label: string
+  payload_val: string
+  status_label: string
+  status_icon: string
+  status_badge_class: string
+}
+
+export interface AdminDailyComplianceReport {
+  report_id: string
+  cycle_date: string
+  verified: boolean
+  total_shipments: number
+  total_shipments_note: string
+  temp_optimal_pct: number
+  excursion_rate_desc: string
+  qc_passed_pct: number
+  hub_quarantine_desc: string
+  incident_count: number
+  incident_desc: string
+  pharmacist_name: string
+  pharmacist_sip: string
+}
+
