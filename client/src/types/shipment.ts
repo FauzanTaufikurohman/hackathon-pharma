@@ -158,4 +158,36 @@ export interface CourierMetrics {
   completed_today_count: number
 }
 
+export type CourierTaskStatus = 'assigned' | 'in_transit' | 'hold' | 'delivered'
+
+export interface CourierTaskItem {
+  id: number
+  awb: string
+  status: CourierTaskStatus
+  status_label: string
+  category_label: string
+  is_urgent?: boolean
+  urgent_badge?: string
+  temperature_profile_label: string
+  item_title: string
+  batch_number: string
+  probe_temp_str: string
+  seal_str: string
+  battery_pct?: number
+  origin_name: string
+  origin_time: string
+  destination_name: string
+  destination_eta: string
+  destination_address: string
+  cooler_box_desc: string
+  tolerance_label: string
+  route_progress_note?: string
+  recipient_person?: string
+  pod_number?: string
+  cta_label: string
+  cta_type: 'accept_reject' | 'monitor' | 'view_pod'
+  hint_text: string
+}
+
+
 
