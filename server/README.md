@@ -1,6 +1,6 @@
 # Menjalankan backend Anteraja Pharma v2
 
-Backend vendor memakai Laravel 13, PHP 8.4, PostgreSQL lokal dan Sanctum 4. Client Vue milik tim tidak diubah. API prefix: /api/v1.
+Backend vendor dan courier memakai Laravel 13, PHP 8.4, PostgreSQL lokal dan Sanctum 4. Client Vue milik tim tidak diubah. API prefix: /api/v1.
 
 ## Setup pada komputer baru
 
@@ -88,3 +88,50 @@ Pengujian saat implementasi: SQLite in-memory dan PostgreSQL 12.4 lokal terpisah
 .env diabaikan Git. OPENAI_API_KEY diisi privat dengan key baru setelah key yang terekspos dicabut; OPENAI_MODEL=gpt-4.1-mini sudah disiapkan. API baca vendor tidak memanggil OpenAI atau mengirim data farmasi ke provider AI.
 
 Panduan [Sanctum resmi](https://laravel.com/docs/13.x/sanctum) dipakai untuk instalasi dan autentikasi.
+
+## Enam modul courier
+
+Implementasi courier dibangun dari main 8080399 dengan membaca keenam branch client/courier-* dan dokumen di server/docs. Seluruh perubahan ada di server/. Client tetap milik tim; endpoint siap dipasang, bukan klaim frontend mock sudah tersambung.
+
+| Branch backend | Kontrak di docs | Fungsi utama |
+| --- | --- | --- |
+| server-courier-dashboard | [Dashboard](docs/courier-dashboard-api.md) | profil, metrik tugas sendiri, prioritas, sensor kosong/stale |
+| server-courier-incoming-task | [Tugas masuk](docs/courier-incoming-task-api.md) | detail, terima checklist, tolak beserta alasan |
+| server-courier-task-list | [Daftar tugas](docs/courier-task-list-api.md) | pencarian, tab status, pagination, hitungan global sendiri |
+| server-courier-delivery-monitor | [Monitor](docs/courier-delivery-monitor-api.md) | berangkat, tiba, ingest/history telemetry, hold suhu/sinyal |
+| server-courier-issue-report | [Kendala](docs/courier-issue-report-api.md) | kendala, foto privat, baca keputusan Admin, konfirmasi retur |
+| server-courier-handover-report | [Serah terima](docs/courier-handover-report-api.md) | POD, foto/tanda tangan privat, penutupan, PDF, ringkasan berbagi |
+
+Branch bertahap: merge dashboard → incoming-task → task-list → delivery-monitor → issue-report → handover-report. Branch terakhir memuat semua modul. Setiap branch tetap berisi struktur repo lengkap; bukan branch satu-folder. Nama server-courier-* dipakai karena branch tim bernama server memblokir namespace server/*. Jangan menghapus branch server.
+
+### Menjalankan dan mencoba courier
+
+Dari server/, sesudah setup PostgreSQL:
+
+```powershell
+php artisan migrate
+php artisan db:seed --class=CourierDemoSeeder
+php artisan serve --host=127.0.0.1 --port=8180
+```
+
+Di terminal kedua:
+
+```powershell
+php artisan schedule:work
+```
+
+Scheduler diperlukan untuk mendeteksi kehilangan sinyal >15 menit; pengecekan sekali: php artisan courier:check-signals. Tidak memanggil OpenAI. Seeder lokal tidak mereset tugas existing. PHA-COUR-001 sampai PHA-COUR-005 adalah fixture berlabel demo, bukan pemeriksaan/POD sungguhan.
+
+Login memakai satria@pharma.test / PharmaKurir!2026. Pakai token dari login sebagai Authorization: Bearer. Endpoint GET /courier/dashboard dan GET /courier/tasks hanya melihat kiriman yang courier_id-nya sesuai akun aktif.
+
+Alur normal: assigned → accept → accepted → depart → in_transit → arrive → arrived → handover → completed. Jangan menganggap accept sebagai berangkat. Retur memerlukan keputusan Admin nyata, kendala resolved, confirm-return, lalu handover mode return sehingga status returned.
+
+Mutasi mengirim request_id UUID; ulangi UUID dan payload yang sama untuk retry. Mutasi bisnis juga mengirim version terbaru; 409 berarti benturan versi/tahap/penugasan dan harus muat ulang. Telemetry tidak menggunakan version agar antrean offline tidak macet, tetapi setiap sampel tetap mempunyai UUID sendiri. Koordinat dan recorded_at divalidasi.
+
+Frontend integrator harus mengganti mock dengan API sesuai tabel, menangani 401/403/404/409/422/429, dan membaca data.workflow_status untuk tahap rinci. data.status pada kartu adalah kategori tab. Unduh foto/PDF melalui fetch dengan Bearer lalu Blob URL; jangan menaruh token di URL atau link publik. Backend tidak menjalankan GPS/BLE atau offline buffer di perangkat.
+
+Kiriman non-demo wajib punya approval Admin yang terkait inspeksi terbaru, checklist aman, suhu sesuai rentang dan foto inspeksi yang benar-benar ada. Bukti kurir disimpan terenkripsi di private storage; jangan menjalankan storage:link untuk membukanya. Simpan APP_KEY dan backup file privat dengan aman. Perlu persistent private storage pada deployment, bukan disk serverless sementara.
+
+Notifikasi yang dibuat masih outbox pending/queued. Tidak diklaim sampai ke HP tanpa integrasi provider. PDF aplikasi dan checksum bukan sertifikasi CDOB/CPOB, PDF/A, tanda tangan digital tersertifikasi, atau layanan QR publik. Endpoint Admin/Checker yang menulis approval/assignment/decision tetap tanggung jawab modul tim terkait.
+
+Hasil verifikasi: [backend-verification.md](docs/backend-verification.md). Tes terakhir pada branch lengkap: 45 tes / 254 assertions lulus di SQLite dan PostgreSQL test terpisah.

@@ -1,6 +1,12 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CourierDashboardController;
+use App\Http\Controllers\CourierDeliveryController;
+use App\Http\Controllers\CourierHandoverController;
+use App\Http\Controllers\CourierIncomingController;
+use App\Http\Controllers\CourierIssuesController;
+use App\Http\Controllers\CourierTasksController;
 use App\Http\Controllers\VendorDashboardController;
 use App\Http\Controllers\VendorMonitorController;
 use App\Http\Controllers\VendorPackagesController;
@@ -11,6 +17,26 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'throttle:vendor'])->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::get('/courier/dashboard', [CourierDashboardController::class, 'show']);
+        Route::get('/courier/tasks', [CourierTasksController::class, 'index']);
+        Route::get('/courier/tasks/{awb}/handover', [CourierHandoverController::class, 'show']);
+        Route::post('/courier/tasks/{awb}/handover', [CourierHandoverController::class, 'store']);
+        Route::get('/courier/tasks/{awb}/proof/photo', [CourierHandoverController::class, 'photo'])->name('courier.proof.photo');
+        Route::get('/courier/tasks/{awb}/proof/signature', [CourierHandoverController::class, 'signature'])->name('courier.proof.signature');
+        Route::get('/courier/tasks/{awb}/share-summary', [CourierHandoverController::class, 'shareSummary']);
+        Route::get('/courier/reports/{report}/download', [CourierHandoverController::class, 'download'])->whereNumber('report')->name('courier.report.download');
+        Route::get('/courier/tasks/{awb}/issues', [CourierIssuesController::class, 'index']);
+        Route::post('/courier/tasks/{awb}/issues', [CourierIssuesController::class, 'store']);
+        Route::post('/courier/tasks/{awb}/confirm-return', [CourierIssuesController::class, 'confirmReturn']);
+        Route::get('/courier/issues/{issue}/photo', [CourierIssuesController::class, 'photo'])->whereNumber('issue')->name('courier.issue.photo');
+        Route::get('/courier/tasks/{awb}/monitor', [CourierDeliveryController::class, 'show']);
+        Route::post('/courier/tasks/{awb}/depart', [CourierDeliveryController::class, 'depart']);
+        Route::post('/courier/tasks/{awb}/arrive', [CourierDeliveryController::class, 'arrive']);
+        Route::get('/courier/tasks/{awb}/telemetry', [CourierDeliveryController::class, 'samples']);
+        Route::post('/courier/tasks/{awb}/telemetry', [CourierDeliveryController::class, 'telemetry']);
+        Route::get('/courier/tasks/{awb}', [CourierIncomingController::class, 'show']);
+        Route::post('/courier/tasks/{awb}/accept', [CourierIncomingController::class, 'accept']);
+        Route::post('/courier/tasks/{awb}/reject', [CourierIncomingController::class, 'reject']);
         Route::get('/vendor/packages', [VendorPackagesController::class, 'index']);
         Route::get('/vendor/packages/export', [VendorPackagesController::class, 'export']);
         Route::get('/vendor/dashboard', [VendorDashboardController::class, 'show']);

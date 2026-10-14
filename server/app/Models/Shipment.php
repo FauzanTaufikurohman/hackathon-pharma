@@ -64,4 +64,19 @@ class Shipment extends Model
     {
         return $this->hasMany(ShipmentReport::class);
     }
+
+    public function latestAssignment(): HasOne
+    {
+        return $this->hasOne(Assignment::class)->latestOfMany();
+    }
+
+    public function latestApproval(): HasOne
+    {
+        return $this->hasOne(Approval::class)->latestOfMany();
+    }
+
+    public function deliveryProof(): HasOne
+    {
+        return $this->hasOne(DeliveryProof::class);
+    }
 }

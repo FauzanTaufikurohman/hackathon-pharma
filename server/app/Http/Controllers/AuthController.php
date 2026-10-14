@@ -22,7 +22,11 @@ class AuthController extends Controller
         if (! $user || ! Hash::check($data['password'], $user->password)) {
             throw ValidationException::withMessages(['email' => 'Email atau kata sandi tidak cocok.']);
         }
-        $token = $user->createToken($data['device_name'] ?? 'vendor-api', ['vendor'], now()->addDay());
+        abort_unless($user->is_active, 403, 'Akun tidak aktif.');
+        $ability = match ($user->role) {
+            'courier' => 'courier', 'admin' => 'admin', 'checker' => 'checker', default => 'vendor'
+        };
+        $token = $user->createToken($data['device_name'] ?? 'pharma-api', [$ability], now()->addDay());
 
         return response()->json([
             'data' => $user->only(['id', 'name', 'email', 'role', 'facility']),
