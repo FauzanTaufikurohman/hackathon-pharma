@@ -49,7 +49,7 @@ class CourierIssuesTest extends TestCase
         ], ['Accept' => 'application/json'])->assertOk();
         $issue = ShipmentIssue::findOrFail($response->json('data.issue_id'));
         $stored = Storage::disk('local')->get($issue->photo_path);
-        $this->assertFalse(str_starts_with($stored, '\x89PNG'));
+        $this->assertFalse(str_starts_with($stored, hex2bin('89504e47')));
         $this->get('/api/v1/courier/issues/'.$issue->id.'/photo')->assertOk()->assertHeader('Content-Type', 'image/png');
         Sanctum::actingAs(User::factory()->create(['role' => 'courier']), ['courier']);
         $this->getJson('/api/v1/courier/issues/'.$issue->id.'/photo')->assertNotFound();
