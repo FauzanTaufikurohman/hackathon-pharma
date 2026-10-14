@@ -18,7 +18,7 @@ class VendorPackagesTest extends TestCase
         $vendor = User::factory()->create();
         Shipment::factory()->create(['buyer_id' => $vendor->id]);
         Shipment::factory()->create();
-        Sanctum::actingAs($vendor);
+        Sanctum::actingAs($vendor, ['vendor']);
         $response = $this->get('/api/v1/vendor/packages/export', ['Accept' => 'application/pdf']);
         $response->assertOk()->assertHeader('Content-Type', 'application/pdf');
         $this->assertStringStartsWith('%PDF-', $response->getContent());
@@ -31,7 +31,7 @@ class VendorPackagesTest extends TestCase
         Shipment::factory()->count(3)->create(['buyer_id' => $vendor->id, 'status' => 'in_transit']);
         Shipment::factory()->create(['buyer_id' => $vendor->id, 'status' => 'inspection']);
         Shipment::factory()->count(2)->create();
-        Sanctum::actingAs($vendor);
+        Sanctum::actingAs($vendor, ['vendor']);
         $this->getJson('/api/v1/vendor/packages?category=transit&per_page=2')
             ->assertOk()->assertJsonCount(2, 'data')->assertJsonPath('meta.total', 3)
             ->assertJsonPath('counts.all', 4)->assertJsonPath('counts.qc', 1);
@@ -53,7 +53,7 @@ class VendorPackagesTest extends TestCase
         $vendor = User::factory()->create();
         Shipment::factory()->create(['buyer_id' => $vendor->id, 'item_summary' => 'Vaksin 50%']);
         Shipment::factory()->create(['buyer_id' => $vendor->id, 'item_summary' => 'Insulin']);
-        Sanctum::actingAs($vendor);
+        Sanctum::actingAs($vendor, ['vendor']);
         $this->getJson('/api/v1/vendor/packages?search=%25')->assertOk()->assertJsonCount(1, 'data');
         $this->getJson('/api/v1/vendor/packages?search=INSULIN')->assertOk()->assertJsonCount(1, 'data');
         $this->getJson('/api/v1/vendor/packages?search=unknown')->assertOk()->assertJsonCount(0, 'data');
@@ -66,7 +66,7 @@ class VendorPackagesTest extends TestCase
     {
         $vendor = User::factory()->create();
         Shipment::factory()->create(['buyer_id' => $vendor->id]);
-        Sanctum::actingAs($vendor);
+        Sanctum::actingAs($vendor, ['vendor']);
         $this->getJson('/api/v1/vendor/packages')->assertOk()
             ->assertJsonPath('data.0.current_temperature', null)
             ->assertJsonPath('data.0.temp_label', 'Belum ada data sensor');
@@ -77,7 +77,7 @@ class VendorPackagesTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $this->seed(DatabaseSeeder::class);
         $this->assertDatabaseCount('shipments', 6);
-        Sanctum::actingAs(User::where('email', 'vendor@pharma.test')->firstOrFail());
+        Sanctum::actingAs(User::where('email', 'vendor@pharma.test')->firstOrFail(), ['vendor']);
         $this->getJson('/api/v1/vendor/packages')->assertOk()->assertJsonCount(5, 'data');
     }
 }

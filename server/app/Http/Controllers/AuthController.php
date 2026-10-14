@@ -33,7 +33,8 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json(['data' => $request->user()->only(['id', 'name', 'email', 'role', 'facility'])]);
+        return response()->json(['data' => $request->user()->only(['id', 'name', 'email', 'role', 'facility'])])
+            ->header('Cache-Control', 'private, no-store');
     }
 
     public function logout(Request $request): JsonResponse
