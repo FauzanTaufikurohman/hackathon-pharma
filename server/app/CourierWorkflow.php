@@ -11,6 +11,7 @@ use Closure;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class CourierWorkflow
 {
@@ -32,6 +33,7 @@ class CourierWorkflow
                     abort_unless($shipment->version === (int) $data['version'], 409, 'Data tugas berubah. Muat ulang terlebih dahulu.');
                 }
                 abort_if(in_array($shipment->status, ['completed', 'delivered', 'returned'], true), 409, 'Kiriman sudah selesai dan dikunci.');
+                abort_unless($shipment->latestAssignment?->courier_id === $freshUser->id, 409, 'Penugasan kurir tidak cocok. Hubungi Admin.');
                 $result = $operation($shipment, $freshUser);
                 CourierActionReceipt::create([
                     'request_id' => $data['request_id'], 'shipment_id' => $shipment->id, 'user_id' => $user->id,
@@ -68,7 +70,15 @@ class CourierWorkflow
         abort_unless($approval && $approval->decision === 'approved' && $inspection && $inspection->passed
             && $approval->inspection_id === $inspection->id
             && User::whereKey($approval->user_id)->where('role', 'admin')->exists(), 409, 'Pemeriksaan belum mendapat persetujuan Admin yang valid.');
-        abort_unless($shipment->is_demo || $inspection->photo_path, 409, 'Foto pemeriksaan wajib tersedia sebelum berangkat.');
+        abort_unless($inspection->packaging && $inspection->seal && $inspection->label
+            && $inspection->temperature !== null && $shipment->temperature_min !== null && $shipment->temperature_max !== null
+            && $inspection->temperature >= $shipment->temperature_min && $inspection->temperature <= $shipment->temperature_max, 409, 'Checklist dan suhu pemeriksaan belum aman.');
+        if (! $shipment->is_demo) {
+            $path = $inspection->photo_path;
+            $safe = $path && str_starts_with($path, 'inspections/') && ! str_contains($path, '..') && ! str_contains($path, '\\');
+            abort_unless($safe && Storage::disk('local')->exists($path), 409, 'Foto pemeriksaan wajib tersedia sebelum berangkat.');
+            abort_unless(in_array(Storage::disk('local')->mimeType($path), ['image/jpeg', 'image/png', 'image/webp'], true), 409, 'Bukti pemeriksaan harus berupa gambar yang valid.');
+        }
     }
 
     public function record(Shipment $shipment, ?User $actor, string $type, string $title, string $from, array $metadata = [], ?string $reason = null): ShipmentEvent
