@@ -1,4 +1,4 @@
-import type { Shipment, FaskesFacility, OperationalMetrics, AuditEvent, BapReport, CourierProfile, CourierMetrics, CourierTaskItem, CheckerProfile, CheckerQueueItem, CheckerHistoryItem } from '../types/shipment'
+import type { Shipment, FaskesFacility, OperationalMetrics, AuditEvent, BapReport, CourierProfile, CourierMetrics, CourierTaskItem, CheckerProfile, CheckerQueueItem, CheckerHistoryItem, AdminProfile, AdminShipmentItem } from '../types/shipment'
 
 export const currentFacility: FaskesFacility = {
   facility_id: 'RSMS-FARM-09',
@@ -735,6 +735,97 @@ export const mockCheckerHistory: CheckerHistoryItem[] = [
     },
   },
 ]
+
+export const mockAdminProfile: AdminProfile = {
+  name: 'Dimas Prasetyo',
+  role: 'Admin Ops & Compliance',
+  avatar_url: 'https://lh3.googleusercontent.com/aida/AEtjO1VlCA1gT2NeF63LTHp4NUdJAzu3ELNjJ5-m0kgFZNK49vAhP9XAhblMao72jPxkMQXWXUcrGR4gJwFV0TTrw1MDoA8iKQzj0frZjK1a9XOklpKAEL1uqX8w2z1rAblx52T0aV3HF28xs8S0Zonq7ZRYg08yGG-YXIK1g5zb-9pYCFSuAKN9DbyClgxNf7mSeaUNHR_Y9BZImWQ7b_q28f8z4WxtEHhd74pOaBe-JF4AREOF12VAzJZya5XQan6ITd4eUWQnHfxnGG4',
+  bot_status: 'WA/Telegram Bot: Online',
+}
+
+export const mockAdminShipments: AdminShipmentItem[] = [
+  {
+    id: 1,
+    awb: 'PHA-260104',
+    sender_origin: 'BioFarma Bandung',
+    recipient_name: 'RS Medika Sehat',
+    recipient_city: 'Salemba, Jakpus',
+    commodity: 'Vaksin Meningococcal',
+    koli: '2 Koli',
+    temp_profile: '2.0°C - 8.0°C',
+    temp_type: 'chilled',
+    officer_name: 'Hendra',
+    officer_role: 'Checker Hub',
+    status: 'pending_approval',
+    action_label: 'Review QC →',
+    action_type: 'review_qc',
+  },
+  {
+    id: 2,
+    awb: 'PHA-260102',
+    sender_origin: 'Kimia Farma Hub',
+    recipient_name: 'Klinik Kimia Farma',
+    recipient_city: 'Pancoran, Jaksel',
+    commodity: 'Reagen Diagnostik PCR',
+    koli: '1 Koli',
+    temp_profile: '2.0°C - 8.0°C',
+    temp_type: 'chilled',
+    officer_name: 'Bambang',
+    officer_role: 'Kurir-007',
+    status: 'in_transit',
+    action_label: 'Monitor GPS',
+    action_type: 'monitor_gps',
+  },
+  {
+    id: 3,
+    awb: 'PHA-260095',
+    sender_origin: 'BioFarma Bandung',
+    recipient_name: 'RSUP Fatmawati',
+    recipient_city: 'Cilandak, Jaksel',
+    commodity: 'Serum Anti-Bisa Ular',
+    koli: '1 Koli',
+    temp_profile: '2.0°C - 8.0°C',
+    temp_type: 'chilled',
+    officer_name: 'Hendra',
+    officer_role: 'Checker Hub',
+    status: 'held',
+    action_label: 'Buka Tiket',
+    action_type: 'open_ticket',
+  },
+  {
+    id: 4,
+    awb: 'PHA-260105',
+    sender_origin: 'BioFarma Bandung',
+    recipient_name: 'RS Medika Sehat',
+    recipient_city: 'Salemba, Jakpus',
+    commodity: 'Vaksin Polio nOPV2',
+    koli: '3 Koli',
+    temp_profile: '2.0°C - 8.0°C',
+    temp_type: 'chilled',
+    officer_name: 'Menunggu Alokasi',
+    officer_role: 'unassigned',
+    status: 'inspection',
+    action_label: 'Detail',
+    action_type: 'detail',
+  },
+  {
+    id: 5,
+    awb: 'PHA-260098',
+    sender_origin: 'Hub Jakarta Timur',
+    recipient_name: 'Apotek K-24 Tebet',
+    recipient_city: 'Tebet Raya, Jaksel',
+    commodity: 'Obat Tablet Rutin',
+    koli: '3 Koli',
+    temp_profile: '15.0°C - 25.0°C',
+    temp_type: 'ambient',
+    officer_name: 'Bambang',
+    officer_role: 'Kurir-007',
+    status: 'delivered',
+    action_label: 'Lihat e-POD',
+    action_type: 'view_epod',
+  },
+]
+
 
 
 

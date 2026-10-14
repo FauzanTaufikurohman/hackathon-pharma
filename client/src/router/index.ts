@@ -8,6 +8,7 @@ import CourierTaskDetailView from '../views/courier/CourierTaskDetailView.vue'
 import CheckerQueueView from '../views/checker/CheckerQueueView.vue'
 import CheckerHistoryView from '../views/checker/CheckerHistoryView.vue'
 import CheckerExamView from '../views/checker/CheckerExamView.vue'
+import AdminShipmentsView from '../views/admin/AdminShipmentsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,6 +72,33 @@ const router = createRouter({
       name: 'checker-history',
       component: CheckerHistoryView,
       alias: ['/checker/history', '/checker/status-approval', '/checker/approvals'],
+    },
+
+    // Admin Role Routes
+    {
+      path: '/admin',
+      redirect: '/admin/manajemen-pengiriman',
+    },
+    {
+      path: '/admin/manajemen-pengiriman',
+      name: 'admin-shipments',
+      component: AdminShipmentsView,
+      alias: ['/admin/shipments', '/admin/pengiriman'],
+    },
+    {
+      path: '/admin/approval-qc-kurir',
+      name: 'admin-approvals',
+      redirect: '/admin/manajemen-pengiriman',
+    },
+    {
+      path: '/admin/live-monitor-kendala',
+      name: 'admin-monitor',
+      redirect: '/admin/manajemen-pengiriman',
+    },
+    {
+      path: '/admin/laporan-audit-log',
+      name: 'admin-reports',
+      redirect: '/admin/manajemen-pengiriman',
     },
 
     // Fallback redirect

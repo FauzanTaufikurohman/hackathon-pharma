@@ -284,5 +284,29 @@ export interface CheckerHistoryItem {
   is_alert?: boolean
 }
 
+export interface AdminProfile {
+  name: string
+  role: string
+  avatar_url: string
+  bot_status: string
+}
+
+export interface AdminShipmentItem {
+  id: number
+  awb: string
+  sender_origin: string
+  recipient_name: string
+  recipient_city: string
+  commodity: string
+  koli: string
+  temp_profile: string
+  temp_type: 'chilled' | 'ambient'
+  officer_name: string
+  officer_role: string
+  status: 'pending_approval' | 'in_transit' | 'held' | 'inspection' | 'delivered'
+  action_label: string
+  action_type: 'review_qc' | 'monitor_gps' | 'open_ticket' | 'detail' | 'view_epod'
+}
+
 
 
