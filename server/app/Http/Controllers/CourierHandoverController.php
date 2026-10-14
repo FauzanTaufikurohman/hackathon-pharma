@@ -94,6 +94,12 @@ class CourierHandoverController extends Controller
                     'report_id' => $report->id, 'download_url' => route('courier.report.download', ['report' => $report->id]), 'notification_status' => 'queued'];
             });
 
+            foreach ($paths as $path) {
+                if (! DeliveryProof::where('photo_path', $path)->orWhere('signature_path', $path)->exists()) {
+                    $evidence->remove($path);
+                }
+            }
+
             return response()->json($result);
         } catch (Throwable $exception) {
             foreach ($paths as $path) {

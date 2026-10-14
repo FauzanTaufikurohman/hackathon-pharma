@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Decision;
+use App\Models\DeliveryProof;
 use App\Models\Shipment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -64,5 +66,28 @@ class CourierHandoverTest extends TestCase
         $this->post($url, $payload, ['Accept' => 'application/json'])->assertStatus(409);
         $this->assertDatabaseCount('delivery_proofs', 0);
         $this->assertCount(0, Storage::disk('local')->allFiles());
+    }
+
+    public function test_return_accepts_admin_decision_and_keeps_proof_immutable(): void
+    {
+        Storage::fake('local');
+        $courier = User::factory()->create(['role' => 'courier']);
+        $shipment = Shipment::factory()->assignedTo($courier, 'returning')->create();
+        $issue = $shipment->issues()->create(['type' => 'seal', 'description' => 'Segel rusak.', 'status' => 'resolved']);
+        Decision::create(['issue_id' => $issue->id, 'user_id' => User::factory()->create(['role' => 'admin'])->id,
+            'action' => 'return', 'reason' => 'Kembalikan ke gudang pengirim.']);
+        Sanctum::actingAs($courier, ['courier']);
+        $payload = $this->payload();
+        $payload['mode'] = 'return';
+        $payload['temperature'] = 12;
+        $payload['seal_intact'] = false;
+        $payload['signature'] = UploadedFile::fake()->image('signature.png');
+        $url = '/api/v1/courier/tasks/'.$shipment->tracking_number;
+        $this->post($url.'/handover', $payload, ['Accept' => 'application/json'])->assertOk()->assertJsonPath('data.workflow_status', 'returned');
+        $this->get($url.'/proof/signature')->assertOk()->assertHeader('Content-Type', 'image/png');
+        $this->getJson($url.'/handover')->assertOk()->assertJsonPath('data.can_submit', false);
+        $this->assertCount(2, Storage::disk('local')->allFiles());
+        $this->expectException(\LogicException::class);
+        DeliveryProof::firstOrFail()->update(['recipient_name' => 'Edited']);
     }
 }

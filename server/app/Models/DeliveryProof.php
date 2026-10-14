@@ -10,6 +10,12 @@ class DeliveryProof extends Model
 
     protected $hidden = ['photo_path', 'signature_path'];
 
+    protected static function booted(): void
+    {
+        static::updating(fn () => throw new \LogicException('Bukti serah terima tidak boleh diubah.'));
+        static::deleting(fn () => throw new \LogicException('Bukti serah terima tidak boleh dihapus.'));
+    }
+
     protected function casts(): array
     {
         return ['temperature' => 'float', 'seal_intact' => 'boolean', 'latitude' => 'float',
