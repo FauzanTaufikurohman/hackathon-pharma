@@ -241,5 +241,48 @@ export interface CheckerQueueItem {
   accent_color: 'primary' | 'tertiary' | 'secondary'
 }
 
+export interface CheckerChecklistParam {
+  label: string
+  value: string
+  icon: string
+  is_error?: boolean
+  is_highlight?: boolean
+}
+
+export interface CheckerColdChainStrip {
+  type: 'temperature' | 'verifier' | 'alert' | 'shipping'
+  icon: string
+  label: string
+  value: string
+  badge_text: string
+  is_error?: boolean
+}
+
+export interface CheckerAdminDecision {
+  status: 'pending' | 'approved' | 'rejected'
+  status_label: string
+  reviewer_role_title: string
+  timestamp?: string
+  note: string
+  footer_status_icon: string
+  footer_status_label: string
+  action_button_label: string
+  action_button_icon: string
+  action_button_type: 'exam_detail' | 'pdf_download' | 'quarantine_doc' | 'audit_trail'
+}
+
+export interface CheckerHistoryItem {
+  id: number
+  awb: string
+  commodity_title: string
+  package_count_str: string
+  submitted_at: string
+  qc_passed: boolean
+  checklist_params: CheckerChecklistParam[]
+  cold_chain_strip: CheckerColdChainStrip
+  admin_decision: CheckerAdminDecision
+  is_alert?: boolean
+}
+
 
 

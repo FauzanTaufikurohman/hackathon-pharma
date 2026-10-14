@@ -1,4 +1,4 @@
-import type { Shipment, FaskesFacility, OperationalMetrics, AuditEvent, BapReport, CourierProfile, CourierMetrics, CourierTaskItem, CheckerProfile, CheckerQueueItem } from '../types/shipment'
+import type { Shipment, FaskesFacility, OperationalMetrics, AuditEvent, BapReport, CourierProfile, CourierMetrics, CourierTaskItem, CheckerProfile, CheckerQueueItem, CheckerHistoryItem } from '../types/shipment'
 
 export const currentFacility: FaskesFacility = {
   facility_id: 'RSMS-FARM-09',
@@ -600,6 +600,142 @@ export const mockCheckerQueue: CheckerQueueItem[] = [
     accent_color: 'secondary',
   },
 ]
+
+export const mockCheckerHistory: CheckerHistoryItem[] = [
+  {
+    id: 1,
+    awb: 'PHA-260104',
+    commodity_title: 'Vaksin Meningococcal Konjugat ACYW',
+    package_count_str: '2 Koli',
+    submitted_at: 'Hari ini, 09:45 WIB',
+    qc_passed: true,
+    checklist_params: [
+      { label: 'Kemasan', value: 'Utuh', icon: 'done_all' },
+      { label: 'Segel Keamanan', value: 'Utuh (SL-8891)', icon: 'verified_user' },
+      { label: 'Label GHS / GDP', value: 'Lengkap', icon: 'check' },
+      { label: 'AI OCR Label', value: '100% Match', icon: 'document_scanner' },
+    ],
+    cold_chain_strip: {
+      type: 'temperature',
+      icon: 'ac_unit',
+      label: 'Sensor Telemetri Dingin (Chilled 2-8°C):',
+      value: '4.2°C',
+      badge_text: 'Status Stabil',
+    },
+    admin_decision: {
+      status: 'pending',
+      status_label: 'Menunggu Persetujuan Admin',
+      reviewer_role_title: 'Catatan Admin Reviewer:',
+      note: '"Sedang ditinjau oleh Admin Dispatcher (dr. Ardiansyah, Apt.) untuk alokasi kurir armada reefer van B 9482 PBF."',
+      footer_status_icon: 'lock_clock',
+      footer_status_label: 'Menunggu Release',
+      action_button_label: 'Buka Detail Formulir Inspeksi',
+      action_button_icon: 'arrow_forward',
+      action_button_type: 'exam_detail',
+    },
+  },
+  {
+    id: 2,
+    awb: 'PHA-260102',
+    commodity_title: 'Reagen Diagnostik PCR & Enzim',
+    package_count_str: '1 Koli',
+    submitted_at: 'Hari ini, 08:30 WIB',
+    qc_passed: true,
+    checklist_params: [
+      { label: 'Kemasan', value: 'Utuh', icon: 'done_all' },
+      { label: 'Segel Keamanan', value: 'Utuh (SL-8877)', icon: 'verified_user' },
+      { label: 'Label GHS / GDP', value: 'Lengkap', icon: 'check' },
+      { label: 'Suhu Awal', value: '4.5°C (Aman)', icon: 'thermostat' },
+    ],
+    cold_chain_strip: {
+      type: 'verifier',
+      icon: 'verified',
+      label: 'Verifier Signature:',
+      value: 'Hendra Wijaya (CHK-012)',
+      badge_text: 'Ready for Dispatch',
+    },
+    admin_decision: {
+      status: 'approved',
+      status_label: 'Disetujui Admin (approved)',
+      reviewer_role_title: 'Alasan Keputusan QA:',
+      timestamp: '08:42 WIB',
+      note: '"Checklist fisik lengkap, suhu terverifikasi stabil. Lanjut penugasan kurir Satria Bambang Suryono (ID: KURIR-007)."',
+      footer_status_icon: 'local_shipping',
+      footer_status_label: 'Diserahkan ke Kurir',
+      action_button_label: 'Unduh Lembar Verifikasi QC (PDF)',
+      action_button_icon: 'picture_as_pdf',
+      action_button_type: 'pdf_download',
+    },
+  },
+  {
+    id: 3,
+    awb: 'PHA-260095',
+    commodity_title: 'Serum Biologis & Anti-Bisa Ular',
+    package_count_str: '1 Koli',
+    submitted_at: '13 Okt 2026, 16:15 WIB',
+    qc_passed: false,
+    is_alert: true,
+    checklist_params: [
+      { label: 'Kemasan', value: 'Utuh', icon: 'done_all' },
+      { label: 'Segel Keamanan', value: 'Rusak / Lepas', icon: 'broken_image', is_error: true },
+      { label: 'Label GHS / GDP', value: 'Lengkap', icon: 'check' },
+      { label: 'Suhu Tercatat', value: '8.9°C (>8.0°C)', icon: 'thermostat', is_error: true },
+    ],
+    cold_chain_strip: {
+      type: 'alert',
+      icon: 'warning',
+      label: 'Deviasi Mutu Termal:',
+      value: '+0.9°C di atas batas kritis',
+      badge_text: 'Ekskursi Suhu',
+      is_error: true,
+    },
+    admin_decision: {
+      status: 'rejected',
+      status_label: 'Ditahan Admin (held / rejected)',
+      reviewer_role_title: 'Alasan Penolakan Resmi:',
+      timestamp: '13 Okt, 16:22 WIB',
+      note: '"Segel fisik terbukti robek dan suhu tercatat 8.9°C melanggar standar CPOB BPOM. Pindahkan kargo segera ke Ruang Karantina Gudang Staging #02 untuk investigasi vendor BioFarma."',
+      footer_status_icon: 'inventory_2',
+      footer_status_label: 'Karantina Staging #02',
+      action_button_label: 'Lihat Berita Acara Karantina',
+      action_button_icon: 'assignment_late',
+      action_button_type: 'quarantine_doc',
+    },
+  },
+  {
+    id: 4,
+    awb: 'PHA-260098',
+    commodity_title: 'Obat Tablet Farmasi Rutin',
+    package_count_str: '3 Koli',
+    submitted_at: '13 Okt 2026, 14:00 WIB',
+    qc_passed: true,
+    checklist_params: [
+      { label: 'Kemasan & Segel', value: 'Utuh & Valid', icon: 'task_alt' },
+      { label: 'Kategori Suhu', value: 'Ambient (15-25°C)', icon: 'device_thermostat' },
+      { label: 'Suhu Aktual', value: '18.2°C', icon: 'done', is_highlight: true },
+    ],
+    cold_chain_strip: {
+      type: 'shipping',
+      icon: 'domain_verification',
+      label: 'Status Pengiriman:',
+      value: 'Terkirim ke RSUP Fatmawati',
+      badge_text: 'e-POD Selesai',
+    },
+    admin_decision: {
+      status: 'approved',
+      status_label: 'Disetujui Admin (approved)',
+      reviewer_role_title: 'Log Serah Terima:',
+      timestamp: '13 Okt, 14:10 WIB',
+      note: '"Kurir telah menyelesaikan serah terima (e-POD tuntas dengan tanda tangan digital Apt. Siti Rahma)."',
+      footer_status_icon: 'verified',
+      footer_status_label: 'Closed Batch',
+      action_button_label: 'Lihat Detail Audit Trail',
+      action_button_icon: 'receipt_long',
+      action_button_type: 'audit_trail',
+    },
+  },
+]
+
 
 
 

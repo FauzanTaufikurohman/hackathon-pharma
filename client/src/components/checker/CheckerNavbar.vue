@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import { mockCheckerProfile } from '../../data/mockShipments'
 
 interface Props {
@@ -12,6 +13,19 @@ withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   (e: 'tab-change', tab: number): void
 }>()
+
+const router = useRouter()
+
+const handleTabClick = (tab: number) => {
+  emit('tab-change', tab)
+  if (tab === 1) {
+    router.push('/checker')
+  } else if (tab === 2) {
+    // Tab 2: Form Initial Exam
+  } else if (tab === 3) {
+    router.push('/checker/riwayat')
+  }
+}
 </script>
 
 <template>
@@ -46,7 +60,7 @@ const emit = defineEmits<{
         <!-- Tab 1: Antrean Pemeriksaan -->
         <button
           type="button"
-          @click="emit('tab-change', 1)"
+          @click="handleTabClick(1)"
           class="transition-all font-label-lg text-label-lg rounded-full px-6 py-2.5 cursor-pointer font-bold"
           :class="activeTab === 1
             ? 'bg-primary-fixed text-primary shadow-xs'
@@ -58,7 +72,7 @@ const emit = defineEmits<{
         <!-- Tab 2: Form Initial Exam -->
         <button
           type="button"
-          @click="emit('tab-change', 2)"
+          @click="handleTabClick(2)"
           class="transition-all font-label-lg text-label-lg rounded-full px-5 py-2.5 cursor-pointer font-bold"
           :class="activeTab === 2
             ? 'bg-primary-fixed text-primary shadow-xs'
@@ -70,7 +84,7 @@ const emit = defineEmits<{
         <!-- Tab 3: Riwayat & Status Approval -->
         <button
           type="button"
-          @click="emit('tab-change', 3)"
+          @click="handleTabClick(3)"
           class="transition-all font-label-lg text-label-lg rounded-full px-5 py-2.5 cursor-pointer font-bold"
           :class="activeTab === 3
             ? 'bg-primary-fixed text-primary shadow-xs'

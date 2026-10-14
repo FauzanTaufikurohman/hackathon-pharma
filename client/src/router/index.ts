@@ -6,6 +6,7 @@ import CourierHomeView from '../views/courier/CourierHomeView.vue'
 import CourierTasksView from '../views/courier/CourierTasksView.vue'
 import CourierTaskDetailView from '../views/courier/CourierTaskDetailView.vue'
 import CheckerQueueView from '../views/checker/CheckerQueueView.vue'
+import CheckerHistoryView from '../views/checker/CheckerHistoryView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -57,6 +58,12 @@ const router = createRouter({
       name: 'checker-queue',
       component: CheckerQueueView,
       alias: ['/checker/antrean', '/checker/queue', '/pemeriksa'],
+    },
+    {
+      path: '/checker/riwayat',
+      name: 'checker-history',
+      component: CheckerHistoryView,
+      alias: ['/checker/history', '/checker/status-approval', '/checker/approvals'],
     },
 
     // Fallback redirect
