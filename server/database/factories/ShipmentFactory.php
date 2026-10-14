@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Approval;
+use App\Models\Assignment;
+use App\Models\Inspection;
 use App\Models\Shipment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -9,6 +12,22 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /** @extends Factory<Shipment> */
 class ShipmentFactory extends Factory
 {
+    public function assignedTo(User $courier, string $status = 'assigned'): static
+    {
+        return $this->state(['courier_id' => $courier->id, 'status' => $status])->afterCreating(function (Shipment $shipment) use ($courier, $status) {
+            $checker = User::factory()->create(['role' => 'checker']);
+            $admin = User::factory()->create(['role' => 'admin']);
+            $inspection = Inspection::create(['shipment_id' => $shipment->id, 'user_id' => $checker->id,
+                'packaging' => true, 'seal' => true, 'label' => true, 'passed' => true,
+                'temperature' => 4, 'note' => 'Fixture demo/test; bukan pemeriksaan nyata.', 'inspected_at' => now()]);
+            Approval::create(['shipment_id' => $shipment->id, 'inspection_id' => $inspection->id,
+                'user_id' => $admin->id, 'decision' => 'approved', 'reason' => 'Persetujuan fixture demo/test.']);
+            Assignment::create(['shipment_id' => $shipment->id, 'courier_id' => $courier->id,
+                'assigned_by' => $admin->id, 'status' => $status === 'assigned' ? 'pending' : 'accepted',
+                'pre_trip' => $status === 'assigned' ? null : ['seal' => true, 'icepack' => true, 'manifest' => true, 'temperature' => 4]]);
+        });
+    }
+
     public function definition(): array
     {
         return [
