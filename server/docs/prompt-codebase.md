@@ -1,1 +1,1 @@
-struktur folder frontend partials mudah dikembangkan, rapi, source code sederhana tanpa pengurangan fungsional. gampang untuk integrasinya  
+struktur folder frontend partials mudah dikembangkan, rapi, source code sederhana tanpa pengurangan fungsional. gampang untuk integrasinya. laravel ini merupakan full untuk endpoint api. hanya kerjakan untuk backend saja
