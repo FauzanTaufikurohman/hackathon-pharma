@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Inspection;
 use App\Models\Shipment;
 use App\Models\ShipmentEvent;
+use App\Models\ShipmentReport;
 use App\Models\TelemetrySample;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -78,6 +79,22 @@ class DatabaseSeeder extends Seeder
                     'shipment_id' => $shipment->id, 'user_id' => $admin->id,
                     'type' => 'demo_seed', 'title' => 'Data contoh dibuat', 'to_status' => $status,
                     'metadata' => ['is_demo' => true], 'created_at' => now(),
+                ]);
+            }
+            foreach (Shipment::where('buyer_id', $vendor->id)->where('is_demo', true)->where('status', 'completed')->get() as $completed) {
+                $snapshot = [
+                    'tracking_number' => $completed->tracking_number,
+                    'status' => $completed->status, 'is_demo' => true,
+                    'sender_name' => $completed->sender_name, 'recipient_name' => $completed->recipient_name,
+                    'item_summary' => $completed->item_summary,
+                    'temperature_min' => $completed->temperature_min, 'temperature_max' => $completed->temperature_max,
+                    'inspection' => $completed->latestInspection?->only(['packaging', 'seal', 'label', 'passed', 'temperature', 'note']),
+                    'telemetry' => $completed->telemetry()->get(['temperature', 'latitude', 'longitude', 'is_simulated', 'recorded_at'])->toArray(),
+                    'pod' => null, 'note' => 'Contoh laporan demo. Tidak ada bukti serah terima nyata.',
+                ];
+                ShipmentReport::firstOrCreate(['shipment_id' => $completed->id, 'revision' => 1], [
+                    'title' => 'Laporan Pengiriman Demo', 'snapshot' => $snapshot,
+                    'sha256' => ShipmentReport::hashSnapshot($snapshot), 'is_demo' => true, 'published_at' => now(),
                 ]);
             }
         });
