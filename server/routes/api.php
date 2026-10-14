@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourierDashboardController;
+use App\Http\Controllers\CourierDeliveryController;
 use App\Http\Controllers\CourierIncomingController;
 use App\Http\Controllers\CourierTasksController;
 use App\Http\Controllers\VendorDashboardController;
@@ -16,6 +17,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/courier/dashboard', [CourierDashboardController::class, 'show']);
         Route::get('/courier/tasks', [CourierTasksController::class, 'index']);
+        Route::get('/courier/tasks/{awb}/monitor', [CourierDeliveryController::class, 'show']);
+        Route::post('/courier/tasks/{awb}/depart', [CourierDeliveryController::class, 'depart']);
+        Route::post('/courier/tasks/{awb}/arrive', [CourierDeliveryController::class, 'arrive']);
+        Route::get('/courier/tasks/{awb}/telemetry', [CourierDeliveryController::class, 'samples']);
+        Route::post('/courier/tasks/{awb}/telemetry', [CourierDeliveryController::class, 'telemetry']);
         Route::get('/courier/tasks/{awb}', [CourierIncomingController::class, 'show']);
         Route::post('/courier/tasks/{awb}/accept', [CourierIncomingController::class, 'accept']);
         Route::post('/courier/tasks/{awb}/reject', [CourierIncomingController::class, 'reject']);
