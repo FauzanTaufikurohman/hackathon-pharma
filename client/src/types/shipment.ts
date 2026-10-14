@@ -187,6 +187,26 @@ export interface CourierTaskItem {
   cta_label: string
   cta_type: 'accept_reject' | 'monitor' | 'view_pod'
   hint_text: string
+  // Detail page fields
+  waybill_number?: string
+  coldbox_id?: string
+  weight_str?: string
+  origin_detail?: string
+  destination_detail?: string
+  handover_person?: string
+  scheduled_at_str?: string
+  sla_warning?: string
+  route_distance_km?: number
+  route_eta_str?: string
+  route_traffic_note?: string
+  commodity_name?: string
+  temp_min?: number
+  temp_max?: number
+  temp_actual?: number
+  handling_instructions?: string
+  inspector_name?: string
+  inspector_id_code?: string
+  inspector_status?: string
 }
 
 

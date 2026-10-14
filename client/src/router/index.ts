@@ -4,6 +4,7 @@ import VendorPackagesView from '../views/vendor/VendorPackagesView.vue'
 import VendorMonitorView from '../views/vendor/VendorMonitorView.vue'
 import CourierHomeView from '../views/courier/CourierHomeView.vue'
 import CourierTasksView from '../views/courier/CourierTasksView.vue'
+import CourierTaskDetailView from '../views/courier/CourierTaskDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,6 +42,12 @@ const router = createRouter({
       name: 'courier-tasks',
       component: CourierTasksView,
       alias: ['/courier/tasks', '/kurir/tugas-saya'],
+    },
+    {
+      path: '/courier/tugas/:awb',
+      name: 'courier-task-detail',
+      component: CourierTaskDetailView,
+      alias: ['/courier/task/:awb', '/kurir/tugas/:awb'],
     },
 
     // Fallback redirect

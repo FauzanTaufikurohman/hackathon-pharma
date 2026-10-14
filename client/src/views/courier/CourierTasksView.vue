@@ -58,20 +58,11 @@ const filteredTasks = computed(() => {
 
 function handleActionClick(task: CourierTaskItem) {
   if (task.status === 'assigned') {
-    selectedTask.value = task
-    isModalOpen.value = true
+    router.push(`/courier/tugas/${task.awb}?tab=1`)
   } else if (task.status === 'in_transit') {
-    toastRef.value?.show(
-      'Navigasi Monitor Satria',
-      `Membuka telemetry rute live dan sensor probe 4.5°C untuk ${task.awb}...`
-    )
-    router.push(`/vendor/monitor/${task.awb}?screen=2`)
+    router.push(`/courier/tugas/${task.awb}?tab=2`)
   } else if (task.status === 'delivered') {
-    toastRef.value?.show(
-      'Berita Acara Penerimaan (e-POD)',
-      `Membuka sertifikat BAP dan tanda tangan SIP Apoteker untuk ${task.awb}...`
-    )
-    router.push(`/vendor/monitor/${task.awb}?screen=3`)
+    router.push(`/courier/tugas/${task.awb}?tab=4`)
   }
 }
 

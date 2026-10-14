@@ -31,9 +31,13 @@ const emit = defineEmits<{
     <!-- Left Column: Cargo Identity & Cold-chain IoT -->
     <div class="flex-1 min-w-0 pl-2 lg:pl-3 flex flex-col gap-2.5">
       <div class="flex flex-wrap items-center gap-2.5">
-        <span class="font-headline-sm font-bold tracking-tight text-on-surface">
+        <router-link
+          :to="`/courier/tugas/${task.awb}`"
+          class="font-headline-sm font-bold tracking-tight text-on-surface hover:text-primary transition-colors cursor-pointer"
+          title="Buka Ruang Eksekusi Tugas"
+        >
           AWB: {{ task.awb }}
-        </span>
+        </router-link>
 
         <!-- Temperature Profile Tag -->
         <span
