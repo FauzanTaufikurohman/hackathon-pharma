@@ -136,3 +136,26 @@ export interface BapReport {
   cooler_box_desc: string
 }
 
+export interface CourierProfile {
+  id: number
+  courier_code: string
+  name: string
+  role_label: string
+  shift_name: string
+  hub_base: string
+  duty_active: boolean
+  cooler_box_code: string
+  current_cooler_temp: number
+  ble_sync: boolean
+  battery_pct: number
+  avatar_url: string
+}
+
+export interface CourierMetrics {
+  new_tasks_count: number
+  on_route_count: number
+  issues_hold_count: number
+  completed_today_count: number
+}
+
+

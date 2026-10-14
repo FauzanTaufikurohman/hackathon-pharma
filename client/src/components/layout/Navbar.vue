@@ -84,8 +84,19 @@ function handleHeaderSearch() {
             />
             <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span>
           </div>
+
+          <!-- Quick Switch to Courier Role -->
+          <router-link
+            to="/courier"
+            class="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-50 hover:bg-pink-100 text-primary-container font-label-sm text-[11px] font-bold transition-all border border-pink-200 shadow-2xs"
+            title="Beralih ke Portal Satria Kurir"
+          >
+            <span class="material-symbols-outlined text-[15px]">two_wheeler</span>
+            <span>Portal Kurir</span>
+          </router-link>
         </div>
       </div>
+
     </div>
   </header>
 </template>

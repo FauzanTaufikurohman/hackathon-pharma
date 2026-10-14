@@ -1,4 +1,4 @@
-import type { Shipment, FaskesFacility, OperationalMetrics, AuditEvent, BapReport } from '../types/shipment'
+import type { Shipment, FaskesFacility, OperationalMetrics, AuditEvent, BapReport, CourierProfile, CourierMetrics } from '../types/shipment'
 
 export const currentFacility: FaskesFacility = {
   facility_id: 'RSMS-FARM-09',
@@ -353,4 +353,27 @@ export const mockBapReport: BapReport = {
   cooler_box_id: 'Cooler Box V-09',
   cooler_box_desc: 'Cooler Box V-09 diserahkan dalam keadaan tersegel micro-barcode tanpa insiden deforstasi.',
 }
+
+export const mockCourierProfile: CourierProfile = {
+  id: 7,
+  courier_code: 'KURIR-007',
+  name: 'Bambang Suryono',
+  role_label: 'Satria Cold-Chain',
+  shift_name: 'Shift 1 • Reguler Cold-Chain',
+  hub_base: 'Pangkalan Hub Cold-Chain Cawang Jakarta',
+  duty_active: true,
+  cooler_box_code: '#CB-04',
+  current_cooler_temp: 4.2,
+  ble_sync: true,
+  battery_pct: 96,
+  avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120',
+}
+
+export const mockCourierMetrics: CourierMetrics = {
+  new_tasks_count: 1,
+  on_route_count: 1,
+  issues_hold_count: 0,
+  completed_today_count: 3,
+}
+
 
