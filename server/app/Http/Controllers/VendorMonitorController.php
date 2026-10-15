@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\CourierEvidenceStore;
 use App\Models\ShipmentReport;
 use App\VendorReportService;
 use App\VendorShipmentService;
@@ -14,6 +15,36 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VendorMonitorController extends Controller
 {
+    public function proof(Request $request, string $awb, VendorShipmentService $service): JsonResponse
+    {
+        $s = $service->find($request->user(), $awb);
+        $pod = $s->deliveryProof;
+        abort_unless($pod, 404, 'Bukti serah terima belum tersedia.');
+
+        return response()->json(['data' => $pod->only(['id', 'mode', 'recipient_name', 'recipient_department',
+            'temperature', 'seal_intact', 'handed_over_at', 'photo_sha256']) + [
+                'digital_signature_verified' => false,
+                'photo_url' => route('vendor.proof.photo', ['awb' => $awb]),
+                'signature_url' => $pod->signature_path ? route('vendor.proof.signature', ['awb' => $awb]) : null,
+            ]])->header('Cache-Control', 'private, no-store');
+    }
+
+    public function proofPhoto(Request $request, string $awb, VendorShipmentService $service, CourierEvidenceStore $store): Response
+    {
+        $pod = $service->find($request->user(), $awb)->deliveryProof;
+        abort_unless($pod, 404, 'Bukti belum tersedia.');
+
+        return $store->response($pod->photo_path);
+    }
+
+    public function proofSignature(Request $request, string $awb, VendorShipmentService $service, CourierEvidenceStore $store): Response
+    {
+        $pod = $service->find($request->user(), $awb)->deliveryProof;
+        abort_unless($pod?->signature_path, 404, 'Tanda tangan belum tersedia.');
+
+        return $store->response($pod->signature_path);
+    }
+
     public function show(Request $request, string $awb, VendorShipmentService $service): JsonResponse
     {
         $shipment = $service->find($request->user(), $awb);

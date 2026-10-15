@@ -76,3 +76,27 @@ API http://127.0.0.1:8180/api/v1 memakai PostgreSQL lokal pharma_v2. Resi PHA-CO
 | Notifikasi | queued, bukan sent |
 
 Suhu/GPS dari endpoint adalah data yang dikirim perangkat atau simulator, bukan bukti sensor terkalibrasi. UI frontend pada branch client tetap perlu dihubungkan oleh integrator.
+
+## Pembaruan lokal lintas-role — 15 Oktober 2026
+
+Fondasi Admin, Checker, ekstensi tab Vendor dan outbox Telegram ditambahkan tanpa commit/push. Frontend acuan main b93d302 belum diubah secara manual; perubahan client yang terlihat pada index berasal dari penggabungan main, bukan pemilih role atau prototype tambahan.
+
+Seluruh suite terakhir lulus **59 tes / 388 assertions** secara terpisah pada SQLite dan PostgreSQL pharma_v2_test. Selain regresi lama, tes meliputi:
+
+- Admin membuat manifest, Checker yang ditugaskan melihatnya dan mengunggah foto wajib.
+- Penghitungan passed di server; inspeksi gagal tidak dapat disetujui.
+- Persetujuan Admin, reservasi kapasitas, penugasan, penerimaan kurir dan keberangkatan terpisah.
+- Sampel telemetry tersimpan, tiba, POD, penutupan dan PDF yang dapat diakses buyer pemilik.
+- Kendala segel → keputusan retur Admin → konfirmasi kurir → POD retur.
+- Pembatalan menghapus tugas kurir dan tidak dihitung sebagai pengiriman aktif Vendor.
+- Tren suhu menghitung data tersimpan dan menolak sampel kurang/stale.
+- Isolasi role, resi asing, foto privat, retry UUID, konflik versi dan kiriman selesai.
+- CSV melindungi formula injection.
+- Telegram Http::fake: credential kosong, demo dilewati, penerima tidak terkonfigurasi, ACK provider, rate limit, timeout uncertain dan tidak mengirim ulang pesan sent.
+- Command Artisan telegram:dispatch dan courier:check-signals dapat menemukan service dan berjalan.
+
+Smoke test browser dari origin 127.0.0.1:5173 ke API 127.0.0.1:8180: login Admin 200, role admin dari akun, GET metrics 200 dan logout. Ini juga memverifikasi CORS. Endpoint lookups dan ringkasan harian WIB berjalan di PostgreSQL aplikasi.
+
+Build dan type-check frontend main lulus memakai Node 24.19.0. Build memiliki warning bundle >500 kB pada frontend tim; tidak diklaim sudah dioptimalkan. Halaman Admin diuji terbuka di browser desktop tanpa error console dan tanpa overflow horizontal pada viewport 1452px. Ini bukan pengujian seluruh interaksi frontend/mobile.
+
+Telegram nyata sengaja belum diaktifkan sesuai arahan pengguna; token dan Chat ID menyusul. Worker tanpa credential mengembalikan configured=false/processed=0. Tidak ada bukti pesan sampai HP dan tidak ada klaim demikian. UI mock yang masih ada belum menjadi integrasi penuh hanya karena API-nya sudah siap.
