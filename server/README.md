@@ -1,6 +1,6 @@
 # Menjalankan backend Anteraja Pharma v2
 
-Backend vendor dan courier memakai Laravel 13, PHP 8.4, PostgreSQL lokal dan Sanctum 4. Client Vue milik tim tidak diubah. API prefix: /api/v1.
+Backend Admin, Checker, Vendor dan Courier memakai Laravel 13, PHP 8.4, PostgreSQL lokal dan Sanctum 4. API prefix: /api/v1. Frontend Vue tetap mengikuti main tim; integrasi view final dilakukan setelah frontend tim siap.
 
 ## Setup pada komputer baru
 
@@ -134,4 +134,17 @@ Kiriman non-demo wajib punya approval Admin yang terkait inspeksi terbaru, check
 
 Notifikasi yang dibuat masih outbox pending/queued. Tidak diklaim sampai ke HP tanpa integrasi provider. PDF aplikasi dan checksum bukan sertifikasi CDOB/CPOB, PDF/A, tanda tangan digital tersertifikasi, atau layanan QR publik. Endpoint Admin/Checker yang menulis approval/assignment/decision tetap tanggung jawab modul tim terkait.
 
-Hasil verifikasi: [backend-verification.md](docs/backend-verification.md). Tes terakhir pada branch lengkap: 45 tes / 254 assertions lulus di SQLite dan PostgreSQL test terpisah.
+Hasil verifikasi: [backend-verification.md](docs/backend-verification.md). Pengujian tahap courier: 45 tes / 254 assertions lulus di SQLite dan PostgreSQL test terpisah. Hasil terbaru seluruh modul dicatat di docs/backend-verification.md.
+
+## Pembaruan lokal Admin, Checker dan Telegram
+
+Backend dibagi ke branch per fitur sesuai urutan pada docs/operations-api.md. Setiap branch memuat fondasi branch sebelumnya. Gabungkan bertahap; jangan menghapus folder client/server.
+
+- [Kontrak API dan pemetaan modul](docs/operations-api.md): sembilan modul client yang belum punya pasangan branch, field request, filter, status dan aturan transisi.
+- [Setup Telegram langsung dari Laravel](docs/telegram-setup.md): token privat, mapping Chat ID, worker, retry dan status pengiriman. Tidak memakai n8n.
+- Tidak menambah pemilih role di login, akun publik Admin, ataupun mode prototype baru. Role ditentukan akun di database. Simulator yang ada hanya boleh mengubah data demo di lingkungan yang diizinkan.
+- View frontend teman belum disambungkan ulang oleh perubahan ini. Jangan menganggap toast/data mock yang masih ada sebagai hasil API nyata.
+
+Sesudah mengambil perubahan server ini, jalankan php artisan migrate, kemudian server API dan scheduler di terminal terpisah. Jangan menjalankan migrate:fresh pada database aplikasi. Worker Telegram aman saat credential belum diisi: tidak mengirim request keluar.
+
+Di laptop Evan, API lokal berjalan di http://127.0.0.1:8180 dan frontend di http://127.0.0.1:5173. Frontend memerlukan Node >=24.12 atau >=22.18 sesuai manifest; Node sistem 22.14 terlalu lama. Runtime Node bundled yang dipakai untuk verifikasi ada di C:\Users\Evan\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe.

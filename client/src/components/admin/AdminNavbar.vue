@@ -28,8 +28,8 @@ async function handleLogout() {
 <template>
   <header class="sticky top-0 z-40 border-b border-slate-200 bg-white">
     <div class="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2 sm:px-6">
-      <router-link to="/admin" class="shrink-0 text-base font-bold tracking-tight text-slate-900">
-        Anteraja <span class="text-primary">Pharma</span>
+      <router-link to="/admin" aria-label="Beranda Anteraja Pharma" class="inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+        <img src="/pharma-logo.webp" alt="Anteraja Pharma" width="110" height="45" class="h-10 w-auto shrink-0 object-contain mix-blend-multiply" />
       </router-link>
 
       <nav class="order-3 flex w-full gap-1 overflow-x-auto pb-1 sm:order-none sm:w-auto sm:pb-0" aria-label="Navigasi admin">

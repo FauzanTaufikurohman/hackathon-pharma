@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { currentFacility } from '../../data/mockShipments'
 import { logoutAndRedirect } from '../../services/auth'
@@ -8,14 +8,17 @@ const router = useRouter()
 const route = useRoute()
 const searchInput = ref('')
 
+const isMonitorPage = computed(() => route.path.startsWith('/vendor/monitor'))
+const activeScreen = computed(() => Number(route.query.screen) || 1)
+
 const emit = defineEmits<{
   (e: 'search', query: string): void
 }>()
 
-function handleHeaderSearch() {
-  if (searchInput.value.trim()) {
-    emit('search', searchInput.value.trim())
-  }
+function switchMonitorTab(tab: number) {
+  router.replace({
+    query: { ...route.query, screen: tab.toString() },
+  })
 }
 
 function handleLogout() {
@@ -24,82 +27,99 @@ function handleLogout() {
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/95 backdrop-blur-md border-b border-surface-container shadow-xs">
-    <div class="h-16 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-space-md">
-      <!-- Left: Brand Logo & Navigation -->
-      <div class="flex items-center gap-space-md lg:gap-space-lg">
-        <!-- Logo -->
-        <router-link to="/" class="flex items-center gap-2.5 group">
-          <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm group-hover:scale-105 transition-transform">
-            <span class="material-symbols-outlined text-[20px]">ac_unit</span>
-          </div>
-          <div class="flex flex-col">
-            <span class="font-headline-sm text-[16px] font-bold text-on-surface leading-none tracking-tight">anteraja</span>
-            <span class="font-label-sm text-[10px] text-primary uppercase tracking-wider font-extrabold mt-0.5">Pharma Cold-Chain</span>
-          </div>
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 sm:px-8 h-20 flex items-center justify-between gap-4">
+      <!-- Brand & Navigation Tabs Group -->
+      <div class="flex items-center gap-8">
+        <router-link to="/" aria-label="Beranda Anteraja Pharma" class="flex items-center shrink-0">
+          <img
+            alt="Anteraja Pharma"
+            class="h-9 w-auto object-contain"
+            src="/pharma-logo.webp"
+          />
         </router-link>
 
-        <!-- Navigation Tabs -->
-        <nav class="flex items-center gap-1 bg-surface-container-low p-1 rounded-full">
+        <!-- Monitor Tabs (when on vendor monitor page) -->
+        <nav v-if="isMonitorPage" class="hidden md:flex items-center gap-2">
+          <button
+            type="button"
+            @click="switchMonitorTab(1)"
+            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer flex items-center gap-1.5"
+            :class="activeScreen === 1
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-bold shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
+          >
+            <span v-if="activeScreen === 1" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
+            <span>Halaman Pantau</span>
+          </button>
+
+          <button
+            type="button"
+            @click="switchMonitorTab(2)"
+            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer flex items-center gap-1.5"
+            :class="activeScreen === 2
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-bold shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
+          >
+            <span v-if="activeScreen === 2" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
+            <span>Pelacakan GPS</span>
+          </button>
+
+          <button
+            type="button"
+            @click="switchMonitorTab(3)"
+            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer flex items-center gap-1.5"
+            :class="activeScreen === 3
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-bold shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
+          >
+            <span v-if="activeScreen === 3" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
+            <span>Laporan</span>
+          </button>
+        </nav>
+
+        <!-- Global Vendor Navigation (when on home or package list) -->
+        <nav v-else class="hidden md:flex items-center gap-2">
           <router-link
             to="/"
-            class="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-label-md font-bold transition-all duration-200"
-            :class="route.path === '/' || route.path === '/vendor' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
+            class="font-medium px-4 py-1.5 rounded-full text-sm transition-all"
+            :class="route.path === '/' || route.path === '/vendor'
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
           >
             Beranda
           </router-link>
           <router-link
             to="/paket-saya"
-            class="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-label-md font-bold transition-all duration-200"
-            :class="route.path === '/paket-saya' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
+            class="font-medium px-4 py-1.5 rounded-full text-sm transition-all"
+            :class="route.path === '/paket-saya'
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
           >
             Paket Saya
           </router-link>
         </nav>
       </div>
 
-      <!-- Right: Search Input & Profile Badge -->
-      <div class="flex items-center gap-space-md">
-        <!-- Search bar in header -->
-        <div class="relative hidden md:block w-64 lg:w-72">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none">search</span>
-          <input
-            v-model="searchInput"
-            @keyup.enter="handleHeaderSearch"
-            type="text"
-            placeholder="Lacak No. AWB / Resi Klinis..."
-            class="w-full h-9 pl-9 pr-3 bg-surface-container-low border border-outline-variant/60 rounded-full font-body-sm text-[13px] text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all"
-          />
+      <!-- Right Side Badges -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-left shadow-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="material-symbols-outlined text-emerald-600 text-[18px]">local_hospital</span>
+          <div>
+            <p class="text-xs font-bold text-slate-800 leading-tight">{{ currentFacility.name }}</p>
+            <p class="text-[10px] text-slate-500 leading-none">{{ currentFacility.department }}</p>
+          </div>
         </div>
 
-        <!-- Facility Info & Profile -->
-        <div class="flex items-center gap-space-sm pl-space-sm border-l border-surface-container-high">
-          <div class="flex flex-col items-end hidden sm:flex">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-              <span class="font-label-md text-label-md text-on-surface font-bold">{{ currentFacility.name }}</span>
-            </div>
-            <span class="font-label-sm text-[10px] text-secondary uppercase font-extrabold tracking-wider">{{ currentFacility.verified_status }}</span>
-          </div>
-          <div class="relative">
-            <img
-              alt="Profile Faskes"
-              class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20 shadow-xs"
-              src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=120"
-            />
-            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span>
-          </div>
-
-          <button
-            type="button"
-            @click="handleLogout"
-            class="inline-flex items-center rounded-full border border-outline-variant px-3 py-1.5 text-xs font-semibold text-on-surface-variant transition-colors hover:bg-surface-container-low"
-          >
-            Keluar
-          </button>
-        </div>
+        <button
+          type="button"
+          @click="handleLogout"
+          class="inline-flex items-center rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
+        >
+          Keluar
+        </button>
       </div>
-
     </div>
   </header>
 </template>

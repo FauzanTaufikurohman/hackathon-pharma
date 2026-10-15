@@ -7,7 +7,7 @@ return [
         env('FRONTEND_URL', 'http://localhost:5173'),
         'https://pharma-hackathon.vercel.app',
         ...(env('APP_ENV', 'production') === 'local' ? ['http://localhost:5173', 'http://127.0.0.1:5173'] : []),
-    ]))),
+
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['Accept', 'Content-Type', 'Authorization', 'X-XSRF-TOKEN', 'X-Requested-With'],
     'exposed_headers' => ['Content-Disposition', 'X-Report-SHA256'],

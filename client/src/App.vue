@@ -23,20 +23,19 @@ const isCourierTaskDetail = computed(() => route.name === 'courier-task-detail')
   <!-- Courier or Vendor Role Layout -->
   <div
     v-else
-    class="min-h-screen flex flex-col font-sans text-on-surface antialiased"
-    :class="isCourier ? 'bg-[#F8FAFC]' : 'bg-surface selection:bg-primary-fixed selection:text-primary'"
+    class="min-h-screen flex flex-col font-sans text-slate-800 antialiased bg-[#F8FAFC] selection:bg-rose-100 selection:text-rose-900 justify-between"
   >
     <!-- Role-based Navigation Bar -->
     <CourierNavbar v-if="isCourier" />
     <Navbar v-else />
 
-    <!-- Main Content Area with Top Padding for fixed Navbar -->
+    <!-- Main Content Area -->
     <main
       class="w-full flex-1"
-      :class="isCourier ? 'pt-20 bg-[#F8FAFC]' : 'pt-16 bg-surface'"
+      :class="isCourier ? 'pt-20' : ''"
     >
       <div
-        :class="isCourier ? 'max-w-6xl mx-auto px-4 sm:px-6 py-8' : 'max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-space-xl'"
+        :class="isCourier ? 'max-w-6xl mx-auto px-4 sm:px-6 py-8' : 'max-w-7xl w-full mx-auto px-6 py-8'"
       >
         <router-view />
       </div>

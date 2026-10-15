@@ -10,6 +10,36 @@ use Illuminate\Support\Facades\DB;
 
 class CourierTelemetryService
 {
+    public function prediction(Shipment $shipment): array
+    {
+        $samples = $shipment->telemetry()->whereNotNull('temperature')
+            ->where('recorded_at', '>=', now()->subMinutes(15))->where('recorded_at', '<=', now())
+            ->orderByDesc('recorded_at')->limit(30)->get()->reverse()->values();
+        $latest = $samples->last();
+        if ($samples->count() < 3 || ! $latest || $latest->recorded_at->lt(now()->subMinutes(2)) || $shipment->temperature_max === null) {
+            return ['available' => false, 'reason' => 'Sampel segar belum cukup.', 'warning' => false];
+        }
+        $first = $samples->first()->recorded_at->getTimestamp();
+        $span = $latest->recorded_at->getTimestamp() - $first;
+        if ($span < 120) {
+            return ['available' => false, 'reason' => 'Rentang sampel kurang dari dua menit.', 'warning' => false];
+        }
+        $points = $samples->map(fn ($s) => ['x' => ($s->recorded_at->getTimestamp() - $first) / 60, 'y' => $s->temperature]);
+        $xMean = $points->avg('x');
+        $yMean = $points->avg('y');
+        $denominator = $points->sum(fn ($p) => ($p['x'] - $xMean) ** 2);
+        if ($denominator <= 0) {
+            return ['available' => false, 'reason' => 'Waktu sampel tidak bervariasi.', 'warning' => false];
+        }
+        $slope = $points->sum(fn ($p) => ($p['x'] - $xMean) * ($p['y'] - $yMean)) / $denominator;
+        $minutes = $slope > 0 ? max(0, ($shipment->temperature_max - $latest->temperature) / $slope) : null;
+
+        return ['available' => true, 'method' => 'linear_temperature_trend', 'samples' => $samples->count(),
+            'slope_c_per_minute' => round($slope, 4), 'minutes_to_upper_limit' => $minutes === null ? null : round($minutes, 1),
+            'warning' => $minutes !== null && $minutes <= 5, 'is_simulated' => $samples->contains('is_simulated', true),
+            'recorded_at' => $latest->recorded_at->toISOString(), 'note' => 'Estimasi tren, bukan verifikasi mutu produk.'];
+    }
+
     public function append(Shipment $shipment, array $data): array
     {
         abort_unless(in_array($shipment->status, ['in_transit', 'arrived', 'returning', 'held', 'deviation_hold'], true)

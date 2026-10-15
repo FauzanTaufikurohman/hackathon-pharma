@@ -12,11 +12,11 @@ class VendorDashboardService
     public function dashboard(User $user, VendorShipmentService $service, ?string $awb = null): array
     {
         $owned = $service->owned($user);
-        $active = (clone $owned)->whereNotIn('status', ['completed', 'delivered', 'returned']);
+        $active = (clone $owned)->whereNotIn('status', ['completed', 'delivered', 'returned', 'cancelled']);
         $latest = TelemetrySample::query()
             ->join('shipments', 'shipments.id', '=', 'telemetry_samples.shipment_id')
             ->where('shipments.buyer_id', $user->id)
-            ->whereNotIn('shipments.status', ['completed', 'delivered', 'returned'])
+            ->whereNotIn('shipments.status', ['completed', 'delivered', 'returned', 'cancelled'])
             ->where('shipments.temperature_profile', 'controlled')
             ->whereNotNull('shipments.temperature_min')->whereNotNull('shipments.temperature_max')
             ->where('telemetry_samples.recorded_at', '>=', now()->subMinutes(15))
