@@ -1,10 +1,10 @@
 # Menjalankan backend Anteraja Pharma v2
 
-Backend Admin, Checker, Vendor dan Courier memakai Laravel 13, PHP 8.4, PostgreSQL lokal dan Sanctum 4. API prefix: /api/v1. Frontend Vue tetap mengikuti main tim; integrasi view final dilakukan setelah frontend tim siap.
+Backend Admin, Checker, Vendor dan Courier memakai Laravel 13, PHP 8.4, PostgreSQL lokal dan Sanctum 4. API prefix: /api/v1. Halaman aktif Vue sudah memakai API, bukan mock dataset. Rekonsiliasi main, header, footer, dan lampiran Telegram ada pada branch server-telegram-report-attachments.
 
 ## Setup pada komputer baru
 
-Sediakan PHP 8.4 dengan pdo_pgsql, pdo_sqlite, mbstring, openssl, fileinfo, gd dan zip; Composer 2; PostgreSQL lokal. Jalankan dari folder server:
+Sediakan PHP 8.4 dengan pdo_pgsql, pdo_sqlite, mbstring, openssl, curl, fileinfo, gd dan zip; Composer 2; PostgreSQL lokal. Gunakan CA bundle tepercaya untuk HTTPS. Jalankan dari folder server:
 
 ```powershell
 composer install
@@ -31,13 +31,23 @@ cd "D:\Work & Organization\Work\Maxy Academy\Modules\Hackathon\anteraja-pharma-v
 & "D:\Work & Organization\Work\Maxy Academy\Modules\Backups\Pharma-v2-runtime\php84\php.exe" artisan serve --host=127.0.0.1 --port=8180
 ```
 
-Buka terminal kedua untuk client; ini masih frontend mock sampai integrator tim menyambungkan endpoint:
+Buka terminal kedua untuk client. Buat client/.env.local jika belum ada, dengan VITE_API_BASE_URL=/api/v1 dan API_PROXY_TARGET=http://127.0.0.1:8180 agar proxy sesuai port Laravel di atas. Jangan menimpa credential di server/.env.
 
 ```powershell
 cd "D:\Work & Organization\Work\Maxy Academy\Modules\Hackathon\anteraja-pharma-v2\client"
 npm install
 npm run dev
 ```
+
+## Konfigurasi hosting tim
+
+Frontend Vercel memakai Root Directory client dan client/vercel.json untuk fallback route Vue Router. client/.env.production mempertahankan URL tunnel demo terbaru tim dari main 4e18177 agar konfigurasi demo tidak hilang. Tunnel itu tetap membutuhkan backend dan proses tunnel yang hidup; bukan hosting permanen.
+
+Untuk backend tetap, isi VITE_API_BASE_URL pada environment hosting dengan URL HTTPS backend yang benar dan suffix /api/v1 sebelum build. Jika memakai /api/v1 relatif, host harus menyediakan reverse proxy API; file fallback SPA tidak menjalankan Laravel atau mem-proxy API. Proxy Vite lokal tetap menuju API_PROXY_TARGET atau 127.0.0.1:8000, tidak memakai tunnel produksi secara diam-diam.
+
+Pada backend, isi APP_URL dengan URL backend dan FRONTEND_URL dengan origin frontend. CORS_ALLOWED_ORIGINS dapat berisi origin tambahan dipisahkan koma tanpa slash penutup. Jalankan php artisan config:clear setelah mengubah .env. Jangan mematikan TLS, memakai wildcard credential CORS, atau menganggap tunnel trycloudflare sementara sebagai alamat server permanen.
+
+Credential database, Telegram, dan OpenAI tetap server-only. Scheduler Telegram harus dijalankan terpisah; pemetaan penerima dan aktivasi pengiriman tidak otomatis dilakukan oleh merge. Lihat [panduan Telegram](docs/telegram-setup.md) dan [hasil pengujian](docs/backend-verification.md). PRD, FRD, dan flowchart tetap menjadi acuan dan tidak diubah pada rekonsiliasi ini.
 
 ## Akun demo lokal
 
@@ -143,7 +153,7 @@ Backend dibagi ke branch per fitur sesuai urutan pada docs/operations-api.md. Se
 - [Kontrak API dan pemetaan modul](docs/operations-api.md): sembilan modul client yang belum punya pasangan branch, field request, filter, status dan aturan transisi.
 - [Setup Telegram langsung dari Laravel](docs/telegram-setup.md): token privat, mapping Chat ID, worker, retry dan status pengiriman. Tidak memakai n8n.
 - Tidak menambah pemilih role di login, akun publik Admin, ataupun mode prototype baru. Role ditentukan akun di database. Simulator yang ada hanya boleh mengubah data demo di lingkungan yang diizinkan.
-- View frontend teman belum disambungkan ulang oleh perubahan ini. Jangan menganggap toast/data mock yang masih ada sebagai hasil API nyata.
+- Pada branch feature/frontend-api-integration, view inti frontend terhubung ke API ini. Detail alur, batas integrasi, dan konfigurasi client dicatat di client/docs/README.md pada root repository. Bagian verifikasi sebelumnya di dokumen ini mencatat tahap pengembangan historis.
 
 Sesudah mengambil perubahan server ini, jalankan php artisan migrate, kemudian server API dan scheduler di terminal terpisah. Jangan menjalankan migrate:fresh pada database aplikasi. Worker Telegram aman saat credential belum diisi: tidak mengirim request keluar.
 

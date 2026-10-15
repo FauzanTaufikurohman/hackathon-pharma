@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminApprovalsController;
 use App\Http\Controllers\AdminMonitorController;
 use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AdminShipmentsController;
+use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckerHistoryController;
 use App\Http\Controllers\CheckerInspectionController;
@@ -23,6 +24,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:login');
     Route::middleware(['auth:sanctum', 'throttle:vendor'])->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::get('/admin/users', [AdminUsersController::class, 'index']);
+        Route::post('/admin/users', [AdminUsersController::class, 'store']);
+        Route::put('/admin/users/{user}', [AdminUsersController::class, 'update'])->whereNumber('user');
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/admin/shipments', [AdminShipmentsController::class, 'index']);
         Route::post('/admin/shipments', [AdminShipmentsController::class, 'store']);

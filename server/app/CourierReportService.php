@@ -5,6 +5,7 @@ namespace App;
 use App\Models\Shipment;
 use App\Models\ShipmentReport;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class CourierReportService
 {
@@ -31,9 +32,14 @@ class CourierReportService
             'digital_signature_verified' => false,
         ];
 
-        return ShipmentReport::create(['shipment_id' => $shipment->id, 'title' => 'Laporan Serah Terima Produk Farmasi',
-            'revision' => 1, 'snapshot' => $snapshot, 'sha256' => ShipmentReport::hashSnapshot($snapshot),
-            'is_demo' => $shipment->is_demo, 'published_at' => now()]);
+        return DB::transaction(function () use ($shipment, $snapshot): ShipmentReport {
+            $report = ShipmentReport::create(['shipment_id' => $shipment->id, 'title' => 'Laporan Serah Terima Produk Farmasi',
+                'revision' => 1, 'snapshot' => $snapshot, 'sha256' => ShipmentReport::hashSnapshot($snapshot),
+                'is_demo' => $shipment->is_demo, 'published_at' => now()]);
+            app(ReportDistribution::class)->queue($report);
+
+            return $report;
+        });
     }
 
     public function download(ShipmentReport $report): Response

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#B10045</color>
+    <color name="colorPrimaryDark">#123F3B</color>
+    <color name="colorAccent">#00979D</color>
+    <color name="pharma_icon_background">#FAF8FF</color>
+</resources>
