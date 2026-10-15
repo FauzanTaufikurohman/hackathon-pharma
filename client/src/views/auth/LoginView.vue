@@ -30,7 +30,8 @@ async function handleLogin() {
     const destination =
       typeof requestedPath === 'string' &&
       requestedPath.startsWith('/') &&
-      !requestedPath.startsWith('//')
+      !requestedPath.startsWith('//') &&
+      requestedPath !== '/login'
         ? requestedPath
         : roleHome[user.role]
 
