@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { mockCourierProfile } from '../../data/mockShipments'
+import { logoutAndRedirect } from '../../services/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -10,6 +11,10 @@ const showNotifications = ref(false)
 const emit = defineEmits<{
   (e: 'notify-click'): void
 }>()
+
+function handleLogout() {
+  return logoutAndRedirect(router)
+}
 </script>
 
 <template>
@@ -84,14 +89,13 @@ const emit = defineEmits<{
           src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
         />
 
-        <!-- Switch Role / Keluar -->
-        <router-link
-          to="/"
-          class="font-label-md text-slate-400 hover:text-primary-container transition-colors pl-1 cursor-pointer font-medium"
-          title="Beralih ke Portal Faskes"
+        <button
+          type="button"
+          @click="handleLogout"
+          class="font-label-md text-slate-500 hover:text-primary-container transition-colors pl-1 cursor-pointer font-medium"
         >
           Keluar
-        </router-link>
+        </button>
       </div>
     </div>
   </header>
