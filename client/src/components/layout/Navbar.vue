@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { currentFacility } from '../../data/mockShipments'
 import { logoutAndRedirect } from '../../services/auth'
@@ -8,14 +8,17 @@ const router = useRouter()
 const route = useRoute()
 const searchInput = ref('')
 
+const isMonitorPage = computed(() => route.path.startsWith('/vendor/monitor'))
+const activeScreen = computed(() => Number(route.query.screen) || 1)
+
 const emit = defineEmits<{
   (e: 'search', query: string): void
 }>()
 
-function handleHeaderSearch() {
-  if (searchInput.value.trim()) {
-    emit('search', searchInput.value.trim())
-  }
+function switchMonitorTab(tab: number) {
+  router.replace({
+    query: { ...route.query, screen: tab.toString() },
+  })
 }
 
 function handleLogout() {
@@ -24,76 +27,92 @@ function handleLogout() {
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/95 backdrop-blur-md border-b border-surface-container shadow-xs">
-    <div class="h-16 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-space-md">
-      <!-- Left: Brand Logo & Navigation -->
-      <div class="flex items-center gap-space-md lg:gap-space-lg">
-        <!-- Logo -->
-        <router-link to="/" aria-label="Beranda Anteraja Pharma" class="inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
-          <img src="/pharma-logo.webp" alt="Anteraja Pharma" width="110" height="45" class="h-10 w-auto shrink-0 object-contain mix-blend-multiply" />
+  <header class="w-full bg-white border-b border-slate-100 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between gap-6">
+      <!-- Brand & Navigation Tabs -->
+      <div class="flex items-center gap-8">
+        <router-link to="/" aria-label="Beranda Anteraja Pharma" class="inline-flex shrink-0 items-center">
+          <img
+            alt="Anteraja Pharma"
+            class="h-9 w-auto object-contain"
+            src="/pharma-logo.webp"
+          />
         </router-link>
 
-        <!-- Navigation Tabs -->
-        <nav class="flex items-center gap-1 bg-surface-container-low p-1 rounded-full">
+        <!-- Monitor Tabs (when on vendor monitor page) -->
+        <nav v-if="isMonitorPage" class="flex items-center gap-2">
+          <button
+            type="button"
+            @click="switchMonitorTab(1)"
+            class="font-semibold px-4 py-1.5 rounded-full text-sm transition-all cursor-pointer"
+            :class="activeScreen === 1
+              ? 'bg-[#FCE7F3] text-[#D81E5B]'
+              : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
+          >
+            Halaman Pantau
+          </button>
+          <button
+            type="button"
+            @click="switchMonitorTab(2)"
+            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer"
+            :class="activeScreen === 2
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold'
+              : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
+          >
+            Pelacakan GPS
+          </button>
+          <button
+            type="button"
+            @click="switchMonitorTab(3)"
+            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer"
+            :class="activeScreen === 3
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold'
+              : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
+          >
+            Laporan
+          </button>
+        </nav>
+
+        <!-- Global Vendor Navigation (when on home or package list) -->
+        <nav v-else class="flex items-center gap-2">
           <router-link
             to="/"
-            class="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-label-md font-bold transition-all duration-200"
-            :class="route.path === '/' || route.path === '/vendor' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
+            class="font-medium px-4 py-1.5 rounded-full text-sm transition-all"
+            :class="route.path === '/' || route.path === '/vendor'
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
           >
             Beranda
           </router-link>
           <router-link
             to="/paket-saya"
-            class="px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-label-md font-bold transition-all duration-200"
-            :class="route.path === '/paket-saya' ? 'bg-primary-container text-on-primary shadow-xs' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
+            class="font-medium px-4 py-1.5 rounded-full text-sm transition-all"
+            :class="route.path === '/paket-saya'
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
           >
             Paket Saya
           </router-link>
         </nav>
       </div>
 
-      <!-- Right: Search Input & Profile Badge -->
-      <div class="flex items-center gap-space-md">
-        <!-- Search bar in header -->
-        <div class="relative hidden md:block w-64 lg:w-72">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none">search</span>
-          <input
-            v-model="searchInput"
-            @keyup.enter="handleHeaderSearch"
-            type="text"
-            placeholder="Lacak No. AWB / Resi Klinis..."
-            class="w-full h-9 pl-9 pr-3 bg-surface-container-low border border-outline-variant/60 rounded-full font-body-sm text-[13px] text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all"
-          />
+      <!-- Right: Facility Badge & Actions -->
+      <div class="flex items-center gap-3">
+        <!-- Right Badge: RS Medika Sehat Jakarta with green dot -->
+        <div class="hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="font-semibold text-slate-800">{{ currentFacility.name }}</span>
+          <span class="text-slate-400 font-normal hidden lg:inline">• {{ currentFacility.department }}</span>
         </div>
 
-        <!-- Facility Info & Profile -->
-        <div class="flex items-center gap-space-sm pl-space-sm border-l border-surface-container-high">
-          <div class="flex flex-col items-end hidden sm:flex">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-              <span class="font-label-md text-label-md text-on-surface font-bold">{{ currentFacility.name }}</span>
-            </div>
-            <span class="font-label-sm text-[10px] text-secondary uppercase font-extrabold tracking-wider">{{ currentFacility.verified_status }}</span>
-          </div>
-          <div class="relative">
-            <img
-              alt="Profile Faskes"
-              class="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20 shadow-xs"
-              src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=120"
-            />
-            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span>
-          </div>
-
-          <button
-            type="button"
-            @click="handleLogout"
-            class="inline-flex items-center rounded-full border border-outline-variant px-3 py-1.5 text-xs font-semibold text-on-surface-variant transition-colors hover:bg-surface-container-low"
-          >
-            Keluar
-          </button>
-        </div>
+        <button
+          type="button"
+          @click="handleLogout"
+          class="inline-flex items-center rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
+        >
+          Keluar
+        </button>
       </div>
-
     </div>
   </header>
 </template>
