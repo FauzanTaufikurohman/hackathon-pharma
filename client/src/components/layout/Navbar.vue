@@ -14,7 +14,7 @@ const currentAwb = computed(() => {
 })
 
 const activeScreen = computed(() => {
-  if (!route.path.startsWith('/vendor/monitor')) return 1
+  if (!route.path.startsWith('/vendor/monitor')) return 0
   return Number(route.query.screen) || 1
 })
 
