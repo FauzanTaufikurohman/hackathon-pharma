@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { mockCourierProfile } from '../../data/mockShipments'
+import { logoutAndRedirect } from '../../services/auth'
 
 const route = useRoute()
 
 const emit = defineEmits<{
   (e: 'notify-click'): void
 }>()
+
+function handleLogout() {
+  return logoutAndRedirect(router)
+}
 </script>
 
 <template>
@@ -92,7 +97,6 @@ const emit = defineEmits<{
             src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
           />
         </div>
-
         <!-- Role Switcher -->
         <div class="hidden lg:flex items-center gap-1.5 pl-2 border-l border-surface-container-high">
           <router-link

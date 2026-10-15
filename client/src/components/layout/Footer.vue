@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// Footer for Vendor / Faskes Portal
 </script>
 
 <template>
@@ -188,6 +187,7 @@
                   <span class="text-[13px] font-bold leading-tight tracking-tight">Google Play</span>
                 </div>
               </a>
+
             </div>
           </div>
         </div>
@@ -197,6 +197,7 @@
       <div class="text-center text-sm text-on-surface-variant py-4 border-t border-surface-container mt-space-lg flex flex-col sm:flex-row items-center justify-between gap-2">
         <span>&copy; 2026 PT Tri Adi Bersama (Anteraja). Hak Cipta Dilindungi Undang-Undang.</span>
         <span class="text-xs text-on-surface-variant font-medium">Standar Kepatuhan Distribusi Farmasi CDOB &amp; ISO 9001 / ISO 27001</span>
+
       </div>
     </div>
   </footer>

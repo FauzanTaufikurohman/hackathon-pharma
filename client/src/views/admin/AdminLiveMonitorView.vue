@@ -72,7 +72,7 @@ function handleSubmitDecision(payload: { action: 'return' | 'recheck' | 'resume'
 <template>
   <div class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col">
     <!-- Navbar Header -->
-    <AdminNavbar active-tab="live-monitor-kendala" />
+    <AdminNavbar active-tab="monitor" />
 
     <!-- Main Content Container -->
     <main class="w-full max-w-7xl mx-auto px-6 pt-24 pb-8 flex-1 bg-surface">

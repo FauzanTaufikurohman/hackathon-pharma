@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { mockCheckerProfile } from '../../data/mockShipments'
+import { logoutAndRedirect } from '../../services/auth'
 
 interface Props {
   activeTab?: number
@@ -15,6 +16,10 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+
+function handleLogout() {
+  return logoutAndRedirect(router)
+}
 
 const handleTabClick = (tab: number) => {
   emit('tab-change', tab)
@@ -44,6 +49,7 @@ const handleTabClick = (tab: number) => {
             src="/images/anteraja-pharma-logo.png"
           />
         </router-link>
+
 
         <span class="hidden sm:inline-flex bg-inverse-surface text-inverse-on-surface font-label-sm text-label-sm px-2.5 py-1 rounded-full uppercase tracking-widest items-center gap-1.5 shadow-sm font-bold">
           <span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span>
@@ -108,7 +114,6 @@ const handleTabClick = (tab: number) => {
               {{ mockCheckerProfile.id_code }} • Shift Pagi
             </span>
           </div>
-
           <div class="relative shrink-0">
             <img
               alt="Checker Profile"

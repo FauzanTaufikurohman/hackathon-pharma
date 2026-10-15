@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { logoutAndRedirect } from '../../services/auth'
+
 interface Props {
   activeTab: number
   awb?: string
@@ -9,12 +12,17 @@ defineProps<Props>()
 const emit = defineEmits<{
   (e: 'tab-change', tab: number): void
 }>()
+
+const router = useRouter()
+
+function handleLogout() {
+  return logoutAndRedirect(router)
+}
 </script>
 
 <template>
   <header class="fixed top-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-surface-container/40">
     <div class="h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-      <!-- Left: Logo & Role Pill -->
       <div class="flex items-center gap-space-md shrink-0">
         <router-link
           to="/courier/tugas-saya"
@@ -102,6 +110,7 @@ const emit = defineEmits<{
           <span class="material-symbols-outlined text-[16px]">arrow_back</span>
           <span class="hidden sm:inline">Daftar Tugas</span>
         </router-link>
+
       </div>
     </div>
   </header>

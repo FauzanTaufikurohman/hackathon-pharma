@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { currentFacility } from '../../data/mockShipments'
+import { logoutAndRedirect } from '../../services/auth'
 
 const router = useRouter()
 const route = useRoute()
 const searchInput = ref('')
 
+const isMonitorPage = computed(() => route.path.startsWith('/vendor/monitor'))
+const activeScreen = computed(() => Number(route.query.screen) || 1)
+
 const emit = defineEmits<{
   (e: 'search', query: string): void
 }>()
-
 function handleHeaderSearch() {
   if (searchInput.value.trim()) {
     emit('search', searchInput.value.trim())
@@ -18,6 +21,7 @@ function handleHeaderSearch() {
       router.push({ path: '/paket-saya', query: { q: searchInput.value.trim() } })
     }
   }
+
 }
 </script>
 
@@ -47,6 +51,7 @@ function handleHeaderSearch() {
             :class="route.path === '/' || route.path === '/vendor'
               ? 'text-primary font-bold bg-primary-fixed/40 shadow-2xs'
               : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
+
           >
             Beranda
           </router-link>
@@ -56,6 +61,7 @@ function handleHeaderSearch() {
             :class="route.path === '/paket-saya'
               ? 'text-primary font-bold bg-primary-fixed/40 shadow-2xs'
               : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
+
           >
             Lacak Kiriman
           </router-link>

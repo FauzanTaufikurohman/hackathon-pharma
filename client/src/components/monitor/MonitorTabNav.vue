@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
-  activeTab: number // 1: Monitor Pengiriman, 2: Lacak Suhu, 3: Laporan
+  activeTab: number // 1: Halaman Pantau, 2: Pelacakan GPS, 3: Laporan
   awbNumber: string
 }>()
 
@@ -10,52 +10,52 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
     <!-- 3 Nav Tabs -->
-    <nav class="flex items-center gap-1 bg-surface-container-low p-1 rounded-full border border-surface-container overflow-x-auto">
-      <!-- Tab 1: Monitor Pengiriman (Active) -->
+    <nav class="flex items-center gap-1.5 bg-white p-1.5 rounded-full border border-slate-200/80 shadow-xs overflow-x-auto">
+      <!-- Tab 1: Halaman Pantau -->
       <button
         type="button"
         @click="emit('update:activeTab', 1)"
-        class="px-5 py-2 transition-all rounded-full font-label-md text-label-md font-bold whitespace-nowrap cursor-pointer"
+        class="px-4 py-1.5 transition-all rounded-full text-sm whitespace-nowrap cursor-pointer"
         :class="activeTab === 1
-          ? 'bg-primary-fixed text-primary shadow-xs'
-          : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
+          ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold shadow-xs'
+          : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
       >
-        Monitor Pengiriman
+        Halaman Pantau
       </button>
 
-      <!-- Tab 2: Lacak Kiriman & Suhu -->
+      <!-- Tab 2: Pelacakan GPS -->
       <button
         type="button"
         @click="emit('update:activeTab', 2)"
-        class="px-5 py-2 transition-all rounded-full font-label-md text-label-md font-bold whitespace-nowrap cursor-pointer"
+        class="px-4 py-1.5 transition-all rounded-full text-sm whitespace-nowrap cursor-pointer"
         :class="activeTab === 2
-          ? 'bg-primary-fixed text-primary shadow-xs'
-          : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
+          ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold shadow-xs'
+          : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
       >
-        Lacak Kiriman &amp; Suhu
+        Pelacakan GPS
       </button>
 
-      <!-- Tab 3: Laporan & Riwayat Audit -->
+      <!-- Tab 3: Laporan -->
       <button
         type="button"
         @click="emit('update:activeTab', 3)"
-        class="px-5 py-2 transition-all rounded-full font-label-md text-label-md font-bold whitespace-nowrap cursor-pointer"
+        class="px-4 py-1.5 transition-all rounded-full text-sm whitespace-nowrap cursor-pointer"
         :class="activeTab === 3
-          ? 'bg-primary-fixed text-primary shadow-xs'
-          : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'"
+          ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold shadow-xs'
+          : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
       >
-        Laporan &amp; Riwayat Audit
+        Laporan
       </button>
     </nav>
 
     <!-- Back to Package List Link -->
     <router-link
       to="/paket-saya"
-      class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-variant text-on-surface font-label-md text-[13px] font-semibold transition-all border border-surface-container-high self-start sm:self-auto cursor-pointer"
+      class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition-all border border-slate-200/60 self-start sm:self-auto cursor-pointer"
     >
-      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      <span class="material-symbols-outlined text-[16px]">arrow_back</span>
       <span>Kembali ke Paket Saya</span>
     </router-link>
   </div>

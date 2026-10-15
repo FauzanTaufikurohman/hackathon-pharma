@@ -1,58 +1,150 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Menjalankan backend Anteraja Pharma v2
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend Admin, Checker, Vendor dan Courier memakai Laravel 13, PHP 8.4, PostgreSQL lokal dan Sanctum 4. API prefix: /api/v1. Frontend Vue tetap mengikuti main tim; integrasi view final dilakukan setelah frontend tim siap.
 
-## About Laravel
+## Setup pada komputer baru
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Sediakan PHP 8.4 dengan pdo_pgsql, pdo_sqlite, mbstring, openssl, fileinfo, gd dan zip; Composer 2; PostgreSQL lokal. Jalankan dari folder server:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```powershell
+composer install
+Copy-Item .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Isi DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD di .env sesuai PostgreSQL kamu. Buat database pharma_v2 terlebih dahulu menggunakan pgAdmin atau createdb. Jangan memakai database proyek lain.
 
-## Contributing
+```powershell
+php artisan migrate
+php artisan db:seed
+php artisan serve --host=127.0.0.1 --port=8180
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+APP_URL harus sesuai alamat backend; FRONTEND_URL sesuai origin client. Seeder hanya di local/testing dan tidak menimpa kiriman yang sudah ada. Data demo diberi is_demo=true; lokasi/suhu contoh ditandai is_simulated=true.
 
-## Code of Conduct
+## Command pada laptop Evan
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+PHP portable disiapkan di Backups/Pharma-v2-runtime, bukan dalam repo. PostgreSQL Pharma v2 berjalan di 127.0.0.1:5544, terpisah dari Odoo. .env lokal sudah terisi; jangan menimpanya dengan .env.example.
 
-## Security Vulnerabilities
+```powershell
+cd "D:\Work & Organization\Work\Maxy Academy\Modules\Hackathon\anteraja-pharma-v2\server"
+& "D:\Work & Organization\Work\Maxy Academy\Modules\Backups\Pharma-v2-runtime\php84\php.exe" artisan serve --host=127.0.0.1 --port=8180
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Buka terminal kedua untuk client; ini masih frontend mock sampai integrator tim menyambungkan endpoint:
 
-## License
+```powershell
+cd "D:\Work & Organization\Work\Maxy Academy\Modules\Hackathon\anteraja-pharma-v2\client"
+npm install
+npm run dev
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Akun demo lokal
+
+| Email | Role | Password |
+| --- | --- | --- |
+| vendor@pharma.test | buyer/vendor penerima | PharmaVendor!2026 |
+| vendor.lain@pharma.test | buyer lain, tes isolasi | PharmaVendor!2026 |
+| admin@pharma.test | admin | PharmaAdmin!2026 |
+| checker@pharma.test | checker | PharmaChecker!2026 |
+| satria@pharma.test | courier | PharmaKurir!2026 |
+
+Password demo ditentukan di database/seeders/DatabaseSeeder.php. Seeder tidak mereset password akun existing. Jangan pakai akun demo di produksi.
+
+## Uji endpoint dengan PowerShell
+
+```powershell
+$api = 'http://127.0.0.1:8180/api/v1'
+$login = Invoke-RestMethod "$api/auth/login" -Method Post -ContentType 'application/json' -Body '{"email":"vendor@pharma.test","password":"PharmaVendor!2026"}'
+$headers = @{ Authorization = "Bearer $($login.token)"; Accept = 'application/json' }
+Invoke-RestMethod "$api/vendor/packages?category=all&per_page=20" -Headers $headers
+Invoke-WebRequest "$api/vendor/packages/export" -Headers $headers -OutFile "$env:TEMP\rekap-pharma.pdf"
+```
+
+## Tes dan format
+
+```powershell
+php artisan test --compact
+php vendor/bin/pint --dirty --format agent
+```
+
+Default tes memakai SQLite in-memory. Untuk uji PostgreSQL buat database terpisah berakhiran _test, jangan database aplikasi:
+
+```powershell
+$env:DB_CONNECTION='pgsql'
+$env:DB_DATABASE='pharma_v2_test'
+php artisan test --compact
+Remove-Item Env:DB_CONNECTION,Env:DB_DATABASE
+```
+
+## Kontrak dan branch
+
+Lihat [kontrak paket](docs/vendor-packages-api.md), [dashboard](docs/vendor-dashboard-api.md), dan [monitor](docs/vendor-monitor-api.md). Branch lokal bertahap: server/vendor-packages → server/vendor-dashboard → server/vendor-shipment-detail-monitor. Tiap branch berisi client dan server lengkap; branch berikutnya mewarisi fondasi branch sebelumnya. Merge berurutan, jangan hapus folder lain. Nama push server/vendor-* terblokir selama remote masih punya branch bernama server; jangan menghapus branch tim tanpa izin.
+
+Pada branch monitor, uji tab dengan GET /vendor/shipments/PHA-260104; telemetry/events/issues/reports tersedia sebagai endpoint terpisah. Backend vendor tidak memberi hak create shipment, pemeriksaan atau approval.
+
+Pengujian saat implementasi: SQLite in-memory dan PostgreSQL 12.4 lokal terpisah. Untuk deployment baru gunakan versi PostgreSQL yang masih mendapat dukungan. Tidak ada data Odoo yang dipakai atau diubah.
+
+.env diabaikan Git. OPENAI_API_KEY diisi privat dengan key baru setelah key yang terekspos dicabut; OPENAI_MODEL=gpt-4.1-mini sudah disiapkan. API baca vendor tidak memanggil OpenAI atau mengirim data farmasi ke provider AI.
+
+Panduan [Sanctum resmi](https://laravel.com/docs/13.x/sanctum) dipakai untuk instalasi dan autentikasi.
+
+## Enam modul courier
+
+Implementasi courier dibangun dari main 8080399 dengan membaca keenam branch client/courier-* dan dokumen di server/docs. Seluruh perubahan ada di server/. Client tetap milik tim; endpoint siap dipasang, bukan klaim frontend mock sudah tersambung.
+
+| Branch backend | Kontrak di docs | Fungsi utama |
+| --- | --- | --- |
+| server-courier-dashboard | [Dashboard](docs/courier-dashboard-api.md) | profil, metrik tugas sendiri, prioritas, sensor kosong/stale |
+| server-courier-incoming-task | [Tugas masuk](docs/courier-incoming-task-api.md) | detail, terima checklist, tolak beserta alasan |
+| server-courier-task-list | [Daftar tugas](docs/courier-task-list-api.md) | pencarian, tab status, pagination, hitungan global sendiri |
+| server-courier-delivery-monitor | [Monitor](docs/courier-delivery-monitor-api.md) | berangkat, tiba, ingest/history telemetry, hold suhu/sinyal |
+| server-courier-issue-report | [Kendala](docs/courier-issue-report-api.md) | kendala, foto privat, baca keputusan Admin, konfirmasi retur |
+| server-courier-handover-report | [Serah terima](docs/courier-handover-report-api.md) | POD, foto/tanda tangan privat, penutupan, PDF, ringkasan berbagi |
+
+Branch bertahap: merge dashboard → incoming-task → task-list → delivery-monitor → issue-report → handover-report. Branch terakhir memuat semua modul. Setiap branch tetap berisi struktur repo lengkap; bukan branch satu-folder. Nama server-courier-* dipakai karena branch tim bernama server memblokir namespace server/*. Jangan menghapus branch server.
+
+### Menjalankan dan mencoba courier
+
+Dari server/, sesudah setup PostgreSQL:
+
+```powershell
+php artisan migrate
+php artisan db:seed --class=CourierDemoSeeder
+php artisan serve --host=127.0.0.1 --port=8180
+```
+
+Di terminal kedua:
+
+```powershell
+php artisan schedule:work
+```
+
+Scheduler diperlukan untuk mendeteksi kehilangan sinyal >15 menit; pengecekan sekali: php artisan courier:check-signals. Tidak memanggil OpenAI. Seeder lokal tidak mereset tugas existing. PHA-COUR-001 sampai PHA-COUR-005 adalah fixture berlabel demo, bukan pemeriksaan/POD sungguhan.
+
+Login memakai satria@pharma.test / PharmaKurir!2026. Pakai token dari login sebagai Authorization: Bearer. Endpoint GET /courier/dashboard dan GET /courier/tasks hanya melihat kiriman yang courier_id-nya sesuai akun aktif.
+
+Alur normal: assigned → accept → accepted → depart → in_transit → arrive → arrived → handover → completed. Jangan menganggap accept sebagai berangkat. Retur memerlukan keputusan Admin nyata, kendala resolved, confirm-return, lalu handover mode return sehingga status returned.
+
+Mutasi mengirim request_id UUID; ulangi UUID dan payload yang sama untuk retry. Mutasi bisnis juga mengirim version terbaru; 409 berarti benturan versi/tahap/penugasan dan harus muat ulang. Telemetry tidak menggunakan version agar antrean offline tidak macet, tetapi setiap sampel tetap mempunyai UUID sendiri. Koordinat dan recorded_at divalidasi.
+
+Frontend integrator harus mengganti mock dengan API sesuai tabel, menangani 401/403/404/409/422/429, dan membaca data.workflow_status untuk tahap rinci. data.status pada kartu adalah kategori tab. Unduh foto/PDF melalui fetch dengan Bearer lalu Blob URL; jangan menaruh token di URL atau link publik. Backend tidak menjalankan GPS/BLE atau offline buffer di perangkat.
+
+Kiriman non-demo wajib punya approval Admin yang terkait inspeksi terbaru, checklist aman, suhu sesuai rentang dan foto inspeksi yang benar-benar ada. Bukti kurir disimpan terenkripsi di private storage; jangan menjalankan storage:link untuk membukanya. Simpan APP_KEY dan backup file privat dengan aman. Perlu persistent private storage pada deployment, bukan disk serverless sementara.
+
+Notifikasi yang dibuat masih outbox pending/queued. Tidak diklaim sampai ke HP tanpa integrasi provider. PDF aplikasi dan checksum bukan sertifikasi CDOB/CPOB, PDF/A, tanda tangan digital tersertifikasi, atau layanan QR publik. Endpoint Admin/Checker yang menulis approval/assignment/decision tetap tanggung jawab modul tim terkait.
+
+Hasil verifikasi: [backend-verification.md](docs/backend-verification.md). Pengujian tahap courier: 45 tes / 254 assertions lulus di SQLite dan PostgreSQL test terpisah. Hasil terbaru seluruh modul dicatat di docs/backend-verification.md.
+
+## Pembaruan lokal Admin, Checker dan Telegram
+
+Backend dibagi ke branch per fitur sesuai urutan pada docs/operations-api.md. Setiap branch memuat fondasi branch sebelumnya. Gabungkan bertahap; jangan menghapus folder client/server.
+
+- [Kontrak API dan pemetaan modul](docs/operations-api.md): sembilan modul client yang belum punya pasangan branch, field request, filter, status dan aturan transisi.
+- [Setup Telegram langsung dari Laravel](docs/telegram-setup.md): token privat, mapping Chat ID, worker, retry dan status pengiriman. Tidak memakai n8n.
+- Tidak menambah pemilih role di login, akun publik Admin, ataupun mode prototype baru. Role ditentukan akun di database. Simulator yang ada hanya boleh mengubah data demo di lingkungan yang diizinkan.
+- View frontend teman belum disambungkan ulang oleh perubahan ini. Jangan menganggap toast/data mock yang masih ada sebagai hasil API nyata.
+
+Sesudah mengambil perubahan server ini, jalankan php artisan migrate, kemudian server API dan scheduler di terminal terpisah. Jangan menjalankan migrate:fresh pada database aplikasi. Worker Telegram aman saat credential belum diisi: tidak mengirim request keluar.
+
+Di laptop Evan, API lokal berjalan di http://127.0.0.1:8180 dan frontend di http://127.0.0.1:5173. Frontend memerlukan Node >=24.12 atau >=22.18 sesuai manifest; Node sistem 22.14 terlalu lama. Runtime Node bundled yang dipakai untuk verifikasi ada di C:\Users\Evan\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe.

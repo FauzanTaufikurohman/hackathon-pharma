@@ -1,43 +1,27 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { mockAdminProfile } from '../../data/mockShipments'
+import { currentUser, logoutAndRedirect } from '../../services/auth'
 
 interface Props {
-  activeTab?: number | string
+  activeTab?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  activeTab: 1,
+  activeTab: 'shipments',
 })
-
-const emit = defineEmits<{
-  (e: 'tab-change', tab: number): void
-}>()
 
 const router = useRouter()
 
-const activeTabNum = computed<number>(() => {
-  if (typeof props.activeTab === 'number') {
-    return props.activeTab
-  }
-  if (props.activeTab === 'approval-qc-kurir') return 2
-  if (props.activeTab === 'live-monitor-kendala') return 3
-  if (props.activeTab === 'laporan-audit-log') return 4
-  return 1
-})
+const navigation = [
+  { label: 'Pengiriman', path: '/admin/manajemen-pengiriman', tab: 'shipments' },
+  { label: 'Persetujuan', path: '/admin/approval-qc-kurir', tab: 'approvals' },
+  { label: 'Pemantauan', path: '/admin/live-monitor-kendala', tab: 'monitor' },
+  { label: 'Laporan', path: '/admin/laporan-audit-log', tab: 'reports' },
+  { label: 'Pengguna', path: '/admin/pengguna', tab: 'users' },
+]
 
-const handleTabClick = (tab: number) => {
-  emit('tab-change', tab)
-  if (tab === 1) {
-    router.push('/admin/manajemen-pengiriman')
-  } else if (tab === 2) {
-    router.push('/admin/approval-qc-kurir')
-  } else if (tab === 3) {
-    router.push('/admin/live-monitor-kendala')
-  } else if (tab === 4) {
-    router.push('/admin/laporan-audit-log')
-  }
+async function handleLogout() {
+  await logoutAndRedirect(router)
 }
 </script>
 
