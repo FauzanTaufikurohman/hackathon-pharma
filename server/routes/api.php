@@ -1,6 +1,12 @@
 <?php
 
+use App\Http\Controllers\AdminApprovalsController;
+use App\Http\Controllers\AdminMonitorController;
+use App\Http\Controllers\AdminShipmentsController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CheckerHistoryController;
+use App\Http\Controllers\CheckerInspectionController;
+use App\Http\Controllers\CheckerQueueController;
 use App\Http\Controllers\CourierDashboardController;
 use App\Http\Controllers\CourierDeliveryController;
 use App\Http\Controllers\CourierHandoverController;
@@ -17,6 +23,28 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'throttle:vendor'])->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::get('/admin/shipments', [AdminShipmentsController::class, 'index']);
+        Route::post('/admin/shipments', [AdminShipmentsController::class, 'store']);
+        Route::get('/admin/lookups', [AdminShipmentsController::class, 'lookups']);
+        Route::get('/admin/metrics', [AdminShipmentsController::class, 'metrics']);
+        Route::get('/admin/shipments/export', [AdminShipmentsController::class, 'export']);
+        Route::get('/admin/shipments/{awb}', [AdminShipmentsController::class, 'show']);
+        Route::post('/admin/shipments/{awb}/approval', [AdminApprovalsController::class, 'approve']);
+        Route::post('/admin/shipments/{awb}/assign', [AdminApprovalsController::class, 'assign']);
+        Route::post('/admin/shipments/{awb}/recheck', [AdminApprovalsController::class, 'recheck']);
+        Route::post('/admin/shipments/{awb}/cancel', [AdminShipmentsController::class, 'cancel']);
+        Route::get('/admin/shipments/{awb}/inspection-photo', [AdminShipmentsController::class, 'inspectionPhoto'])->name('admin.inspection.photo');
+        Route::get('/admin/shipments/{awb}/telemetry', [AdminMonitorController::class, 'telemetry']);
+        Route::get('/admin/shipments/{awb}/prediction', [AdminMonitorController::class, 'prediction']);
+        Route::get('/admin/monitor', [AdminMonitorController::class, 'monitor']);
+        Route::get('/admin/issues', [AdminMonitorController::class, 'issues']);
+        Route::post('/admin/shipments/{awb}/issues/{issue}/decision', [AdminMonitorController::class, 'decide'])->whereNumber('issue');
+        Route::get('/admin/issues/{issue}/photo', [AdminMonitorController::class, 'issuePhoto'])->whereNumber('issue');
+        Route::get('/checker/queue', [CheckerQueueController::class, 'queue']);
+        Route::get('/checker/shipments/{awb}', [CheckerInspectionController::class, 'show']);
+        Route::post('/checker/shipments/{awb}/inspection', [CheckerInspectionController::class, 'submit']);
+        Route::get('/checker/history', [CheckerHistoryController::class, 'history']);
+        Route::get('/checker/inspections/{inspection}/photo', [CheckerInspectionController::class, 'photo'])->whereNumber('inspection')->name('checker.inspection.photo');
         Route::get('/courier/dashboard', [CourierDashboardController::class, 'show']);
         Route::get('/courier/tasks', [CourierTasksController::class, 'index']);
         Route::get('/courier/tasks/{awb}/handover', [CourierHandoverController::class, 'show']);

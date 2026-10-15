@@ -21,4 +21,9 @@ class Inspection extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function shipment(): BelongsTo
+    {
+        return $this->belongsTo(Shipment::class);
+    }
 }

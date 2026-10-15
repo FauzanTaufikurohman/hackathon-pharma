@@ -94,6 +94,10 @@ class CourierWorkflow
     public function notify(Shipment $shipment, ShipmentEvent $event, ?int $courierId = null): void
     {
         $ids = User::where('role', 'admin')->pluck('id')->push($shipment->buyer_id)->push($courierId ?? $shipment->courier_id)->filter()->unique();
+        if (in_array($shipment->status, ['created', 'inspection'], true) && $shipment->inspector_id) {
+            $ids->push($shipment->inspector_id);
+            $ids = $ids->unique();
+        }
         foreach ($ids as $id) {
             Message::firstOrCreate(['dedupe_key' => 'courier:'.$event->id.':'.$id], [
                 'shipment_id' => $shipment->id, 'user_id' => $id, 'subject' => $event->title,
