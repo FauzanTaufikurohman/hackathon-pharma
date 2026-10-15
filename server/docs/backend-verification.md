@@ -139,3 +139,17 @@ Branch server-telegram-report-attachments menambah relasi pesan/laporan, distrib
 - Token hanya tersimpan di .env yang diabaikan Git; token yang pernah dibagikan harus diganti melalui BotFather. PHP lokal memakai CA bundle tepercaya; tidak menonaktifkan verifikasi TLS.
 
 Pengiriman antrean operasional masih nonaktif sampai akun penerima dipetakan secara eksplisit. Belum ada bukti distribusi laporan operasional ke seluruh role di HP. Generator laporan analisis AI belum terintegrasi; PDF saat ini bersumber dari snapshot data aplikasi. Lihat [panduan Telegram](telegram-setup.md).
+
+## Rekonsiliasi main dan frontend tim — 15 Oktober 2026
+
+Basis remote yang diselaraskan adalah main 4e18177, configuration 70582c3, header-update 2feb899, dan footer-update 7b26468. Resolusi lokal mempertahankan kontrak API nyata, sesi Sanctum yang dipulihkan melalui auth/me, serta logo dan navigasi layanan terbaru. Tampilan aktif tidak memakai fallback ke paket demo lain atau klaim sertifikat/AI yang belum terintegrasi.
+
+- PHPUnit SQLite: 79 tes / 491 assertions, lulus.
+- PHPUnit PostgreSQL pharma_v2_test: 79 tes / 491 assertions, lulus.
+- Seluruh 135 template Vue dan pemeriksaan TypeScript lulus; build produksi Vite lulus.
+- Login UI Admin, Checker, Kurir, dan Vendor diuji dengan akun lokal. Endpoint utama masing-masing merespons 200; Vendor ditolak dengan 403 saat meminta endpoint Admin.
+- Refresh/deep link monitor mempertahankan sesi yang diverifikasi server. Resi yang tidak ditemukan menampilkan error tanpa paket pengganti. Error UI 401/403/404/5xx tidak menampilkan detail model/SQL server.
+- Viewport 375/768/1440 pada halaman yang diuji tidak overflow. Menu mobile membuka navigasi; Escape menutup dan mengembalikan fokus. Pembaruan background tidak menyisipkan banner loading yang menggeser kartu yang sudah terisi.
+- CORS diuji untuk origin Vercel yang diizinkan, origin asing, dan metode di luar whitelist. Tidak menonaktifkan TLS atau mengganti proteksi Bearer.
+
+Struktur utama tetap client/ dan server/; tidak menambah dependency. client/vercel.json adalah konfigurasi fallback SPA, bukan backend PHP. Alamat tunnel produksi terbaru tim tetap dipertahankan sebagai konfigurasi demo dan dapat di-override melalui environment hosting. Deployment, scheduler, pemetaan Telegram, dan migrasi pada komputer lain tetap harus dikonfigurasi; hasil lokal ini bukan jaminan semua layanan eksternal selalu tersedia.

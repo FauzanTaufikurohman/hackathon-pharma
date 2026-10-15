@@ -70,8 +70,40 @@ const menus = {
     { path: '/paket-saya', name: 'vendor-packages', label: 'Paket saya' },
   ],
 }
-const links = computed(() => menus[props.role])
-const home = computed(() => links.value[0]!.path)
+type NavigationLink = {
+  path: string
+  name: string
+  label: string
+  screen?: number
+}
+const links = computed<NavigationLink[]>(() => {
+  if (
+    props.role === 'vendor' &&
+    route.name === 'vendor-monitor' &&
+    typeof route.params.awb === 'string'
+  ) {
+    return ['Halaman Pantau', 'Pelacakan GPS', 'Laporan'].map(
+      (label, index) => ({
+        name: 'vendor-monitor',
+        label,
+        screen: index + 1,
+        path: router.resolve({
+          name: 'vendor-monitor',
+          params: { awb: route.params.awb },
+          query: { screen: String(index + 1) },
+        }).href,
+      }),
+    )
+  }
+  return menus[props.role]
+})
+const home = computed(() => menus[props.role][0]!.path)
+function isActive(link: NavigationLink) {
+  const screen = [1, 2, 3].includes(Number(route.query.screen))
+    ? Number(route.query.screen)
+    : 1
+  return route.name === link.name && (!link.screen || link.screen === screen)
+}
 const facilityName = computed(() => {
   const name = currentUser.value?.facility?.name
   return typeof name === 'string' && name.trim()
@@ -101,7 +133,7 @@ async function signOut() {
         aria-label="Beranda Anteraja Pharma"
         class="col-start-1 row-start-1 shrink-0 rounded focus-visible:outline-2 focus-visible:outline-primary"
         ><img
-          src="/pharma-logo.webp"
+          src="/images/anteraja-pharma-logo.png"
           alt="Anteraja Pharma"
           width="110"
           height="45"
@@ -120,11 +152,11 @@ async function signOut() {
           :to="link.path"
           class="live-button whitespace-nowrap border-transparent rounded-full font-semibold"
           :class="
-            route.name === link.name
+            isActive(link)
               ? 'bg-primary/10 text-primary'
               : 'text-on-surface-variant'
           "
-          :aria-current="route.name === link.name ? 'page' : undefined"
+          :aria-current="isActive(link) ? 'page' : undefined"
           >{{ link.label }}</RouterLink
         >
       </nav>

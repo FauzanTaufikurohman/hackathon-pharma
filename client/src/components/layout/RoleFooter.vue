@@ -55,7 +55,7 @@ const links = computed(() => {
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         <div class="flex flex-col items-start gap-4">
           <img
-            src="/pharma-logo.webp"
+            src="/images/anteraja-pharma-logo.png"
             alt="Anteraja Pharma"
             width="110"
             height="45"

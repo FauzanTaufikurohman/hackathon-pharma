@@ -41,7 +41,9 @@ npm run dev
 
 ## Konfigurasi hosting tim
 
-Frontend Vercel memakai Root Directory client dan client/vercel.json untuk fallback route Vue Router. Isi VITE_API_BASE_URL pada environment hosting dengan URL HTTPS backend yang benar dan suffix /api/v1 sebelum build. Default /api/v1 hanya bekerja jika host menyediakan reverse proxy API; file fallback SPA tidak menjalankan Laravel atau mem-proxy API.
+Frontend Vercel memakai Root Directory client dan client/vercel.json untuk fallback route Vue Router. client/.env.production mempertahankan URL tunnel demo terbaru tim dari main 4e18177 agar konfigurasi demo tidak hilang. Tunnel itu tetap membutuhkan backend dan proses tunnel yang hidup; bukan hosting permanen.
+
+Untuk backend tetap, isi VITE_API_BASE_URL pada environment hosting dengan URL HTTPS backend yang benar dan suffix /api/v1 sebelum build. Jika memakai /api/v1 relatif, host harus menyediakan reverse proxy API; file fallback SPA tidak menjalankan Laravel atau mem-proxy API. Proxy Vite lokal tetap menuju API_PROXY_TARGET atau 127.0.0.1:8000, tidak memakai tunnel produksi secara diam-diam.
 
 Pada backend, isi APP_URL dengan URL backend dan FRONTEND_URL dengan origin frontend. CORS_ALLOWED_ORIGINS dapat berisi origin tambahan dipisahkan koma tanpa slash penutup. Jalankan php artisan config:clear setelah mengubah .env. Jangan mematikan TLS, memakai wildcard credential CORS, atau menganggap tunnel trycloudflare sementara sebagai alamat server permanen.
 
