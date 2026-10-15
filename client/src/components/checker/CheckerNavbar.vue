@@ -39,13 +39,8 @@ const handleTabClick = (tab: number) => {
       <!-- Left: Brand Logo & Role Pill -->
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-3">
-          <router-link to="/checker" class="flex items-center group cursor-pointer">
-            <span class="font-headline-lg text-headline-lg text-primary tracking-tight font-extrabold group-hover:scale-105 transition-transform">
-              Anteraja
-            </span>
-            <span class="font-headline-sm text-headline-sm text-secondary ml-1 font-bold">
-              Pharma
-            </span>
+          <router-link to="/checker" aria-label="Beranda Anteraja Pharma" class="inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+            <img src="/pharma-logo.webp" alt="Anteraja Pharma" width="110" height="45" class="h-10 w-auto shrink-0 object-contain mix-blend-multiply" />
           </router-link>
 
           <div class="h-6 w-px bg-surface-container-high hidden sm:block"></div>

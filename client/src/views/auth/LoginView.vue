@@ -47,7 +47,7 @@ async function handleLogin() {
   <main class="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-10">
     <section class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">
       <div class="mb-8">
-        <p class="text-sm font-bold uppercase tracking-widest text-primary">Anteraja Pharma</p>
+        <img src="/pharma-logo.webp" alt="Anteraja Pharma" width="147" height="60" class="h-16 w-40 max-w-full object-contain object-left" />
         <h1 class="mt-3 text-2xl font-bold tracking-tight text-slate-900">Masuk ke akun</h1>
         <p class="mt-2 text-sm text-slate-600">Gunakan akun operasional Anda untuk melanjutkan.</p>
       </div>

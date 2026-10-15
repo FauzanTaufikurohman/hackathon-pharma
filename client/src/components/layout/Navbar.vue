@@ -29,14 +29,8 @@ function handleLogout() {
       <!-- Left: Brand Logo & Navigation -->
       <div class="flex items-center gap-space-md lg:gap-space-lg">
         <!-- Logo -->
-        <router-link to="/" class="flex items-center gap-2.5 group">
-          <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm group-hover:scale-105 transition-transform">
-            <span class="material-symbols-outlined text-[20px]">ac_unit</span>
-          </div>
-          <div class="flex flex-col">
-            <span class="font-headline-sm text-[16px] font-bold text-on-surface leading-none tracking-tight">anteraja</span>
-            <span class="font-label-sm text-[10px] text-primary uppercase tracking-wider font-extrabold mt-0.5">Pharma Cold-Chain</span>
-          </div>
+        <router-link to="/" aria-label="Beranda Anteraja Pharma" class="inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+          <img src="/pharma-logo.webp" alt="Anteraja Pharma" width="110" height="45" class="h-10 w-auto shrink-0 object-contain mix-blend-multiply" />
         </router-link>
 
         <!-- Navigation Tabs -->
