@@ -10,11 +10,12 @@ const route = useRoute()
 const isCourier = computed(() => route.path.startsWith('/courier') || route.path.startsWith('/kurir'))
 const isChecker = computed(() => route.path.startsWith('/checker') || route.path.startsWith('/pemeriksa'))
 const isAdmin = computed(() => route.path.startsWith('/admin'))
+const isCourierDetail = computed(() => route.name === 'courier-task-detail' || route.path.includes('/courier/tugas/') || route.path.includes('/kurir/tugas/'))
 </script>
 
 <template>
-  <!-- Checker & Admin Dedicated Portal Layouts -->
-  <div v-if="isChecker || isAdmin" class="min-h-screen bg-surface font-sans text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+  <!-- Checker, Admin, & Dedicated Detail Portal Layouts -->
+  <div v-if="isChecker || isAdmin || isCourierDetail" class="min-h-screen bg-surface font-sans text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
     <router-view />
   </div>
 
@@ -31,7 +32,7 @@ const isAdmin = computed(() => route.path.startsWith('/admin'))
     <!-- Main Content Area with Top Padding for fixed Navbar -->
     <main
       class="w-full flex-1"
-      :class="isCourier ? 'pt-20 bg-[#F8FAFC]' : 'pt-16 bg-surface'"
+      :class="isCourier ? 'pt-20 bg-[#F8FAFC]' : 'pt-20 bg-surface'"
     >
       <div
         :class="isCourier ? 'max-w-6xl mx-auto px-4 sm:px-6 py-8' : 'max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-space-xl'"

@@ -98,7 +98,7 @@ function handleDispatch(params: { courierId: string; notifyBot: boolean; enableB
     <AdminNavbar active-tab="approval-qc-kurir" />
 
     <!-- Main Content Container -->
-    <main class="w-full max-w-7xl mx-auto px-6 py-8 flex-1 bg-surface">
+    <main class="w-full max-w-7xl mx-auto px-6 pt-24 pb-8 flex-1 bg-surface">
       <div class="flex flex-col w-full">
         <!-- Top Section Header -->
         <AdminApprovalsHeader :queue-count="shipments.length" />

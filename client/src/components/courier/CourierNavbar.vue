@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { mockCourierProfile } from '../../data/mockShipments'
 
 const route = useRoute()
-const router = useRouter()
-const showNotifications = ref(false)
 
 const emit = defineEmits<{
   (e: 'notify-click'): void
@@ -13,56 +10,66 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 w-full z-50 bg-white border-b border-slate-100 shadow-xs">
-    <div class="h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-      <!-- Left: Logo & Role Pill -->
-      <div class="flex items-center gap-3 shrink-0">
-        <router-link to="/courier" class="flex items-center gap-2 group">
-          <span class="font-headline-md font-bold tracking-tight text-on-surface flex items-center gap-1.5">
-            <span class="text-primary-container font-extrabold group-hover:scale-105 transition-transform">anteraja</span>
-            <span class="font-medium text-slate-700">pharma</span>
-          </span>
-          <span class="px-2 py-0.5 rounded-full border border-pink-200 bg-pink-50 text-[10px] font-bold text-primary-container tracking-wider uppercase">
-            Satria Pharma
-          </span>
-        </router-link>
-      </div>
-
-      <!-- Center: 2 Navigations (Beranda & Tugas Saya / Kurir) -->
-      <nav class="hidden md:flex items-center p-1 bg-slate-50/80 rounded-full border border-slate-100">
-        <!-- Nav 1: Beranda -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-surface-container/40">
+    <div class="h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-space-md">
+      <!-- Left: Logo, Role Badge & Navigation Tabs -->
+      <div class="flex items-center gap-space-md lg:gap-space-lg">
+        <!-- Brand Logo -->
         <router-link
           to="/courier"
-          class="transition-all px-6 py-2.5 rounded-full text-label-md font-semibold cursor-pointer"
-          :class="route.path === '/courier' || route.path === '/courier/beranda'
-            ? 'bg-[#FCE7F3] text-primary-container font-bold shadow-2xs'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'"
+          class="flex items-center gap-space-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg group shrink-0"
+          title="Portal Satria Pharma"
         >
-          Beranda
+          <img
+            alt="Anteraja Pharma"
+            class="h-9 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
+            src="/images/anteraja-pharma-logo.png"
+          />
         </router-link>
 
-        <!-- Nav 2: Tugas Saya -->
-        <router-link
-          to="/courier/tugas-saya"
-          class="transition-all px-6 py-2.5 rounded-full text-label-md font-semibold cursor-pointer"
-          :class="route.path.startsWith('/courier/tugas-saya')
-            ? 'bg-[#FCE7F3] text-primary-container font-bold shadow-2xs'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'"
-        >
-          Tugas Saya
-        </router-link>
-      </nav>
+        <!-- Role Badge -->
+        <span class="hidden sm:inline-flex bg-inverse-surface text-inverse-on-surface font-label-sm text-label-sm px-2.5 py-1 rounded-full uppercase tracking-widest items-center gap-1.5 shadow-sm font-bold">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span>
+          SATRIA PHARMA
+        </span>
 
-      <!-- Right: Courier Duty Chip & Profile -->
-      <div class="flex items-center gap-4 shrink-0">
+        <!-- Navigation Tabs -->
+        <nav class="flex items-center gap-space-xs sm:gap-space-sm pl-2">
+          <!-- Nav 1: Beranda -->
+          <router-link
+            to="/courier"
+            class="font-label-lg text-label-lg transition-colors py-2 px-3.5 sm:px-4 rounded-full"
+            :class="route.path === '/courier' || route.path === '/courier/beranda'
+              ? 'text-primary font-bold bg-primary-fixed/40 shadow-2xs'
+              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
+          >
+            Beranda
+          </router-link>
+
+          <!-- Nav 2: Tugas Saya -->
+          <router-link
+            to="/courier/tugas-saya"
+            class="font-label-lg text-label-lg transition-colors py-2 px-3.5 sm:px-4 rounded-full"
+            :class="route.path.startsWith('/courier/tugas')
+              ? 'text-primary font-bold bg-primary-fixed/40 shadow-2xs'
+              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
+          >
+            Tugas Saya
+          </router-link>
+        </nav>
+      </div>
+
+      <!-- Right: Courier Duty Chip, Notification & Profile -->
+      <div class="flex items-center gap-3 sm:gap-4 shrink-0">
         <!-- Duty Status Tag -->
-        <div class="flex items-center gap-2.5 py-1 px-3 rounded-full bg-slate-50 border border-slate-100 shadow-2xs">
+        <div class="flex items-center gap-2 py-1.5 px-3 rounded-full bg-surface-container-low border border-surface-container shadow-2xs">
           <span class="relative flex h-2.5 w-2.5">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-secondary"></span>
           </span>
-          <span class="font-label-md text-slate-700 font-medium hidden sm:inline-block">
-            {{ mockCourierProfile.name }} <span class="text-slate-400 font-normal">• {{ mockCourierProfile.role_label }}</span>
+          <span class="font-label-md text-on-surface font-bold hidden sm:inline-block">
+            {{ mockCourierProfile.name }}
+            <span class="text-on-surface-variant font-normal">• {{ mockCourierProfile.role_label }}</span>
           </span>
         </div>
 
@@ -71,27 +78,40 @@ const emit = defineEmits<{
           type="button"
           aria-label="Notifications"
           @click="emit('notify-click')"
-          class="relative p-2 text-slate-500 hover:text-slate-800 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+          class="relative p-2 text-on-surface-variant hover:text-on-surface rounded-full hover:bg-surface-container transition-colors cursor-pointer"
         >
           <span class="material-symbols-outlined text-[20px]">notifications</span>
-          <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary-container"></span>
+          <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary animate-pulse"></span>
         </button>
 
         <!-- Profile Avatar -->
-        <img
-          alt="Profile Satria"
-          class="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200 shadow-2xs"
-          src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
-        />
+        <div class="relative shrink-0">
+          <img
+            alt="Profile Satria"
+            class="w-9 h-9 rounded-full object-cover ring-2 ring-primary/20 shadow-xs"
+            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+          />
+        </div>
 
-        <!-- Switch Role / Keluar -->
-        <router-link
-          to="/"
-          class="font-label-md text-slate-400 hover:text-primary-container transition-colors pl-1 cursor-pointer font-medium"
-          title="Beralih ke Portal Faskes"
-        >
-          Keluar
-        </router-link>
+        <!-- Role Switcher -->
+        <div class="hidden lg:flex items-center gap-1.5 pl-2 border-l border-surface-container-high">
+          <router-link
+            to="/"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-primary font-label-sm text-[11px] font-semibold transition-all border border-surface-container"
+            title="Beralih ke Portal Faskes"
+          >
+            <span class="material-symbols-outlined text-[14px]">local_hospital</span>
+            <span>Faskes</span>
+          </router-link>
+          <router-link
+            to="/admin"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-primary font-label-sm text-[11px] font-semibold transition-all border border-surface-container"
+            title="Beralih ke Portal Admin"
+          >
+            <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+            <span>Admin</span>
+          </router-link>
+        </div>
       </div>
     </div>
   </header>
