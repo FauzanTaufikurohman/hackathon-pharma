@@ -19,7 +19,9 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0",
       proxy: {
         "/api": {
-          target: env.API_PROXY_TARGET || "http://127.0.0.1:8000",
+          target:
+            env.API_PROXY_TARGET ||
+            "https://naturals-class-acknowledge-yield.trycloudflare.com",
           changeOrigin: true,
         },
       },
