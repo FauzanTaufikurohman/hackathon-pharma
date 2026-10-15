@@ -125,4 +125,17 @@ Data, koordinat, nama penerima, dan gambar kecil pada resi PHA-UI-20261015-1228 
 
 Empat tes tambahan pengelolaan pengguna meliputi isolasi Admin, password hash, kapasitas kurir, email unik, pencabutan token, konflik data akses, akun sendiri, dan akun dengan kiriman aktif. Satu tes tambahan capability simulator membatasi panel demo menurut role, status, dan is_demo. Pemeriksaan template menangkap handler inline multi-statement yang dapat rusak setelah formatting; handler tersebut sekarang berupa fungsi bernama.
 
-Pengujian ini bukan jaminan semua kombinasi perangkat, beban produksi, atau gangguan jaringan bebas bug. Telegram menggunakan mock pada tes provider dan belum dibuktikan sampai HP. OCR/AI Vision, BLE otomatis, PDF/A dan sertifikasi regulatory bukan hasil integrasi ini. Peta memakai koordinat sampel, bukan bukti posisi fisik kurir terverifikasi.
+Pengujian ini bukan jaminan semua kombinasi perangkat, beban produksi, atau gangguan jaringan bebas bug. Pada tahap integrasi frontend di atas, Telegram masih menggunakan mock pada tes provider. Hasil uji koneksi Telegram sesudahnya dicatat di bagian berikut. OCR/AI Vision, BLE otomatis, PDF/A dan sertifikasi regulatory bukan hasil integrasi ini. Peta memakai koordinat sampel, bukan bukti posisi fisik kurir terverifikasi.
+
+## Lampiran Telegram — 15 Oktober 2026
+
+Branch server-telegram-report-attachments menambah relasi pesan/laporan, distribusi PDF otomatis setelah penerbitan laporan, dan command pemeriksaan/pemetaan bot. Semua perubahan fitur baru berada di server/; tidak menambah folder dasar atau mengubah PRD/FRD/flowchart.
+
+- PHPUnit SQLite: 77 tes, 484 assertions, lulus.
+- PHPUnit PostgreSQL pharma_v2_test: 77 tes, 484 assertions, lulus.
+- Pint --dirty: lulus. Migrasi tambahan messages diterapkan pada database lokal tanpa menghapus data lama.
+- Tes mencakup PDF multipart asli, checksum file/snapshot, dedupe, antrean legacy, laporan kiriman lain, akses penerima dicabut, data demo, rate limit, timeout, ACK dokumen tidak lengkap, dan HTTP 5xx.
+- Bot @CSAnterajaPharmabot berhasil diverifikasi melalui getMe. Satu /start pribadi diterima dan satu PDF diagnostik tanpa data kiriman diterima provider melalui sendDocument (message_id 2). ACK ini membuktikan penerimaan provider, bukan bahwa penerima telah membuka file.
+- Token hanya tersimpan di .env yang diabaikan Git; token yang pernah dibagikan harus diganti melalui BotFather. PHP lokal memakai CA bundle tepercaya; tidak menonaktifkan verifikasi TLS.
+
+Pengiriman antrean operasional masih nonaktif sampai akun penerima dipetakan secara eksplisit. Belum ada bukti distribusi laporan operasional ke seluruh role di HP. Generator laporan analisis AI belum terintegrasi; PDF saat ini bersumber dari snapshot data aplikasi. Lihat [panduan Telegram](telegram-setup.md).
