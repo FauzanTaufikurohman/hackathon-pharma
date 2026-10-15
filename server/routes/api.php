@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminApprovalsController;
 use App\Http\Controllers\AdminMonitorController;
+use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AdminShipmentsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckerHistoryController;
@@ -40,6 +41,15 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/issues', [AdminMonitorController::class, 'issues']);
         Route::post('/admin/shipments/{awb}/issues/{issue}/decision', [AdminMonitorController::class, 'decide'])->whereNumber('issue');
         Route::get('/admin/issues/{issue}/photo', [AdminMonitorController::class, 'issuePhoto'])->whereNumber('issue');
+        Route::get('/admin/reports', [AdminReportsController::class, 'reports']);
+        Route::get('/admin/reports/daily', [AdminReportsController::class, 'daily']);
+        Route::get('/admin/reports/{report}/download', [AdminReportsController::class, 'downloadReport'])->whereNumber('report');
+        Route::post('/admin/reports/{report}/distribute', [AdminReportsController::class, 'reportDistribution'])->whereNumber('report');
+        Route::get('/admin/events', [AdminReportsController::class, 'events']);
+        Route::get('/admin/notifications', [AdminReportsController::class, 'notifications']);
+        Route::post('/admin/notifications/{message}/retry', [AdminReportsController::class, 'retryNotification'])->whereNumber('message');
+        Route::put('/admin/users/{user}/telegram', [AdminReportsController::class, 'telegramRecipient'])->whereNumber('user');
+        Route::post('/admin/shipments/{awb}/simulate', [AdminReportsController::class, 'simulate']);
         Route::get('/checker/queue', [CheckerQueueController::class, 'queue']);
         Route::get('/checker/shipments/{awb}', [CheckerInspectionController::class, 'show']);
         Route::post('/checker/shipments/{awb}/inspection', [CheckerInspectionController::class, 'submit']);
