@@ -9,11 +9,12 @@ import CourierFooter from './components/courier/CourierFooter.vue'
 const route = useRoute()
 const isCourier = computed(() => route.path.startsWith('/courier') || route.path.startsWith('/kurir'))
 const isChecker = computed(() => route.path.startsWith('/checker') || route.path.startsWith('/pemeriksa'))
+const isAdmin = computed(() => route.path.startsWith('/admin'))
 </script>
 
 <template>
-  <!-- Checker Role Layout -->
-  <div v-if="isChecker" class="min-h-screen bg-surface font-sans text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+  <!-- Checker & Admin Dedicated Portal Layouts -->
+  <div v-if="isChecker || isAdmin" class="min-h-screen bg-surface font-sans text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
     <router-view />
   </div>
 
