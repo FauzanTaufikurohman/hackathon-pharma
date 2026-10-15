@@ -10,6 +10,7 @@ interface ManagedUser {
   email: string
   role: string
   is_active: boolean
+  telegram_configured: boolean
   courier_profile: { capacity_kg?: number } | null
 }
 interface Directory {
@@ -102,8 +103,10 @@ async function telegram(user: ManagedUser) {
       { chat_id: chat },
       'PUT',
     )
-  )
+  ) {
     chatIds.value[user.id] = ''
+    await users.reload()
+  }
 }
 function chooseRole(event: Event, user: ManagedUser) {
   const select = event.target as HTMLSelectElement
@@ -237,6 +240,9 @@ function submitSearch() {
             <p class="mt-2 break-all">{{ user.email }}</p>
             <p class="mt-2">
               {{ user.role }} · {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
+            </p>
+            <p class="mt-2 text-on-surface-variant">
+              Telegram: {{ user.telegram_configured ? 'sudah dipetakan' : 'belum dipetakan' }}
             </p>
           </div>
           <div class="flex flex-wrap gap-3 items-start">

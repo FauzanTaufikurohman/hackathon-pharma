@@ -22,15 +22,15 @@ Jalankan command berikut dari folder `server/` dengan PHP yang memiliki extensio
    php artisan telegram:check
    ```
 
-3. Penerima membuka bot dan menekan **Start**. Bot notifikasi ini tidak membalas /start otomatis. Periksa Chat ID pribadi yang mengirim /start:
+3. Jalankan scheduler sebelum buyer menghubungkan akun. Buyer masuk ke portal penerima, pilih **Buat tautan Telegram**, lalu buka tautan sebelum 15 menit dan tekan **Start** pada bot. Chat ID dikirim langsung oleh Telegram dan dipetakan ke akun buyer yang sedang login; buyer tidak perlu memberikan nomor telepon atau Chat ID. Tautan hanya berlaku sekali.
 
    ```powershell
-   php artisan telegram:check --starts
+   php artisan schedule:work
    ```
 
-   Command ini tidak menghubungkan akun secara otomatis, tidak menghapus update, dan tidak menampilkan isi percakapan. Jangan jalankan bersamaan dengan poller/webhook bot lain. Telegram hanya menyimpan update sementara; tekan /start lagi jika update lama sudah tidak tersedia.
+   Scheduler memproses tautan /start tiap menit. Untuk memproses langsung saat uji coba, jalankan `php artisan telegram:link-sync`. Poller ini menggunakan `getUpdates`; jangan aktifkan webhook atau poller lain untuk bot yang sama. `telegram:check --starts` hanya untuk inspeksi manual saat poller dihentikan. Biarkan scheduler berjalan sampai Chat ID berstatus terhubung di portal.
 
-4. Dengan izin penerima, petakan Chat ID ke email akun aplikasi yang benar. Ganti email dan angka contoh berikut:
+4. Pemetaan manual oleh Admin tetap tersedia bila dibutuhkan. Ganti email dan Chat ID pribadi yang sudah opt-in:
 
    ```powershell
    php artisan telegram:link admin@pharma.test 123456789
@@ -46,7 +46,7 @@ Jalankan command berikut dari folder `server/` dengan PHP yang memiliki extensio
 
    Command memerlukan konfirmasi eksplisit. Setelah timeout, periksa HP sebelum mengulang agar tidak menghasilkan duplikat.
 
-6. Pastikan mapping dan penerima sudah benar. Ubah `TELEGRAM_ENABLED=true`, jalankan `php artisan config:clear`, lalu jalankan worker:
+6. Setelah mapping dan penerima sudah benar, ubah `TELEGRAM_ENABLED=true` dan jalankan `php artisan config:clear`. Scheduler yang sudah berjalan akan mengirim antrean:
 
    ```powershell
    php artisan schedule:work
@@ -64,11 +64,13 @@ Jalankan command berikut dari folder `server/` dengan PHP yang memiliki extensio
 
 Selesaikan serah terima melalui alur kurir. Saat laporan terbit, aplikasi otomatis mengantrekan PDF kepada Admin aktif, pemilik kiriman, dan kurir terkait. Admin dapat mengantrekan kembali laporan yang belum pernah didistribusikan lewat `POST /api/v1/admin/reports/{report}/distribute`; dedupe mencegah pengiriman ulang laporan yang sudah sent.
 
+Sebelum laporan pertama terbit, Admin dapat menambahkan catatan operasional pada detail kiriman yang sudah selesai. Catatan masuk ke linimasa audit dan snapshot PDF. Setelah laporan terbit, endpoint catatan menolak perubahan; snapshot/checksum revisi lama tidak dimutasi. Rekomendasi suhu AI merupakan alur terpisah untuk ditinjau operator dan tidak otomatis dimasukkan ke laporan.
+
 Notifikasi status biasa memakai `sendMessage`. Pesan laporan memakai `sendDocument` dengan upload PDF multipart, caption, dan tautan aplikasi sesuai role. Telegram tidak perlu mengakses endpoint privat, Bearer token, atau storage laptop.
 
 Worker memeriksa kecocokan shipment, checksum snapshot, status demo, dan akses penerima terkini sebelum mengunggah. Batas aplikasi adalah 10 MiB per PDF; caption dibatasi 1.000 karakter. Kolom `shipment_report_id` mengikat pesan ke revisi laporan, sedangkan `attachment_sha256` mencatat checksum file yang diunggah. Pesan laporan lama yang belum punya kolom relasi dikenali dari dedupe key valid.
 
-Laporan saat ini adalah rangkuman data aplikasi, **bukan hasil analisis AI**. Generator analisis AI belum terintegrasi. Jangan menyebut laporan sebagai keluaran AI, diagnosis, sertifikat CDOB/CPOB, atau PDF/A tersertifikasi. PDF juga dapat memuat informasi penerima; kirim hanya kepada pihak yang berhak.
+Laporan saat ini adalah rangkuman data aplikasi, **bukan hasil analisis AI**. Rekomendasi suhu AI yang tersedia untuk operator tidak mengendalikan perangkat dan bukan keputusan mutu/medis; rekomendasi itu tidak otomatis dimasukkan ke PDF. Jangan menyebut laporan sebagai keluaran AI, diagnosis, sertifikat CDOB/CPOB, atau PDF/A tersertifikasi. PDF juga dapat memuat informasi penerima; kirim hanya kepada pihak yang berhak.
 
 ## Periksa hasil dan masalah koneksi
 
@@ -77,7 +79,7 @@ Laporan saat ini adalah rangkuman data aplikasi, **bukan hasil analisis AI**. Ge
 | pending / processing | Tunggu worker; ini belum bukti terkirim. |
 | sent | Telegram mengembalikan message_id dan, untuk PDF, document.file_id. Periksa HP; ACK bukan bukti dibaca. |
 | retry | HTTP 429: tunggu next_attempt_at; maksimal lima percobaan. |
-| unconfigured | Periksa akun aktif dan mapping Chat ID. |
+| unconfigured | Buyer dapat menghubungkan Telegram dari portal; pesan yang gagal karena mapping belum ada akan otomatis masuk antrean lagi setelah terhubung. |
 | skipped_demo | Kiriman atau laporan demo sengaja tidak dikirim keluar. |
 | uncertain | Timeout, HTTP 5xx, ACK tidak lengkap, atau worker terhenti. Periksa HP dahulu; tidak otomatis mengulang. |
 | failed | Periksa error_code: akses dicabut, checksum tidak cocok, ukuran PDF, atau penolakan provider. |

@@ -50,13 +50,13 @@ class OperationsWorkflow
         return array_map(fn ($item) => $this->canonical($item), $value);
     }
 
-    public function perform(User $actor, string $role, ?string $awb, string $action, array $data, Closure $operation): array
+    public function perform(User $actor, string $role, ?string $awb, string $action, array $data, Closure $operation, bool $allowTerminal = false): array
     {
         $this->authorize($actor, $role);
         $action = $role.':'.$action;
         $hash = hash('sha256', json_encode($this->canonical(['awb' => $awb, 'action' => $action, 'data' => $data]), JSON_THROW_ON_ERROR));
         try {
-            return DB::transaction(function () use ($actor, $role, $awb, $action, $data, $hash, $operation) {
+            return DB::transaction(function () use ($actor, $role, $awb, $action, $data, $hash, $operation, $allowTerminal) {
                 $fresh = User::whereKey($actor->id)->lockForUpdate()->firstOrFail();
                 abort_unless($fresh->role === $role && $fresh->is_active, 403);
                 $receipt = CourierActionReceipt::where('request_id', $data['request_id'])->first();
@@ -68,7 +68,7 @@ class OperationsWorkflow
                 $shipment = $awb === null ? null : $this->visible($actor, $role)->where('tracking_number', $awb)->lockForUpdate()->firstOrFail();
                 if ($shipment) {
                     abort_unless($shipment->version === (int) $data['version'], 409, 'Data kiriman berubah. Muat ulang terlebih dahulu.');
-                    abort_if(in_array($shipment->status, ['completed', 'delivered', 'returned', 'cancelled'], true), 409, 'Kiriman sudah ditutup dan tidak dapat diubah.');
+                    abort_if(! $allowTerminal && in_array($shipment->status, ['completed', 'delivered', 'returned', 'cancelled'], true), 409, 'Kiriman sudah ditutup dan tidak dapat diubah.');
                 }
                 $result = $operation($shipment, $fresh);
                 CourierActionReceipt::create(['request_id' => $data['request_id'], 'user_id' => $actor->id,

@@ -2,6 +2,7 @@
 
 use App\CourierTelemetryService;
 use App\Models\User;
+use App\TelegramLinkService;
 use App\TelegramOutbox;
 use App\VendorReportService;
 use Illuminate\Foundation\Inspiring;
@@ -22,6 +23,20 @@ Artisan::command('telegram:dispatch {--limit=20}', function () {
 })->purpose('Send queued Telegram messages without n8n');
 
 Schedule::command('telegram:dispatch --limit=5')->name('telegram-outbox')->everyMinute()->withoutOverlapping()->runInBackground();
+Schedule::command('telegram:link-sync')->name('telegram-link-sync')->everyMinute()->withoutOverlapping()->runInBackground()
+    ->when(fn () => filled(config('services.telegram.bot_token')));
+
+Artisan::command('telegram:link-sync', function () {
+    $result = app(TelegramLinkService::class)->syncUpdates();
+    if (! $result['ok']) {
+        $this->error('Sinkronisasi tautan Telegram gagal: '.$result['error_code'].'.');
+
+        return 1;
+    }
+    $this->info(json_encode($result));
+
+    return 0;
+})->purpose('Process private Telegram /start links for recipient self-connection');
 
 Artisan::command('telegram:check {--starts : Show private chat IDs that sent /start; do not acknowledge or link them}', function () {
     $token = config('services.telegram.bot_token');

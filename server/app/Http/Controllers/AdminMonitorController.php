@@ -9,6 +9,7 @@ use App\Models\Shipment;
 use App\Models\ShipmentIssue;
 use App\Models\User;
 use App\OperationsWorkflow;
+use App\TemperatureAiAdvisor;
 use App\VendorShipmentService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
@@ -23,6 +24,14 @@ class AdminMonitorController extends Controller
         $s = $workflow->visible($request->user(), 'admin')->where('tracking_number', $awb)->firstOrFail();
 
         return response()->json(['data' => $engine->prediction($s)])->header('Cache-Control', 'private, no-store');
+    }
+
+    public function advice(Request $request, string $awb, OperationsWorkflow $workflow, CourierTelemetryService $engine, TemperatureAiAdvisor $advisor): JsonResponse
+    {
+        $s = $workflow->visible($request->user(), 'admin')->where('tracking_number', $awb)->firstOrFail();
+        $prediction = $engine->prediction($s);
+
+        return response()->json(['data' => $advisor->advise($s, $prediction)])->header('Cache-Control', 'private, no-store');
     }
 
     public function telemetry(Request $request, string $awb, OperationsWorkflow $workflow): JsonResponse

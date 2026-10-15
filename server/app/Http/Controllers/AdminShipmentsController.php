@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\CourierWorkflow;
 use App\Models\Shipment;
 use App\Models\ShipmentIssue;
 use App\Models\ShipmentReport;
@@ -18,6 +19,38 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminShipmentsController extends Controller
 {
+    public function reportNote(Request $request, string $awb, OperationsWorkflow $workflow): JsonResponse
+    {
+        $data = $workflow->validateAction($request, [
+            'note' => ['required', 'string', 'min:3', 'max:4000'],
+        ]);
+
+        return response()->json($workflow->perform($request->user(), 'admin', $awb, 'report-note', $data,
+            function (Shipment $shipment, User $actor) use ($data) {
+                abort_unless(in_array($shipment->status, ['completed', 'delivered', 'returned'], true), 409, 'Catatan hanya dapat ditambahkan setelah serah terima selesai.');
+                abort_if($shipment->reports()->exists(), 409, 'Laporan sudah terbit dan tidak dapat diubah.');
+                $from = $shipment->status;
+                $shipment->version++;
+                $shipment->save();
+                app(CourierWorkflow::class)->record(
+                    $shipment,
+                    $actor,
+                    'report_note',
+                    'Catatan tambahan sebelum laporan terbit',
+                    $from,
+                    ['included_in_report' => true],
+                    trim($data['note']),
+                );
+
+                return [
+                    'shipment_id' => $shipment->id,
+                    'awb' => $shipment->tracking_number,
+                    'workflow_status' => $shipment->status,
+                    'version' => $shipment->version,
+                ];
+            }, true));
+    }
+
     public function metrics(Request $request, OperationsWorkflow $workflow): JsonResponse
     {
         $query = $workflow->visible($request->user(), 'admin');

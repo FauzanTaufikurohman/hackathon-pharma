@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useApi, useMutation, usePolling } from '../../services/useApi'
 import {
   awbPath,
@@ -9,8 +9,9 @@ import {
   type Response,
   type Issue,
   type Sample,
+  type TemperatureAdvice,
 } from '../../services/models'
-import { download, errorText, query, type Page } from '../../services/api'
+import { download, errorText, query, read, type Page } from '../../services/api'
 import ApiState from '../layout/ApiState.vue'
 import ShipmentRecord from '../layout/ShipmentRecord.vue'
 import PrivateImage from '../layout/PrivateImage.vue'
@@ -50,6 +51,7 @@ const prediction = useApi<
 )
 const mutation = useMutation(),
   reason = ref(''),
+  reportNote = ref(''),
   decision = ref('held'),
   courier = ref(''),
   issueId = ref(''),
@@ -57,8 +59,18 @@ const mutation = useMutation(),
   confirmed = ref(false),
   downloadError = ref('')
 const shipment = computed(() => record.data.value?.data)
+const advice = ref<TemperatureAdvice | null>(null),
+  adviceLoading = ref(false),
+  adviceError = ref('')
 const simulationType = ref('temperature'),
   simulationTemperature = ref(10)
+watch(
+  () => props.awb,
+  () => {
+    advice.value = null
+    adviceError.value = ''
+  },
+)
 usePolling(
   reload,
   () => props.mode === 'monitor' && !mutation.busy.value && !reason.value,
@@ -97,6 +109,33 @@ async function report(id: number) {
     )
   } catch (cause) {
     downloadError.value = errorText(cause)
+  }
+}
+async function requestAdvice() {
+  if (adviceLoading.value) return
+  adviceLoading.value = true
+  adviceError.value = ''
+  advice.value = null
+  try {
+    const result = await read<Response<TemperatureAdvice>>(base.value + '/advice')
+    advice.value = result.data
+  } catch (cause) {
+    adviceError.value = errorText(cause)
+  } finally {
+    adviceLoading.value = false
+  }
+}
+async function saveReportNote() {
+  if (!shipment.value || mutation.busy.value) return
+  if (
+    await mutation.run(base.value + '/report-notes', {
+      version: shipment.value.version,
+      note: reportNote.value.trim(),
+    })
+  ) {
+    reportNote.value = ''
+    await reload()
+    emit('changed')
   }
 }
 const predictionMessage = computed(() =>
@@ -296,7 +335,7 @@ const openTemperatureIssue = computed(() =>
           "
           class="live-panel"
         >
-          <h3 class="text-lg font-semibold">Koreksi termal simulasi berbantuan AI</h3>
+          <h3 class="text-lg font-semibold">Simulasi koreksi termal</h3>
           <p class="mt-3">
             Simulasikan tiga pembacaan stabil pada titik tengah rentang suhu
             kiriman. Sampel akan dicatat sebagai simulasi; ini tidak mengontrol
@@ -339,6 +378,51 @@ const openTemperatureIssue = computed(() =>
             {{ prediction.data.value.data.minutes_to_upper_limit }} menit. Bukan
             rekomendasi medis atau bukti sensor terkalibrasi.
           </p>
+          <div class="mt-4">
+            <button
+              type="button"
+              class="live-button live-primary"
+              :disabled="adviceLoading"
+              @click="requestAdvice"
+            >
+              {{
+                adviceLoading
+                  ? 'Meminta rekomendasi…'
+                  : 'Minta rekomendasi AI untuk operator'
+              }}
+            </button>
+            <ApiState :loading="adviceLoading" :error="adviceError" />
+            <p v-if="advice?.available" class="mt-3">
+              <strong>
+                {{
+                  advice.urgency === 'urgent'
+                    ? 'Perlu tindakan segera'
+                    : advice.urgency === 'review'
+                      ? 'Perlu ditinjau'
+                      : 'Pemantauan rutin'
+                }}
+              </strong>
+              · {{ advice.summary }}
+            </p>
+            <p v-else-if="advice && !advice.available" class="mt-3">
+              Rekomendasi belum tersedia: {{ advice.reason }}
+            </p>
+            <ul
+              v-if="advice?.available && advice.actions?.length"
+              class="mt-2 list-disc pl-6"
+            >
+              <li v-for="(action, index) in advice.actions" :key="index">
+                {{ action }}
+              </li>
+            </ul>
+            <p v-if="advice?.includes_simulated_samples" class="mt-2">
+              Rekomendasi ini mencakup sampel simulasi.
+            </p>
+            <p class="mt-2 text-on-surface-variant">
+              Saran berbasis telemetri angka untuk ditinjau operator; tidak
+              mengendalikan perangkat, dan bukan keputusan mutu atau medis.
+            </p>
+          </div>
         </section>
         <section class="live-panel">
           <h3 class="text-lg font-semibold">Kendala kiriman</h3>
@@ -428,6 +512,38 @@ const openTemperatureIssue = computed(() =>
           </button>
         </div>
       </section>
+      <form
+        v-else-if="
+          ['completed', 'delivered', 'returned'].includes(shipment.status)
+        "
+        class="live-panel grid gap-4"
+        @submit.prevent="saveReportNote"
+      >
+        <h3 class="text-lg font-semibold">Catatan untuk laporan pertama</h3>
+        <p>
+          Catatan ini akan disertakan saat PDF pertama diterbitkan. Laporan yang
+          sudah terbit tidak dapat diubah.
+        </p>
+        <label class="live-field"
+          ><span>Catatan operasional</span
+          ><textarea
+            v-model="reportNote"
+            name="report_note"
+            minlength="3"
+            maxlength="4000"
+            required
+            rows="4"
+            :disabled="mutation.busy.value"
+          />
+        </label>
+        <button
+          type="submit"
+          class="live-button live-primary self-start"
+          :disabled="mutation.busy.value || reportNote.trim().length < 3"
+        >
+          Tambahkan ke PDF pertama
+        </button>
+      </form>
       <details
         v-if="
           mode === 'summary' &&

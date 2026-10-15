@@ -47,6 +47,14 @@ interface Message {
   error_code: string | null
   sent_at: string | null
 }
+interface TelegramDiagnostics {
+  configured: boolean
+  enabled: boolean
+  active_recipients: number
+  pending_messages: number
+  message_statuses: Record<string, number>
+  scheduler_command: string
+}
 const daily = useApi<Response<Daily>>(
   () => '/admin/reports/daily' + query({ date: date.value }),
 )
@@ -59,7 +67,7 @@ const events = useApi<Paginator<EventRecord>>(
     '/admin/events' + query({ page: eventPage.value, awb: filterAwb.value }),
 )
 const notifications = useApi<{
-  gateway: { configured: boolean; enabled: boolean }
+  gateway: TelegramDiagnostics
   messages: Paginator<Message>
 }>(() => '/admin/notifications' + query({ page: messagePage.value }))
 const gateway = computed(() => notifications.data.value?.gateway)
@@ -347,6 +355,34 @@ function submitSearch() {
               ? 'Gateway diaktifkan. Periksa status tiap pesan.'
               : 'Gateway belum diaktifkan atau token belum dipasang. Pesan tidak diklaim terkirim.'
           }}
+        </p>
+        <dl
+          v-if="gateway"
+          class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4"
+        >
+          <div>
+            <dt class="text-on-surface-variant">Penerima aktif terpetakan</dt>
+            <dd class="font-semibold">{{ gateway.active_recipients }}</dd>
+          </div>
+          <div>
+            <dt class="text-on-surface-variant">Pesan menunggu / retry</dt>
+            <dd class="font-semibold">{{ gateway.pending_messages }}</dd>
+          </div>
+          <div>
+            <dt class="text-on-surface-variant">Status scheduler</dt>
+            <dd class="font-semibold">
+              Tidak dapat dipastikan lewat API; deployment perlu menjalankan
+              <code>{{ gateway.scheduler_command }}</code>
+            </dd>
+          </div>
+        </dl>
+        <p v-if="gateway" class="mt-3 text-on-surface-variant">
+          Jumlah pesan:
+          <span
+            v-for="(count, status) in gateway.message_statuses"
+            :key="status"
+            class="mr-2"
+          >{{ status }}: {{ count }}</span>
         </p>
         <ApiState
           :loading="notifications.loading.value"

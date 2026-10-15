@@ -97,10 +97,23 @@ class AdminReportsController extends Controller
     public function notifications(Request $request, OperationsWorkflow $workflow): JsonResponse
     {
         $workflow->authorize($request->user(), 'admin');
-        $request->validate(['page' => ['sometimes', 'integer', 'between:1,100000']]);
+        $data = $request->validate(['page' => ['sometimes', 'integer', 'between:1,100000']]);
+        $messages = Message::latest('id')->paginate(30, ['*'], 'page', $data['page'] ?? 1);
+        $statuses = Message::query()->selectRaw('status, COUNT(*) AS total')->groupBy('status')->pluck('total', 'status');
 
-        return response()->json(['gateway' => ['provider' => 'telegram', 'configured' => (bool) config('services.telegram.bot_token'),
-            'enabled' => (bool) config('services.telegram.enabled')], 'messages' => Message::latest('id')->paginate(30)]);
+        return response()->json([
+            'gateway' => [
+                'provider' => 'telegram',
+                'configured' => (bool) config('services.telegram.bot_token'),
+                'enabled' => (bool) config('services.telegram.enabled'),
+                'active_recipients' => User::where('is_active', true)->whereIn('role', ['admin', 'buyer', 'vendor', 'courier'])
+                    ->whereNotNull('telegram_chat_id')->count(),
+                'pending_messages' => (int) ($statuses['pending'] ?? 0) + (int) ($statuses['retry'] ?? 0),
+                'message_statuses' => $statuses,
+                'scheduler_command' => 'php artisan schedule:work',
+            ],
+            'messages' => $messages,
+        ])->header('Cache-Control', 'private, no-store');
     }
 
     public function telegramRecipient(Request $request, int $user, OperationsWorkflow $workflow): JsonResponse

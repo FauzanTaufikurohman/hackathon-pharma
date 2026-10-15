@@ -4,8 +4,17 @@ import { useRouter } from 'vue-router'
 import ApiState from '../../components/layout/ApiState.vue'
 import { currentUser } from '../../services/auth'
 import { dateText, type LiveShipment, type Response } from '../../services/models'
-import { query, type Page } from '../../services/api'
+import { errorText, query, send, type Page } from '../../services/api'
 import { useApi, usePolling } from '../../services/useApi'
+
+interface TelegramStatus {
+  connected: boolean
+}
+
+interface TelegramLink {
+  url: string
+  expires_at: string
+}
 
 interface Dashboard {
   facility: { name?: string; department?: string; facility_id?: string } | null
@@ -34,6 +43,10 @@ const dashboard = useApi<Response<Dashboard>>(() => '/vendor/dashboard')
 const recent = useApi<Page<LiveShipment>>(() =>
   '/vendor/packages' + query({ per_page: 5, sort: 'newest' }),
 )
+const telegramStatus = useApi<Response<TelegramStatus>>(() => '/vendor/telegram')
+const telegramLink = ref('')
+const telegramLinkError = ref('')
+const telegramLinkLoading = ref(false)
 
 usePolling(
   async () => {
@@ -43,11 +56,33 @@ usePolling(
   60000,
 )
 
+usePolling(
+  async () => {
+    await telegramStatus.reload()
+    if (telegramStatus.data.value?.data.connected) telegramLink.value = ''
+  },
+  () => Boolean(telegramLink.value) && !telegramStatus.data.value?.data.connected,
+  5000,
+)
+
 const facilityName = computed(() => {
   const name = dashboard.data.value?.data.facility?.name
   return name || currentUser.value?.name || 'Fasilitas penerima'
 })
 const metrics = computed(() => dashboard.data.value?.data.metrics)
+
+async function createTelegramLink() {
+  telegramLinkLoading.value = true
+  telegramLinkError.value = ''
+  try {
+    const response = await send<Response<TelegramLink>>('/vendor/telegram/link', {})
+    telegramLink.value = response.data.url
+  } catch (error) {
+    telegramLinkError.value = errorText(error)
+  } finally {
+    telegramLinkLoading.value = false
+  }
+}
 
 function searchPackages() {
   void router.push({
@@ -112,6 +147,48 @@ function temperatureLabel(shipment: LiveShipment) {
           </div>
           <p class="px-2 pt-2 text-xs text-slate-300">Pencarian diproses langsung oleh data kiriman akun Anda.</p>
         </form>
+      </div>
+    </section>
+
+    <section class="live-panel flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-primary">Notifikasi pengiriman</p>
+        <h2 class="mt-1 text-lg font-bold text-slate-900">Hubungkan Telegram</h2>
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+          Hubungkan akun Telegram agar notifikasi status dan laporan kiriman dapat dikirim langsung ke chat Anda. Nomor telepon tidak diperlukan.
+        </p>
+        <p v-if="telegramStatus.data.value?.data.connected" class="mt-2 text-sm font-semibold text-emerald-700" role="status">
+          Telegram sudah terhubung ke akun ini.
+        </p>
+        <p v-else class="mt-2 text-sm text-amber-700">
+          Telegram belum terhubung. Tautan berlaku 15 menit dan hanya dapat digunakan sekali.
+        </p>
+        <p v-if="telegramStatus.error.value" class="mt-2 text-sm font-semibold text-rose-700" role="alert">
+          Status Telegram belum dapat diperiksa. {{ telegramStatus.error.value }}
+        </p>
+        <p v-if="telegramLinkError" class="mt-2 text-sm font-semibold text-rose-700" role="alert">
+          {{ telegramLinkError }}
+        </p>
+      </div>
+      <div class="flex shrink-0 flex-wrap gap-2">
+        <button
+          v-if="!telegramStatus.data.value?.data.connected"
+          type="button"
+          class="live-button live-primary"
+          :disabled="telegramLinkLoading"
+          @click="createTelegramLink"
+        >
+          {{ telegramLinkLoading ? 'Menyiapkan tautan…' : 'Buat tautan Telegram' }}
+        </button>
+        <a
+          v-if="telegramLink && !telegramStatus.data.value?.data.connected"
+          :href="telegramLink"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="live-button"
+        >
+          Buka bot dan tekan Start
+        </a>
       </div>
     </section>
 

@@ -18,6 +18,7 @@ use App\Http\Controllers\CourierTasksController;
 use App\Http\Controllers\VendorDashboardController;
 use App\Http\Controllers\VendorMonitorController;
 use App\Http\Controllers\VendorPackagesController;
+use App\Http\Controllers\VendorTelegramController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -41,6 +42,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/shipments/{awb}/inspection-photo', [AdminShipmentsController::class, 'inspectionPhoto'])->name('admin.inspection.photo');
         Route::get('/admin/shipments/{awb}/telemetry', [AdminMonitorController::class, 'telemetry']);
         Route::get('/admin/shipments/{awb}/prediction', [AdminMonitorController::class, 'prediction']);
+        Route::get('/admin/shipments/{awb}/advice', [AdminMonitorController::class, 'advice']);
+        Route::post('/admin/shipments/{awb}/report-notes', [AdminShipmentsController::class, 'reportNote']);
         Route::get('/admin/monitor', [AdminMonitorController::class, 'monitor']);
         Route::get('/admin/issues', [AdminMonitorController::class, 'issues']);
         Route::post('/admin/shipments/{awb}/issues/{issue}/decision', [AdminMonitorController::class, 'decide'])->whereNumber('issue');
@@ -82,6 +85,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/vendor/packages', [VendorPackagesController::class, 'index']);
         Route::get('/vendor/packages/export', [VendorPackagesController::class, 'export']);
         Route::get('/vendor/dashboard', [VendorDashboardController::class, 'show']);
+        Route::get('/vendor/telegram', [VendorTelegramController::class, 'show']);
+        Route::post('/vendor/telegram/link', [VendorTelegramController::class, 'createLink']);
         Route::put('/vendor/shipments/{awb}/readiness', [VendorDashboardController::class, 'readiness']);
         Route::get('/vendor/shipments/{awb}', [VendorMonitorController::class, 'show']);
         Route::get('/vendor/shipments/{awb}/telemetry', [VendorMonitorController::class, 'telemetry'])->name('vendor.telemetry');

@@ -11,35 +11,36 @@ class CourierReportService
 {
     public function publish(Shipment $shipment): ShipmentReport
     {
-        $shipment->loadMissing(['deliveryProof', 'latestInspection.checker']);
-        $summary = $shipment->telemetry()->whereNotNull('temperature')->selectRaw('COUNT(*) AS count, MIN(temperature) AS min, MAX(temperature) AS max, AVG(temperature) AS average')->first();
-        $snapshot = [
-            'tracking_number' => $shipment->tracking_number, 'status' => $shipment->status, 'is_demo' => $shipment->is_demo,
-            'sender_name' => $shipment->sender_name, 'recipient_name' => $shipment->recipient_name,
-            'item_summary' => $shipment->item_summary, 'package_count' => $shipment->package_count,
-            'temperature_min' => $shipment->temperature_min, 'temperature_max' => $shipment->temperature_max,
-            'completed_at' => $shipment->completed_at?->toISOString(),
-            'inspection' => ($shipment->latestInspection?->only(['packaging', 'seal', 'label', 'passed', 'temperature', 'note']) ?? [])
-                + ['checker_name' => $shipment->latestInspection?->checker?->name],
-            'temperature_summary' => ['count' => (int) $summary->count, 'min' => $summary->min, 'max' => $summary->max, 'average' => $summary->average],
-            'telemetry_preview' => $shipment->telemetry()->orderByDesc('recorded_at')->limit(2000)->get()->reverse()->values()
-                ->map(fn ($sample) => $sample->only(['temperature', 'latitude', 'longitude', 'is_simulated']) + ['recorded_at' => $sample->recorded_at->toISOString()])->all(),
-            'telemetry_preview_limited' => $shipment->telemetry()->count() > 2000,
-            'incidents' => $shipment->issues()->get(['type', 'description', 'status', 'resolution_reason', 'created_at'])->toArray(),
-            'events' => $shipment->events()->orderBy('id')->get(['type', 'title', 'reason', 'from_status', 'to_status', 'metadata', 'created_at'])->toArray(),
-            'pod' => $shipment->deliveryProof?->only(['mode', 'recipient_name', 'recipient_department', 'recipient_identity',
-                'temperature', 'seal_intact', 'latitude', 'longitude', 'handed_over_at', 'photo_sha256']),
-            'digital_signature_verified' => false,
-        ];
-
-        return DB::transaction(function () use ($shipment, $snapshot): ShipmentReport {
+        return DB::transaction(function () use ($shipment): ShipmentReport {
+            $shipment = Shipment::whereKey($shipment->id)->lockForUpdate()->firstOrFail();
+            $shipment->load(['deliveryProof', 'latestInspection.checker']);
+            $summary = $shipment->telemetry()->whereNotNull('temperature')->selectRaw('COUNT(*) AS count, MIN(temperature) AS min, MAX(temperature) AS max, AVG(temperature) AS average')->first();
+            $snapshot = [
+                'tracking_number' => $shipment->tracking_number, 'status' => $shipment->status, 'is_demo' => $shipment->is_demo,
+                'sender_name' => $shipment->sender_name, 'recipient_name' => $shipment->recipient_name,
+                'item_summary' => $shipment->item_summary, 'package_count' => $shipment->package_count,
+                'temperature_min' => $shipment->temperature_min, 'temperature_max' => $shipment->temperature_max,
+                'completed_at' => $shipment->completed_at?->toISOString(),
+                'inspection' => ($shipment->latestInspection?->only(['packaging', 'seal', 'label', 'passed', 'temperature', 'note']) ?? [])
+                    + ['checker_name' => $shipment->latestInspection?->checker?->name],
+                'temperature_summary' => ['count' => (int) $summary->count, 'min' => $summary->min, 'max' => $summary->max, 'average' => $summary->average],
+                'telemetry_preview' => $shipment->telemetry()->orderByDesc('recorded_at')->limit(2000)->get()->reverse()->values()
+                    ->map(fn ($sample) => $sample->only(['temperature', 'latitude', 'longitude', 'is_simulated']) + ['recorded_at' => $sample->recorded_at->toISOString()])->all(),
+                'telemetry_preview_limited' => $shipment->telemetry()->count() > 2000,
+                'incidents' => $shipment->issues()->get(['type', 'description', 'status', 'resolution_reason', 'created_at'])->toArray(),
+                'events' => $shipment->events()->orderBy('id')->get(['type', 'title', 'reason', 'from_status', 'to_status', 'metadata', 'created_at'])->toArray(),
+                'pod' => $shipment->deliveryProof?->only(['mode', 'recipient_name', 'recipient_department', 'recipient_identity',
+                    'temperature', 'seal_intact', 'latitude', 'longitude', 'handed_over_at', 'photo_sha256']),
+                'digital_signature_verified' => false,
+            ];
+            $revision = ((int) $shipment->reports()->max('revision')) + 1;
             $report = ShipmentReport::create(['shipment_id' => $shipment->id, 'title' => 'Laporan Serah Terima Produk Farmasi',
-                'revision' => 1, 'snapshot' => $snapshot, 'sha256' => ShipmentReport::hashSnapshot($snapshot),
+                'revision' => $revision, 'snapshot' => $snapshot, 'sha256' => ShipmentReport::hashSnapshot($snapshot),
                 'is_demo' => $shipment->is_demo, 'published_at' => now()]);
             app(ReportDistribution::class)->queue($report);
 
             return $report;
-        });
+        }, 3);
     }
 
     public function download(ShipmentReport $report): Response
@@ -72,6 +73,14 @@ class CourierReportService
                 $detail .= ' | Skenario simulasi.';
             }
             $html .= '<tr><td>'.e($event['created_at']).'</td><td>'.e($event['title']).'</td><td>'.e($detail).'</td></tr>';
+        }
+        $reportNotes = array_filter($s['events'] ?? [], fn (array $event) => ($event['metadata']['included_in_report'] ?? false) === true);
+        if ($reportNotes) {
+            $html .= '</table><h2>Catatan tambahan sebelum laporan terbit</h2>';
+            foreach ($reportNotes as $event) {
+                $html .= '<p><strong>'.e($event['created_at']).'</strong> — '.e($event['reason'] ?? '').'</p>';
+            }
+            $html .= '<table>';
         }
         $html .= '</table><p>SHA256 snapshot: '.e($report->sha256).'</p><p>Checksum bukan enkripsi atau tanda tangan digital tersertifikasi.</p>';
 

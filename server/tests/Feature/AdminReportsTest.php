@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\CourierReportService;
 use App\Models\Message;
 use App\Models\Shipment;
 use App\Models\ShipmentReport;
@@ -50,6 +51,74 @@ class AdminReportsTest extends TestCase
         Sanctum::actingAs($shipment->buyer, ['vendor']);
         $this->getJson('/api/v1/admin/reports')->assertForbidden();
         $this->postJson('/api/v1/admin/reports/'.$report->id.'/distribute')->assertForbidden();
+    }
+
+    public function test_admin_can_add_a_note_before_first_report_and_it_is_locked_into_the_pdf_snapshot(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $shipment = Shipment::factory()->create(['status' => 'completed', 'version' => 2]);
+        Sanctum::actingAs($admin, ['admin']);
+        $requestId = (string) Str::uuid();
+
+        $this->postJson('/api/v1/admin/shipments/'.$shipment->tracking_number.'/report-notes', [
+            'version' => 2,
+            'request_id' => $requestId,
+            'note' => 'Operator verified the temperature logger.',
+        ])->assertOk()->assertJsonPath('data.version', 3);
+
+        $this->assertDatabaseHas('events', [
+            'shipment_id' => $shipment->id,
+            'type' => 'report_note',
+            'reason' => 'Operator verified the temperature logger.',
+        ]);
+        $report = app(CourierReportService::class)->publish($shipment->fresh());
+        $noteEvent = collect($report->snapshot['events'])->firstWhere('type', 'report_note');
+        $this->assertSame('Operator verified the temperature logger.', $noteEvent['reason']);
+        $this->get('/api/v1/admin/reports/'.$report->id.'/download')->assertOk();
+
+        $this->postJson('/api/v1/admin/shipments/'.$shipment->tracking_number.'/report-notes', [
+            'version' => $shipment->fresh()->version,
+            'request_id' => (string) Str::uuid(),
+            'note' => 'This must not mutate a published report.',
+        ])->assertStatus(409);
+
+        $this->assertSame(1, $shipment->events()->where('type', 'report_note')->count());
+        $this->assertSame($report->sha256, $report->fresh()->sha256);
+    }
+
+    public function test_telegram_diagnostics_report_mapping_counts_message_statuses_and_requested_page_without_exposing_chat_ids(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'telegram_chat_id' => '123456789']);
+        $inactive = User::factory()->create(['role' => 'buyer', 'is_active' => false, 'telegram_chat_id' => '987654321']);
+        $shipment = Shipment::factory()->create(['buyer_id' => $inactive->id]);
+        for ($index = 1; $index <= 31; $index++) {
+            Message::create([
+                'shipment_id' => $shipment->id,
+                'user_id' => $admin->id,
+                'subject' => 'Queue item',
+                'body' => 'Queue body',
+                'status' => $index === 1 ? 'retry' : 'pending',
+                'dedupe_key' => 'diagnostic-message-'.$index,
+            ]);
+        }
+        config(['services.telegram.enabled' => true, 'services.telegram.bot_token' => 'test-token']);
+        Sanctum::actingAs($admin, ['admin']);
+
+        $this->getJson('/api/v1/admin/notifications?page=2')
+            ->assertOk()
+            ->assertJsonPath('gateway.configured', true)
+            ->assertJsonPath('gateway.enabled', true)
+            ->assertJsonPath('gateway.active_recipients', 1)
+            ->assertJsonPath('gateway.pending_messages', 31)
+            ->assertJsonPath('gateway.message_statuses.retry', 1)
+            ->assertJsonPath('gateway.message_statuses.pending', 30)
+            ->assertJsonPath('messages.current_page', 2)
+            ->assertJsonCount(1, 'messages.data');
+
+        $this->getJson('/api/v1/admin/users')
+            ->assertOk()
+            ->assertJsonPath('data.0.telegram_configured', true)
+            ->assertJsonMissingPath('data.0.telegram_chat_id');
     }
 
     public function test_simulated_temperature_deviation_can_record_ai_correction_without_resuming_shipment(): void

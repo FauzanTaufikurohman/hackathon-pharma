@@ -18,14 +18,22 @@ class AdminUsersController extends Controller
         $workflow->authorize($request->user(), 'admin');
         $data = $request->validate(['page' => ['sometimes', 'integer', 'between:1,100000'],
             'search' => ['sometimes', 'string', 'max:120']]);
-        $query = User::query()->select(['id', 'name', 'email', 'role', 'is_active', 'facility', 'courier_profile', 'updated_at']);
+        $query = User::query()->select(['id', 'name', 'email', 'role', 'is_active', 'facility', 'courier_profile', 'telegram_chat_id', 'updated_at']);
         if (trim($data['search'] ?? '') !== '') {
             $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], mb_strtolower(trim($data['search']))).'%';
             $query->where(fn ($q) => $q->whereRaw("LOWER(name) LIKE ? ESCAPE '!'", [$pattern])
                 ->orWhereRaw("LOWER(email) LIKE ? ESCAPE '!'", [$pattern]));
         }
 
-        return response()->json($query->orderBy('id')->paginate(30))->header('Cache-Control', 'private, no-store');
+        $users = $query->orderBy('id')->paginate(30);
+        $users->getCollection()->transform(function (User $user) {
+            $user->setAttribute('telegram_configured', filled($user->telegram_chat_id));
+            $user->makeHidden('telegram_chat_id');
+
+            return $user;
+        });
+
+        return response()->json($users)->header('Cache-Control', 'private, no-store');
     }
 
     public function store(Request $request, OperationsWorkflow $workflow): JsonResponse

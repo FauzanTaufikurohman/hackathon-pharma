@@ -93,6 +93,15 @@ export interface Sample {
   recorded_at: string
   speed_kmh: number | null
 }
+export interface TemperatureAdvice {
+  available: boolean
+  reason?: string
+  urgency?: 'normal' | 'review' | 'urgent'
+  summary?: string
+  actions?: string[]
+  includes_simulated_samples?: boolean
+  note?: string
+}
 export interface Issue {
   id: number
   shipment_id: number
