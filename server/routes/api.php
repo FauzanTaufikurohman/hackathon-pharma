@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminApprovalsController;
 use App\Http\Controllers\AdminShipmentsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckerHistoryController;
@@ -27,6 +28,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/metrics', [AdminShipmentsController::class, 'metrics']);
         Route::get('/admin/shipments/export', [AdminShipmentsController::class, 'export']);
         Route::get('/admin/shipments/{awb}', [AdminShipmentsController::class, 'show']);
+        Route::post('/admin/shipments/{awb}/approval', [AdminApprovalsController::class, 'approve']);
+        Route::post('/admin/shipments/{awb}/assign', [AdminApprovalsController::class, 'assign']);
+        Route::post('/admin/shipments/{awb}/recheck', [AdminApprovalsController::class, 'recheck']);
         Route::post('/admin/shipments/{awb}/cancel', [AdminShipmentsController::class, 'cancel']);
         Route::get('/admin/shipments/{awb}/inspection-photo', [AdminShipmentsController::class, 'inspectionPhoto'])->name('admin.inspection.photo');
         Route::get('/checker/queue', [CheckerQueueController::class, 'queue']);
