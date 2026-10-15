@@ -3,6 +3,14 @@
 
 Dokumentasi resmi arsitektur sistem, persyaratan produk (*Product Requirement Document* / PRD), spesifikasi fungsional (*Functional Requirement Document* / FRD), serta diagram alur operasional logistik farmasi (*cold-chain*) untuk tim pengembang Anteraja Pharma.
 
+## Scope Aplikasi Client
+
+PRD, enam FRD, dan [diagram alur](./diagrams/flowchart.png) di folder ini menjadi acuan scope UI client. Prioritas prototipe adalah urutan kerja pengiriman: admin mendaftarkan kiriman, checker memeriksa, admin menyetujui dan menugaskan kurir, kurir memperbarui perjalanan, lalu admin/vendor melihat pemantauan dan laporan. Login memakai `POST /api/v1/auth/login` sesuai kontrak backend di [server/docs](../../server/docs); sesi dan role ditangani berdasarkan respons API.
+
+Halaman **Pengguna & Hak Akses** memvisualisasikan penetapan role Admin, Checker, Kurir, dan Vendor/Customer sesuai matriks RBAC di bawah. Karena API pengelolaan pengguna belum tersedia, perubahan pada halaman tersebut hanya data prototipe sementara dan bukan kontrol otorisasi backend. Otorisasi data tetap wajib ditegakkan oleh server.
+
+Untuk pengembangan lokal, client mengirim request API ke Laravel pada `http://localhost:8000/api/v1` secara langsung. URL dapat diubah dengan `VITE_API_BASE_URL`; Vite juga menyediakan proxy `/api` ke `http://127.0.0.1:8000` sebagai fallback, yang dapat diubah dengan `API_PROXY_TARGET`.
+
 ---
 
 ## 📁 Struktur Direktori `docs/`

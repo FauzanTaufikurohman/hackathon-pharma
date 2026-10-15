@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { mockCheckerProfile } from '../../data/mockShipments'
+import { logoutAndRedirect } from '../../services/auth'
 
 interface Props {
   activeTab?: number
@@ -15,6 +16,10 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+
+function handleLogout() {
+  return logoutAndRedirect(router)
+}
 
 const handleTabClick = (tab: number) => {
   emit('tab-change', tab)
@@ -34,13 +39,8 @@ const handleTabClick = (tab: number) => {
       <!-- Left: Brand Logo & Role Pill -->
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-3">
-          <router-link to="/checker" class="flex items-center group cursor-pointer">
-            <span class="font-headline-lg text-headline-lg text-primary tracking-tight font-extrabold group-hover:scale-105 transition-transform">
-              Anteraja
-            </span>
-            <span class="font-headline-sm text-headline-sm text-secondary ml-1 font-bold">
-              Pharma
-            </span>
+          <router-link to="/checker" aria-label="Beranda Anteraja Pharma" class="inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+            <img src="/pharma-logo.webp" alt="Anteraja Pharma" width="110" height="45" class="h-10 w-auto shrink-0 object-contain mix-blend-multiply" />
           </router-link>
 
           <div class="h-6 w-px bg-surface-container-high hidden sm:block"></div>
@@ -122,14 +122,13 @@ const handleTabClick = (tab: number) => {
             </span>
           </div>
 
-          <!-- Switch portal / logout -->
-          <router-link
-            to="/"
-            class="font-label-sm text-slate-400 hover:text-primary transition-colors pl-2 font-medium"
-            title="Beralih ke Portal Buyer"
+          <button
+            type="button"
+            @click="handleLogout"
+            class="font-label-sm text-slate-500 hover:text-primary transition-colors pl-2 font-medium"
           >
             Keluar
-          </router-link>
+          </button>
         </div>
       </div>
     </div>

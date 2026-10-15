@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { mockCourierProfile } from '../../data/mockShipments'
+import { logoutAndRedirect } from '../../services/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -10,6 +11,10 @@ const showNotifications = ref(false)
 const emit = defineEmits<{
   (e: 'notify-click'): void
 }>()
+
+function handleLogout() {
+  return logoutAndRedirect(router)
+}
 </script>
 
 <template>
@@ -17,14 +22,8 @@ const emit = defineEmits<{
     <div class="h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
       <!-- Left: Logo & Role Pill -->
       <div class="flex items-center gap-3 shrink-0">
-        <router-link to="/courier" class="flex items-center gap-2 group">
-          <span class="font-headline-md font-bold tracking-tight text-on-surface flex items-center gap-1.5">
-            <span class="text-primary-container font-extrabold group-hover:scale-105 transition-transform">anteraja</span>
-            <span class="font-medium text-slate-700">pharma</span>
-          </span>
-          <span class="px-2 py-0.5 rounded-full border border-pink-200 bg-pink-50 text-[10px] font-bold text-primary-container tracking-wider uppercase">
-            Satria Pharma
-          </span>
+        <router-link to="/courier" aria-label="Beranda Anteraja Pharma" class="inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+          <img src="/pharma-logo.webp" alt="Anteraja Pharma" width="110" height="45" class="h-10 w-auto shrink-0 object-contain mix-blend-multiply" />
         </router-link>
       </div>
 
@@ -84,14 +83,13 @@ const emit = defineEmits<{
           src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
         />
 
-        <!-- Switch Role / Keluar -->
-        <router-link
-          to="/"
-          class="font-label-md text-slate-400 hover:text-primary-container transition-colors pl-1 cursor-pointer font-medium"
-          title="Beralih ke Portal Faskes"
+        <button
+          type="button"
+          @click="handleLogout"
+          class="font-label-md text-slate-500 hover:text-primary-container transition-colors pl-1 cursor-pointer font-medium"
         >
           Keluar
-        </router-link>
+        </button>
       </div>
     </div>
   </header>

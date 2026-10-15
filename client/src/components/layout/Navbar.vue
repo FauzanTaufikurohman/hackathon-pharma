@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { currentFacility } from '../../data/mockShipments'
+import { logoutAndRedirect } from '../../services/auth'
 
 const router = useRouter()
 const route = useRoute()
@@ -16,6 +17,10 @@ function handleHeaderSearch() {
     emit('search', searchInput.value.trim())
   }
 }
+
+function handleLogout() {
+  return logoutAndRedirect(router)
+}
 </script>
 
 <template>
@@ -24,14 +29,8 @@ function handleHeaderSearch() {
       <!-- Left: Brand Logo & Navigation -->
       <div class="flex items-center gap-space-md lg:gap-space-lg">
         <!-- Logo -->
-        <router-link to="/" class="flex items-center gap-2.5 group">
-          <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm group-hover:scale-105 transition-transform">
-            <span class="material-symbols-outlined text-[20px]">ac_unit</span>
-          </div>
-          <div class="flex flex-col">
-            <span class="font-headline-sm text-[16px] font-bold text-on-surface leading-none tracking-tight">anteraja</span>
-            <span class="font-label-sm text-[10px] text-primary uppercase tracking-wider font-extrabold mt-0.5">Pharma Cold-Chain</span>
-          </div>
+        <router-link to="/" aria-label="Beranda Anteraja Pharma" class="inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+          <img src="/pharma-logo.webp" alt="Anteraja Pharma" width="110" height="45" class="h-10 w-auto shrink-0 object-contain mix-blend-multiply" />
         </router-link>
 
         <!-- Navigation Tabs -->
@@ -85,15 +84,13 @@ function handleHeaderSearch() {
             <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span>
           </div>
 
-          <!-- Quick Switch to Courier Role -->
-          <router-link
-            to="/courier"
-            class="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-50 hover:bg-pink-100 text-primary-container font-label-sm text-[11px] font-bold transition-all border border-pink-200 shadow-2xs"
-            title="Beralih ke Portal Satria Kurir"
+          <button
+            type="button"
+            @click="handleLogout"
+            class="inline-flex items-center rounded-full border border-outline-variant px-3 py-1.5 text-xs font-semibold text-on-surface-variant transition-colors hover:bg-surface-container-low"
           >
-            <span class="material-symbols-outlined text-[15px]">two_wheeler</span>
-            <span>Portal Kurir</span>
-          </router-link>
+            Keluar
+          </button>
         </div>
       </div>
 

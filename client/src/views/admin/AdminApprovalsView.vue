@@ -95,7 +95,7 @@ function handleDispatch(params: { courierId: string; notifyBot: boolean; enableB
 <template>
   <div class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col">
     <!-- Navbar Header -->
-    <AdminNavbar active-tab="approval-qc-kurir" />
+    <AdminNavbar active-tab="approvals" />
 
     <!-- Main Content Container -->
     <main class="w-full max-w-7xl mx-auto px-6 py-8 flex-1 bg-surface">
