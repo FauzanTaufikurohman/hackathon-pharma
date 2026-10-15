@@ -45,10 +45,22 @@ function navigateToTab(screen: number) {
           </p>
         </div>
 
-        <!-- Col 2: Layanan with 3 items (2 cols) -->
+        <!-- Col 2: Layanan (2 cols) -->
         <div class="lg:col-span-2 flex flex-col gap-space-md">
           <span class="font-headline-sm text-headline-sm text-on-surface font-bold">Layanan</span>
           <nav class="flex flex-col gap-space-sm font-body-md text-body-md text-on-surface-variant">
+            <router-link
+              to="/"
+              class="text-left hover:text-primary transition-colors cursor-pointer"
+            >
+              Beranda
+            </router-link>
+            <router-link
+              to="/paket-saya"
+              class="text-left hover:text-primary transition-colors cursor-pointer"
+            >
+              Paket Saya
+            </router-link>
             <button
               type="button"
               @click="navigateToTab(1)"

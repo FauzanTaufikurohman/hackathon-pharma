@@ -312,7 +312,7 @@ function handleContactHotline() {
                   </div>
                   <button
                     type="button"
-                    @click="openMonitor(2, '#100098421088712')"
+                    @click="openMonitor(1, '#100098421088712')"
                     class="px-3.5 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface font-bold text-xs transition-colors cursor-pointer"
                   >
                     Detail

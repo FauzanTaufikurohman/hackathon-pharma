@@ -7,19 +7,21 @@ import { logoutAndRedirect } from '../../services/auth'
 const router = useRouter()
 const route = useRoute()
 
+const isMonitorPage = computed(() => route.path.startsWith('/vendor/monitor'))
+
 const currentAwb = computed(() => {
   const param = route.params.awb as string | undefined
   if (param) return decodeURIComponent(param)
-  return '#PHA-260104'
+  return '#100098421088712'
 })
 
 const activeScreen = computed(() => {
-  if (!route.path.startsWith('/vendor/monitor')) return 0
+  if (!isMonitorPage.value) return 0
   return Number(route.query.screen) || 1
 })
 
 function navigateToTab(screen: number) {
-  if (route.path.startsWith('/vendor/monitor')) {
+  if (isMonitorPage.value) {
     router.replace({
       query: { ...route.query, screen: screen.toString() },
     })
@@ -37,14 +39,14 @@ function handleLogout() {
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-surface-container/40">
-    <div class="h-20 max-w-[1200px] mx-auto px-4 md:px-6 lg:px-8 flex items-center justify-between gap-space-md">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-sm">
+    <div class="h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
       <!-- Left: Logo & Navigation Tabs -->
-      <div class="flex items-center gap-6 lg:gap-8">
+      <div class="flex items-center gap-5 lg:gap-8">
         <!-- Logo Anteraja Pharma -->
         <router-link
           to="/"
-          class="flex items-center gap-space-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg shrink-0"
+          class="flex items-center focus:outline-none rounded-lg shrink-0"
           title="Beranda Anteraja Pharma"
         >
           <img
@@ -54,49 +56,90 @@ function handleLogout() {
           />
         </router-link>
 
-        <!-- Navigation: 3 Layanan tabs (Halaman Pantau, Pelacakan GPS, Laporan) -->
-        <nav class="flex items-center gap-1.5 sm:gap-2">
-          <button
-            type="button"
-            @click="navigateToTab(1)"
-            class="transition-colors py-1.5 px-3.5 rounded-full font-label-lg text-label-lg cursor-pointer flex items-center gap-1.5"
-            :class="activeScreen === 1
-              ? 'text-primary font-bold bg-primary-fixed/40 shadow-xs'
-              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-medium'"
+        <!-- STATE 1: Portal Navigation (Beranda & Paket Saya) for '/' or '/paket-saya' -->
+        <nav v-if="!isMonitorPage" class="flex items-center gap-1.5 sm:gap-2">
+          <router-link
+            to="/"
+            class="transition-colors px-4 py-2 rounded-full text-sm font-semibold"
+            :class="route.path === '/'
+              ? 'bg-[#FCE7F3] text-[#D81E5B]'
+              : 'text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-50'"
           >
-            <span v-if="activeScreen === 1" class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            <span>Halaman Pantau</span>
-          </button>
+            Beranda
+          </router-link>
 
-          <button
-            type="button"
-            @click="navigateToTab(2)"
-            class="transition-colors py-1.5 px-3.5 rounded-full font-label-lg text-label-lg cursor-pointer flex items-center gap-1.5"
-            :class="activeScreen === 2
-              ? 'text-primary font-bold bg-primary-fixed/40 shadow-xs'
-              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-medium'"
+          <router-link
+            to="/paket-saya"
+            class="transition-colors px-4 py-2 rounded-full text-sm font-semibold"
+            :class="route.path === '/paket-saya'
+              ? 'bg-[#FCE7F3] text-[#D81E5B]'
+              : 'text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-50'"
           >
-            <span v-if="activeScreen === 2" class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            <span>Pelacakan GPS</span>
-          </button>
-
-          <button
-            type="button"
-            @click="navigateToTab(3)"
-            class="transition-colors py-1.5 px-3.5 rounded-full font-label-lg text-label-lg cursor-pointer flex items-center gap-1.5"
-            :class="activeScreen === 3
-              ? 'text-primary font-bold bg-primary-fixed/40 shadow-xs'
-              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-medium'"
-          >
-            <span v-if="activeScreen === 3" class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-            <span>Laporan</span>
-          </button>
+            Paket Saya
+          </router-link>
         </nav>
+
+        <!-- STATE 2: Detail Navigation (Monitor Page, Tracking GPS, Laporan) for '/vendor/monitor/:awb' -->
+        <div v-else class="flex items-center gap-2 sm:gap-3">
+          <!-- Back button to Paket Saya -->
+          <router-link
+            to="/paket-saya"
+            class="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-[#D81E5B] bg-slate-100 hover:bg-pink-50 px-3 py-1.5 rounded-full transition-all shrink-0"
+            title="Kembali ke Daftar Paket Saya"
+          >
+            <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+            <span class="hidden xs:inline">Paket Saya</span>
+          </router-link>
+
+          <span class="text-slate-200 text-xs hidden sm:inline">•</span>
+
+          <!-- 3 Detail tabs -->
+          <nav class="flex items-center gap-1 sm:gap-1.5">
+            <button
+              type="button"
+              @click="navigateToTab(1)"
+              title="Monitor Page (Halaman Pantau)"
+              class="transition-all py-1.5 px-3 sm:px-3.5 rounded-full text-xs font-semibold cursor-pointer flex items-center gap-1.5"
+              :class="activeScreen === 1
+                ? 'bg-[#FCE7F3] text-[#D81E5B] shadow-xs'
+                : 'text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-100'"
+            >
+              <span v-if="activeScreen === 1" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
+              <span>Monitor Page</span>
+            </button>
+
+            <button
+              type="button"
+              @click="navigateToTab(2)"
+              title="Tracking GPS (Pelacakan GPS)"
+              class="transition-all py-1.5 px-3 sm:px-3.5 rounded-full text-xs font-semibold cursor-pointer flex items-center gap-1.5"
+              :class="activeScreen === 2
+                ? 'bg-[#FCE7F3] text-[#D81E5B] shadow-xs'
+                : 'text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-100'"
+            >
+              <span v-if="activeScreen === 2" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
+              <span>Tracking GPS</span>
+            </button>
+
+            <button
+              type="button"
+              @click="navigateToTab(3)"
+              title="Laporan & Bukti Serah Terima"
+              class="transition-all py-1.5 px-3 sm:px-3.5 rounded-full text-xs font-semibold cursor-pointer flex items-center gap-1.5"
+              :class="activeScreen === 3
+                ? 'bg-[#FCE7F3] text-[#D81E5B] shadow-xs'
+                : 'text-slate-600 font-medium hover:text-slate-900 hover:bg-slate-100'"
+            >
+              <span v-if="activeScreen === 3" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
+              <span>Laporan</span>
+            </button>
+          </nav>
+        </div>
       </div>
 
       <!-- Right: Facility Verified Badge & Logout -->
       <div class="flex items-center gap-3">
-        <div class="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 shadow-xs">
+        <div class="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200/80 shadow-xs">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span class="font-semibold text-xs text-slate-800">{{ currentFacility.name }}</span>
           <span class="material-symbols-outlined text-emerald-600 text-[14px]">verified</span>

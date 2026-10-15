@@ -42,7 +42,7 @@ const packages = ref<PackageItem[]>([
     actionLabel: 'Lacak Live',
     actionIcon: 'arrow_forward',
     actionColor: 'bg-[#D81E5B] hover:bg-[#b10045] text-white shadow-pink-100',
-    targetScreen: 2,
+    targetScreen: 1,
   },
   {
     id: '2',
@@ -76,7 +76,7 @@ const packages = ref<PackageItem[]>([
     actionLabel: 'Pelacakan GPS',
     actionIcon: 'navigation',
     actionColor: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-    targetScreen: 2,
+    targetScreen: 1,
   },
   {
     id: '4',
@@ -93,7 +93,7 @@ const packages = ref<PackageItem[]>([
     actionLabel: 'Berita Acara POD',
     actionIcon: 'description',
     actionColor: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200',
-    targetScreen: 3,
+    targetScreen: 1,
   },
 ])
 
@@ -138,15 +138,15 @@ function handleDownloadRekap() {
 
 function handleActionClick(item: PackageItem) {
   toastRef.value?.show(
-    `Membuka ${item.actionLabel}`,
+    `Membuka Halaman Pantau`,
     `Mengalihkan ke ${item.awb} (${item.title})...`
   )
   setTimeout(() => {
     router.push({
       path: `/vendor/monitor/${encodeURIComponent(item.awb)}`,
-      query: { screen: item.targetScreen.toString() },
+      query: { screen: '1' },
     })
-  }, 400)
+  }, 250)
 }
 
 function handleOpenExcursionGuide() {
@@ -346,7 +346,8 @@ function handleOpenExcursionGuide() {
       <div
         v-for="item in displayedPackages"
         :key="item.id"
-        class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 hover:shadow-md transition-shadow flex flex-col md:flex-row md:items-center justify-between gap-6"
+        @click="handleActionClick(item)"
+        class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 hover:shadow-md transition-shadow flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer"
       >
         <!-- Left: Status pill, AWB, Title, Route -->
         <div class="flex flex-col gap-2.5 flex-1">
