@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target:
             env.API_PROXY_TARGET ||
-            "https://lightbox-clan-meanwhile-motorcycles.trycloudflare.com",
+            "https://naturals-class-acknowledge-yield.trycloudflare.com",
           changeOrigin: true,
         },
       },

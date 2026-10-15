@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { mockCourierProfile } from '../../data/mockShipments'
 import { logoutAndRedirect } from '../../services/auth'
 
 const route = useRoute()
+const router = useRouter()
 
 const emit = defineEmits<{
   (e: 'notify-click'): void
