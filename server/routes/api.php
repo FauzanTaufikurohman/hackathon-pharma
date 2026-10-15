@@ -84,6 +84,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/vendor/shipments/{awb}/events', [VendorMonitorController::class, 'events'])->name('vendor.events');
         Route::get('/vendor/shipments/{awb}/issues', [VendorMonitorController::class, 'issues']);
         Route::get('/vendor/shipments/{awb}/reports', [VendorMonitorController::class, 'reports'])->name('vendor.reports');
+        Route::get('/vendor/shipments/{awb}/proof', [VendorMonitorController::class, 'proof']);
+        Route::get('/vendor/shipments/{awb}/proof/photo', [VendorMonitorController::class, 'proofPhoto'])->name('vendor.proof.photo');
+        Route::get('/vendor/shipments/{awb}/proof/signature', [VendorMonitorController::class, 'proofSignature'])->name('vendor.proof.signature');
         Route::get('/vendor/shipments/{awb}/inspection-photo', [VendorMonitorController::class, 'inspectionPhoto']);
         Route::get('/vendor/reports/{report}/download', [VendorMonitorController::class, 'download'])->whereNumber('report')->name('vendor.report.download');
         Route::get('/vendor/reports/{report}/verify', [VendorMonitorController::class, 'verify'])->whereNumber('report')->name('vendor.report.verify');
