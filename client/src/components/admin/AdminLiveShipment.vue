@@ -105,6 +105,9 @@ const predictionMessage = computed(() =>
     : prediction.data.value?.data.reason ||
       'Data belum cukup untuk menghitung tren.',
 )
+const openTemperatureIssue = computed(() =>
+  openIssues.value.some((issue) => issue.type === 'temperature'),
+)
 </script>
 <template>
   <div class="flex flex-col gap-5 min-w-0">
@@ -231,7 +234,13 @@ const predictionMessage = computed(() =>
           Data diperbarui tiap 15 detik saat halaman aktif. Pembaruan dijeda
           ketika Anda menulis keputusan.
         </p>
-        <details v-if="shipment.can_simulate" class="live-panel">
+        <details
+          v-if="
+            shipment.can_simulate &&
+            ['in_transit', 'arrived'].includes(shipment.status)
+          "
+          class="live-panel"
+        >
           <summary class="cursor-pointer font-semibold">
             Uji skenario pada kiriman contoh
           </summary>
@@ -247,8 +256,9 @@ const predictionMessage = computed(() =>
             "
           >
             <p>
-              Hanya untuk data demo. Tidak mengubah kiriman nyata atau mengirim
-              pesan Telegram.
+              Hanya untuk kiriman demo. Data skenario tersimpan sebagai
+              telemetry simulasi dan dapat memicu kendala serta notifikasi
+              internal; perangkat nyata tidak diubah.
             </p>
             <label class="live-field"
               ><span>Skenario uji</span
@@ -278,6 +288,30 @@ const predictionMessage = computed(() =>
             </button>
           </form>
         </details>
+        <section
+          v-if="
+            shipment.can_simulate &&
+            shipment.status === 'deviation_hold' &&
+            openTemperatureIssue
+          "
+          class="live-panel"
+        >
+          <h3 class="text-lg font-semibold">Koreksi termal simulasi berbantuan AI</h3>
+          <p class="mt-3">
+            Simulasikan tiga pembacaan stabil pada titik tengah rentang suhu
+            kiriman. Sampel akan dicatat sebagai simulasi; ini tidak mengontrol
+            perangkat pendingin nyata dan tidak membuka penahanan secara
+            otomatis.
+          </p>
+          <button
+            type="button"
+            class="live-button live-primary mt-4"
+            :disabled="mutation.busy.value"
+            @click="act('simulate', { type: 'correct_temperature' })"
+          >
+            Catat koreksi termal simulasi
+          </button>
+        </section>
         <ApiState
           :error="
             telemetry.error.value ||

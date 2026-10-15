@@ -46,6 +46,11 @@ const menus = {
       label: 'Pemantauan',
     },
     {
+      path: '/admin/simulasi-termal',
+      name: 'admin-thermal-simulation',
+      label: 'Simulasi termal',
+    },
+    {
       path: '/admin/laporan-audit-log',
       name: 'admin-reports',
       label: 'Laporan',

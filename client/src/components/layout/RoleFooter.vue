@@ -10,6 +10,7 @@ const baseLinks = {
     { to: '/admin/manajemen-pengiriman', label: 'Manajemen pengiriman' },
     { to: '/admin/approval-qc-kurir', label: 'Persetujuan dan penugasan' },
     { to: '/admin/live-monitor-kendala', label: 'Pemantauan dan kendala' },
+    { to: '/admin/simulasi-termal', label: 'Simulasi termal' },
     { to: '/admin/laporan-audit-log', label: 'Laporan dan notifikasi' },
     { to: '/admin/pengguna', label: 'Pengguna dan hak akses' },
   ],

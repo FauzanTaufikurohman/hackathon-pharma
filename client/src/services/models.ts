@@ -76,6 +76,7 @@ export interface LiveTask {
   temp_actual: number | null
   probe_temp_str: string
   telemetry_stale: boolean
+  telemetry_recorded_at: string | null
   is_demo: boolean
   weight_str: string
   destination_detail: string

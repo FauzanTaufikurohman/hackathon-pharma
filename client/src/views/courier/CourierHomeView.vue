@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { currentUser } from '../../services/auth'
-import { useApi } from '../../services/useApi'
+import { useApi, usePolling } from '../../services/useApi'
 import type { LiveTask, Response } from '../../services/models'
 import ApiState from '../../components/layout/ApiState.vue'
 import CourierMetricCards from '../../components/courier/CourierMetricCards.vue'
+import RoleNavbar from '../../components/layout/RoleNavbar.vue'
+import RoleFooter from '../../components/layout/RoleFooter.vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 interface Dashboard {
@@ -18,9 +20,12 @@ interface Dashboard {
 const { data, loading, error, reload } = useApi<Response<Dashboard>>(
   () => '/courier/dashboard',
 )
+usePolling(reload, () => true)
 </script>
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="min-h-screen flex flex-col">
+    <RoleNavbar role="courier" />
+    <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 flex-1 flex flex-col gap-6">
     <header>
       <p class="text-primary font-semibold">
         Selamat bertugas, {{ currentUser?.name }}
@@ -55,7 +60,18 @@ const { data, loading, error, reload } = useApi<Response<Dashboard>>(
           })
       "
     />
-    <section v-if="data?.data.priority_task" class="live-panel">
+    <section
+      v-if="data?.data.priority_task"
+      class="live-panel"
+      :aria-live="data.data.priority_task.workflow_status === 'assigned' ? 'polite' : undefined"
+      :role="data.data.priority_task.workflow_status === 'assigned' ? 'status' : undefined"
+    >
+      <p
+        v-if="data.data.priority_task.workflow_status === 'assigned'"
+        class="font-semibold text-primary"
+      >
+        Penugasan baru untuk Anda — tinjau checklist dan tanggapi tugas ini.
+      </p>
       <p class="font-semibold text-primary">
         {{ data.data.priority_task.awb }}
       </p>
@@ -81,5 +97,7 @@ const { data, loading, error, reload } = useApi<Response<Dashboard>>(
     <RouterLink to="/courier/tugas-saya" class="live-button self-start"
       >Lihat semua tugas</RouterLink
     >
+    </main>
+    <RoleFooter role="courier" />
   </div>
 </template>

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Inspection;
+use App\Models\Assignment;
 use App\Models\Shipment;
 use App\Models\ShipmentEvent;
 use App\Models\ShipmentReport;
@@ -19,11 +20,11 @@ class DatabaseSeeder extends Seeder
             throw new \RuntimeException('Seeder demo hanya untuk local/testing.');
         }
         DB::transaction(function () {
-            $admin = User::firstOrCreate(['email' => 'admin@pharma.test'], ['name' => 'Admin Demo', 'role' => 'admin', 'password' => 'PharmaAdmin!2026']);
-            $checker = User::firstOrCreate(['email' => 'checker@pharma.test'], ['name' => 'Checker Demo', 'role' => 'checker', 'password' => 'PharmaChecker!2026']);
-            $courier = User::firstOrCreate(['email' => 'satria@pharma.test'], ['name' => 'Satria Demo', 'role' => 'courier', 'password' => 'PharmaKurir!2026']);
+            $admin = User::firstOrCreate(['email' => 'admin@pharma.test'], ['name' => 'Admin Demo', 'role' => 'admin', 'password' => 'password']);
+            $checker = User::firstOrCreate(['email' => 'checker@pharma.test'], ['name' => 'Checker Demo', 'role' => 'checker', 'password' => 'password']);
+            $courier = User::firstOrCreate(['email' => 'satria@pharma.test'], ['name' => 'Satria Demo', 'role' => 'courier', 'password' => 'password']);
             $vendor = User::firstOrCreate(['email' => 'vendor@pharma.test'], [
-                'name' => 'Sarah Nadia', 'role' => 'buyer', 'password' => 'PharmaVendor!2026',
+                'name' => 'Sarah Nadia', 'role' => 'buyer', 'password' => 'password',
                 'facility' => [
                     'facility_id' => 'RSMS-FARM-09', 'name' => 'RS Medika Sehat Jakarta',
                     'department' => 'Instalasi Farmasi Pusat', 'verified_status' => 'DEMO FACILITY',
@@ -59,6 +60,15 @@ class DatabaseSeeder extends Seeder
                     'recipient_ready' => false, 'is_demo' => true,
                     'completed_at' => $status === 'completed' ? now()->subHour() : null,
                 ]);
+                if (in_array($status, ['in_transit', 'completed'], true) && $shipment->courier_id
+                    && ! Assignment::where('shipment_id', $shipment->id)->exists()) {
+                    Assignment::create([
+                        'shipment_id' => $shipment->id, 'courier_id' => $shipment->courier_id,
+                        'assigned_by' => $admin->id, 'status' => $status === 'in_transit' ? 'accepted' : 'completed',
+                        'pre_trip' => ['seal' => true, 'icepack' => true, 'manifest' => true, 'temperature' => $temp],
+                        'responded_at' => now(),
+                    ]);
+                }
                 if (! $shipment->wasRecentlyCreated) {
                     continue;
                 }

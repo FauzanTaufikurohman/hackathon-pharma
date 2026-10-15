@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Message;
 use App\Models\Shipment;
 use App\Models\ShipmentReport;
+use App\Models\TelemetrySample;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -48,5 +50,40 @@ class AdminReportsTest extends TestCase
         Sanctum::actingAs($shipment->buyer, ['vendor']);
         $this->getJson('/api/v1/admin/reports')->assertForbidden();
         $this->postJson('/api/v1/admin/reports/'.$report->id.'/distribute')->assertForbidden();
+    }
+
+    public function test_simulated_temperature_deviation_can_record_ai_correction_without_resuming_shipment(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $courier = User::factory()->create(['role' => 'courier']);
+        $shipment = Shipment::factory()->assignedTo($courier, 'in_transit')->create([
+            'temperature_min' => 2, 'temperature_max' => 8, 'is_demo' => true, 'version' => 1,
+        ]);
+        Sanctum::actingAs($admin, ['admin']);
+        $url = '/api/v1/admin/shipments/'.$shipment->tracking_number.'/simulate';
+        $this->freezeTime();
+        $this->postJson($url, ['version' => $shipment->version, 'request_id' => (string) Str::uuid(),
+            'type' => 'temperature', 'temperature' => 12])
+            ->assertOk()->assertJsonPath('data.workflow_status', 'deviation_hold');
+        $shipment->refresh();
+        $this->assertDatabaseHas('issues', ['shipment_id' => $shipment->id, 'type' => 'temperature', 'status' => 'open']);
+        $this->getJson('/api/v1/admin/shipments/'.$shipment->tracking_number)
+            ->assertOk()->assertJsonPath('data.can_simulate', true);
+
+        $correction = ['version' => $shipment->version, 'request_id' => (string) Str::uuid(),
+            'type' => 'correct_temperature'];
+        $this->postJson($url, $correction)
+            ->assertOk()->assertJsonPath('data.workflow_status', 'deviation_hold');
+        $latest = TelemetrySample::where('shipment_id', $shipment->id)->latest('id')->firstOrFail();
+        $this->assertSame(5.0, (float) $latest->temperature);
+        $this->assertSame('AI-SIMULATOR', $latest->sensor_id);
+        $this->assertSame($latest->id, $shipment->fresh()->latestTelemetry->id);
+        $this->assertSame('deviation_hold', $shipment->fresh()->status);
+        $this->assertDatabaseHas('events', [
+            'shipment_id' => $shipment->id, 'type' => 'simulation_correction',
+        ]);
+
+        $this->postJson($url, $correction)->assertOk()->assertJsonPath('replayed', true);
+        $this->assertSame(6, TelemetrySample::where('shipment_id', $shipment->id)->count());
     }
 }

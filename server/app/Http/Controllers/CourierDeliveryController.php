@@ -22,7 +22,8 @@ class CourierDeliveryController extends Controller
             'open_issues_count' => $shipment->issues()->where('status', 'open')->count(),
             'can_depart' => $shipment->status === 'accepted',
             'can_arrive' => $shipment->status === 'in_transit' && ! $shipment->issues()->where('status', 'open')->exists(),
-            'can_handover' => $shipment->status === 'arrived' && ! $shipment->issues()->where('status', 'open')->exists(),
+            'can_handover' => in_array($shipment->status, ['arrived', 'returning'], true)
+                && ! $shipment->issues()->where('status', 'open')->exists(),
         ]])->header('Cache-Control', 'private, no-store');
     }
 

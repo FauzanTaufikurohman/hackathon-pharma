@@ -117,22 +117,44 @@ class AdminReportsController extends Controller
     public function simulate(Request $request, string $awb, OperationsWorkflow $workflow, CourierTelemetryService $engine): JsonResponse
     {
         abort_unless(app()->environment(['local', 'testing']) || config('services.pharma.simulator_enabled'), 404);
-        $data = $workflow->validateAction($request, ['type' => ['required', Rule::in(['temperature', 'signal_loss', 'seal'])],
+        $data = $workflow->validateAction($request, ['type' => ['required', Rule::in(['temperature', 'signal_loss', 'seal', 'correct_temperature'])],
             'temperature' => ['required_if:type,temperature', 'numeric', 'between:-100,100']]);
 
         return response()->json($workflow->perform($request->user(), 'admin', $awb, 'simulate', $data, function (Shipment $s, User $actor) use ($data, $engine, $workflow) {
-            abort_unless($s->is_demo && in_array($s->status, ['in_transit', 'arrived'], true), 409, 'Simulator hanya untuk kiriman demo yang sedang diantar.');
+            abort_unless($s->is_demo && in_array($s->status, ['in_transit', 'arrived', 'deviation_hold'], true), 409, 'Simulator hanya untuk kiriman demo yang sedang diantar atau ditahan karena penyimpangan.');
             $from = $s->status;
+            if ($data['type'] === 'correct_temperature') {
+                abort_unless($s->status === 'deviation_hold'
+                    && $s->temperature_min !== null && $s->temperature_max !== null
+                    && $s->issues()->where('type', 'temperature')->where('status', 'open')->exists(), 409,
+                    'Koreksi termal hanya tersedia untuk penyimpangan suhu demo yang masih terbuka.');
+                $current = $s->latestTelemetry?->temperature;
+                abort_unless($current !== null, 409, 'Sampel suhu terakhir tidak tersedia untuk memulai koreksi.');
+                $target = round(($s->temperature_min + $s->temperature_max) / 2, 1);
+                $starting = (float) $current;
+                for ($step = 1; $step <= 3; $step++) {
+                    $corrected = round($starting + (($target - $starting) * $step / 3), 2);
+                    $engine->append($s, ['temperature' => $corrected, 'latitude' => -6.2, 'longitude' => 106.8,
+                        'sensor_id' => 'AI-SIMULATOR', 'recorded_at' => now()->addSeconds($step)->toISOString()]);
+                }
+
+                return $workflow->result($s, $actor, $from, 'simulation_correction', 'Koreksi termal simulasi tercatat',
+                    'Simulasi mencatat tiga sampel stabil pada titik tengah rentang aman. Kiriman tetap ditahan sampai Admin meninjau dan memutuskan.',
+                    ['is_simulated' => true, 'ai_correction' => true, 'target_temperature_c' => $target, 'samples_written' => 3]);
+            }
             if ($data['type'] === 'temperature') {
+                abort_unless(in_array($s->status, ['in_transit', 'arrived'], true), 409, 'Skenario suhu hanya dapat dimulai saat demo dalam perjalanan.');
                 foreach ([4, 2, 0] as $minutes) {
                     $engine->append($s, ['temperature' => $data['temperature'], 'latitude' => -6.2, 'longitude' => 106.8,
+                        'sensor_id' => 'SIMULATOR',
                         'recorded_at' => now()->subMinutes($minutes)->toISOString()]);
                 }
             } else {
+                abort_unless(in_array($s->status, ['in_transit', 'arrived'], true), 409, 'Skenario penyimpangan hanya dapat dimulai saat demo dalam perjalanan.');
                 $engine->hold($s, $data['type'], 'Skenario demo: '.$data['type'], $s->latestTelemetry);
             }
 
-            return $workflow->result($s, $actor, $from, 'simulation', 'Skenario demo dijalankan', 'Data simulasi; tidak dikirim ke Telegram.', ['is_simulated' => true]);
+            return $workflow->result($s, $actor, $from, 'simulation', 'Skenario demo dijalankan', 'Data simulasi untuk pengujian; bukan pembacaan sensor nyata.', ['is_simulated' => true]);
         }));
     }
 }

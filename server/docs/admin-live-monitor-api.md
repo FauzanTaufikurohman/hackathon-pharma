@@ -12,6 +12,15 @@ Prefix /api/v1; gunakan Bearer Sanctum. Role mengikuti akun di database, bukan p
 - GET /admin/shipments/{awb}/prediction
 - POST /admin/shipments/{awb}/issues/{issue}/decision
 - GET /admin/issues/{issue}/photo
+- POST /admin/shipments/{awb}/simulate (khusus kiriman demo yang memenuhi syarat)
+
+Simulator tersedia pada halaman Admin **Simulasi termal**. Skenario suhu,
+sinyal, atau segel dan koreksi termal berbantuan prediksi dicatat sebagai
+telemetry/event simulasi dan disertakan pada laporan ketika serah terima
+diterbitkan. Koreksi termal membuat tiga sampel pada titik tengah rentang
+kiriman; koreksi tidak mengendalikan perangkat nyata dan tidak melanjutkan
+kiriman secara otomatis. Admin tetap harus meninjau kendala dan mengambil
+keputusan. Data demo tidak dikirim keluar melalui Telegram.
 
 ## Integrasi
 
