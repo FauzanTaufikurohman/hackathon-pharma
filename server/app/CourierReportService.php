@@ -26,7 +26,7 @@ class CourierReportService
                 ->map(fn ($sample) => $sample->only(['temperature', 'latitude', 'longitude', 'is_simulated']) + ['recorded_at' => $sample->recorded_at->toISOString()])->all(),
             'telemetry_preview_limited' => $shipment->telemetry()->count() > 2000,
             'incidents' => $shipment->issues()->get(['type', 'description', 'status', 'resolution_reason', 'created_at'])->toArray(),
-            'events' => $shipment->events()->orderBy('id')->get(['type', 'title', 'reason', 'from_status', 'to_status', 'created_at'])->toArray(),
+            'events' => $shipment->events()->orderBy('id')->get(['type', 'title', 'reason', 'from_status', 'to_status', 'metadata', 'created_at'])->toArray(),
             'pod' => $shipment->deliveryProof?->only(['mode', 'recipient_name', 'recipient_department', 'recipient_identity',
                 'temperature', 'seal_intact', 'latitude', 'longitude', 'handed_over_at', 'photo_sha256']),
             'digital_signature_verified' => false,
@@ -64,7 +64,14 @@ class CourierReportService
         }
         $html .= '</table><h2>Linimasa audit</h2><table>';
         foreach ($s['events'] ?? [] as $event) {
-            $html .= '<tr><td>'.e($event['created_at']).'</td><td>'.e($event['title']).'</td><td>'.e($event['reason'] ?? '').'</td></tr>';
+            $metadata = $event['metadata'] ?? [];
+            $detail = $event['reason'] ?? '';
+            if (($metadata['ai_correction'] ?? false) === true) {
+                $detail .= ' | Koreksi termal simulasi: '.($metadata['samples_written'] ?? 0).' sampel pada '.($metadata['target_temperature_c'] ?? '—').' °C.';
+            } elseif (($metadata['is_simulated'] ?? false) === true && $event['type'] === 'simulation') {
+                $detail .= ' | Skenario simulasi.';
+            }
+            $html .= '<tr><td>'.e($event['created_at']).'</td><td>'.e($event['title']).'</td><td>'.e($detail).'</td></tr>';
         }
         $html .= '</table><p>SHA256 snapshot: '.e($report->sha256).'</p><p>Checksum bukan enkripsi atau tanda tangan digital tersertifikasi.</p>';
 

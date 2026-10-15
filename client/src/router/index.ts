@@ -12,6 +12,7 @@ import CheckerExamView from "../views/checker/CheckerExamView.vue";
 import AdminShipmentsView from "../views/admin/AdminShipmentsView.vue";
 import AdminApprovalsView from "../views/admin/AdminApprovalsView.vue";
 import AdminLiveMonitorView from "../views/admin/AdminLiveMonitorView.vue";
+import AdminThermalSimulationView from "../views/admin/AdminThermalSimulationView.vue";
 import AdminReportsView from "../views/admin/AdminReportsView.vue";
 import AdminAccessManagementView from "../views/admin/AdminAccessManagementView.vue";
 import LoginView from "../views/auth/LoginView.vue";
@@ -63,7 +64,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/courier",
     name: "courier-home",
-    component: CourierTaskDetailView,
+    component: CourierHomeView,
     alias: [
       "/kurir",
       "/courier/beranda",
@@ -134,6 +135,12 @@ const routes: RouteRecordRaw[] = [
     name: "admin-monitor",
     component: AdminLiveMonitorView,
     alias: ["/admin/monitor", "/admin/live-monitor", "/admin/kendala"],
+    meta: { roles: ["admin"] },
+  },
+  {
+    path: "/admin/simulasi-termal",
+    name: "admin-thermal-simulation",
+    component: AdminThermalSimulationView,
     meta: { roles: ["admin"] },
   },
   {

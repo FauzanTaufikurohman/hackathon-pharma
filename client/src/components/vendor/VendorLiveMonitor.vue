@@ -99,7 +99,7 @@ async function search() {
   })
   if (value === props.awb) await record.reload()
 }
-usePolling(reload, () => tab.value === 2 && !mutation.busy.value)
+usePolling(reload, () => tab.value !== 3 && !mutation.busy.value)
 const proof = useApi<
   Response<{
     recipient_name: string

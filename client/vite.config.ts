@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target:
             env.API_PROXY_TARGET ||
-            "https://naturals-class-acknowledge-yield.trycloudflare.com",
+            "https://vbulletin-experiences-stud-synthesis.trycloudflare.com",
           changeOrigin: true,
         },
       },
