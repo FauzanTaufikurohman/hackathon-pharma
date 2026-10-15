@@ -2,130 +2,171 @@ import { ref } from 'vue'
 import type { Router } from 'vue-router'
 
 export type AppRole = 'admin' | 'checker' | 'courier' | 'buyer' | 'vendor'
-
 export interface AuthUser {
   id: number
   name: string
   email: string
   role: AppRole
+  facility?: Record<string, unknown> | null
 }
-
-function isAppRole(value: unknown): value is AppRole {
-  return value === 'admin'
-    || value === 'checker'
-    || value === 'courier'
-    || value === 'buyer'
-    || value === 'vendor'
-}
-
-interface LoginResponse {
-  data: AuthUser
-  token: string
-}
-
-
 export const currentUser = ref<AuthUser | null>(null)
-
+export const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api/v1')
+  .trim()
+  .replace(/\/+$/, '')
+const sessionKey = 'pharma.session'
 let accessToken: string | null = null
-
-const apiBaseUrl = (
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
-).replace(/\/+$/, '')
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
+let restorePromise: Promise<void> | undefined
+let sessionVersion = 0
+try {
+  accessToken = sessionStorage.getItem(sessionKey)
+} catch {
+  /* private browsing may disable storage */
 }
 
-function getMessage(body: unknown, fallback: string): string {
-  if (!isRecord(body)) return fallback
-
-  if (typeof body.message === 'string') return body.message
-
-  if (isRecord(body.errors)) {
-    const firstError = Object.values(body.errors).find(
-      (value): value is string[] => Array.isArray(value) && value.every((item) => typeof item === 'string'),
-    )?.[0]
-    if (firstError) return firstError
-  }
-
-  return fallback
+export function getAccessToken() {
+  return accessToken
 }
-
-function parseLoginResponse(value: unknown): LoginResponse {
-  if (!isRecord(value) || !isRecord(value.data)) {
-    throw new Error('Server memberikan respons login yang tidak valid.')
-  }
-
-  const { id, name, email, role } = value.data
-  const token = value.token
-
-  if (
-    typeof id !== 'number'
-    || typeof name !== 'string'
-    || typeof email !== 'string'
-    || !isAppRole(role)
-    || typeof token !== 'string'
-    || token.length === 0
-  ) {
-    throw new Error('Data akun atau token dari server tidak lengkap.')
-  }
-
-  return {
-    data: { id, name, email, role },
-    token,
+export function clearSession() {
+  sessionVersion++
+  accessToken = null
+  currentUser.value = null
+  try {
+    sessionStorage.removeItem(sessionKey)
+  } catch {
+    /* memory-only session */
   }
 }
-
-export async function login(email: string, password: string): Promise<AuthUser> {
-  const response = await fetch(`${apiBaseUrl}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ email, password, device_name: 'pharma-web' }),
-  })
-  const body: unknown = await response.json()
-
-  if (!response.ok) {
-    throw new Error(getMessage(body, 'Login gagal. Periksa kembali email dan kata sandi.'))
+function setToken(token: string) {
+  sessionVersion++
+  accessToken = token
+  try {
+    sessionStorage.setItem(sessionKey, token)
+  } catch {
+    /* memory-only session */
   }
-
-  const result = parseLoginResponse(body)
-  accessToken = result.token
-  currentUser.value = result.data
-  return result.data
 }
-
+function isUser(value: unknown): value is AuthUser {
+  if (!value || typeof value !== 'object') return false
+  const user = value as Partial<AuthUser>
+  return (
+    typeof user.id === 'number' &&
+    typeof user.name === 'string' &&
+    typeof user.email === 'string' &&
+    ['admin', 'checker', 'courier', 'buyer', 'vendor'].includes(user.role || '')
+  )
+}
+export async function restoreSession(): Promise<void> {
+  if (currentUser.value || !accessToken) return
+  if (!restorePromise) {
+    restorePromise = (async () => {
+      const version = sessionVersion
+      const token = accessToken
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 15000)
+      try {
+        const response = await fetch(apiBaseUrl + '/auth/me', {
+          headers: {
+            Authorization: 'Bearer ' + token,
+            Accept: 'application/json',
+          },
+          signal: controller.signal,
+        })
+        if (version !== sessionVersion) return
+        if (response.status === 401 || response.status === 403) {
+          clearSession()
+          return
+        }
+        if (!response.ok)
+          throw new Error('Sesi belum dapat diperiksa. Coba lagi.')
+        const body = await response.json()
+        if (version !== sessionVersion) return
+        if (!isUser(body.data)) {
+          clearSession()
+          return
+        }
+        currentUser.value = body.data
+      } catch {
+        /* retain the token on network failure; never grant access from cached role */
+      } finally {
+        clearTimeout(timer)
+        restorePromise = undefined
+      }
+    })()
+  }
+  await restorePromise
+}
+export async function login(
+  email: string,
+  password: string,
+): Promise<AuthUser> {
+  clearSession()
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 15000)
+  try {
+    const response = await fetch(apiBaseUrl + '/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ email, password, device_name: 'pharma-web' }),
+      signal: controller.signal,
+    })
+    if (response.status >= 500)
+      throw new Error('Server sedang bermasalah. Silakan coba lagi.')
+    const body = await response.json()
+    if (!response.ok) {
+      const first = Object.values(body.errors || {}).flat()[0]
+      throw new Error(
+        typeof first === 'string'
+          ? first
+          : body.message || 'Login gagal. Periksa akun Anda.',
+      )
+    }
+    if (!isUser(body.data) || typeof body.token !== 'string' || !body.token)
+      throw new Error('Respons login tidak lengkap.')
+    setToken(body.token)
+    currentUser.value = body.data
+    return body.data
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError')
+      throw new Error('Server belum merespons. Silakan coba lagi.')
+    if (error instanceof TypeError || error instanceof SyntaxError)
+      throw new Error(
+        'Tidak dapat membaca respons server. Periksa koneksi lalu coba lagi.',
+      )
+    throw error
+  } finally {
+    clearTimeout(timer)
+  }
+}
 export async function logout(): Promise<void> {
   const token = accessToken
-
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 10000)
   try {
     if (!token) return
-
-    const response = await fetch(`${apiBaseUrl}/auth/logout`, {
+    const response = await fetch(apiBaseUrl + '/auth/logout', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' },
+      signal: controller.signal,
     })
-    const body: unknown = await response.json()
-
-    if (!response.ok) {
-      throw new Error(getMessage(body, 'Server gagal mengakhiri sesi.'))
-    }
+    if (!response.ok && response.status !== 401)
+      throw new Error('Server belum mengonfirmasi pencabutan sesi.')
   } finally {
-    accessToken = null
-    currentUser.value = null
+    clearTimeout(timer)
+    clearSession()
   }
 }
-
 export async function logoutAndRedirect(router: Router): Promise<void> {
-  let logoutFailed = false
-
+  let failed = false
   try {
     await logout()
   } catch {
-    logoutFailed = true
+    failed = true
   }
-
   await router.replace({
     name: 'login',
-    query: { logout: logoutFailed ? 'failed' : 'success' },
+    query: { logout: failed ? 'failed' : 'success' },
   })
 }

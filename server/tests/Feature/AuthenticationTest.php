@@ -50,6 +50,19 @@ class AuthenticationTest extends TestCase
         $this->assertDatabaseCount('personal_access_tokens', 0);
     }
 
+    public function test_cors_does_not_allow_an_unlisted_origin_or_delete_method(): void
+    {
+        $this->withHeaders([
+            'Origin' => 'https://untrusted.example',
+            'Access-Control-Request-Method' => 'POST',
+            'Access-Control-Request-Headers' => 'authorization,content-type',
+        ])->options('/api/v1/auth/login')->assertHeaderMissing('Access-Control-Allow-Origin');
+        $this->withHeaders([
+            'Origin' => 'https://pharma-hackathon.vercel.app',
+            'Access-Control-Request-Method' => 'DELETE',
+        ])->options('/api/v1/auth/login')->assertHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
+    }
+
     public function test_invalid_password_and_unknown_email_have_same_error(): void
     {
         User::factory()->create(['email' => 'vendor@example.test', 'password' => 'secret-test']);

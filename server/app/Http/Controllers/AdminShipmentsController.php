@@ -120,6 +120,8 @@ class AdminShipmentsController extends Controller
             ? route('admin.inspection.photo', ['awb' => $awb]) : null, 'ocr_available' => false] : null;
 
         return response()->json(['data' => $serializer->serialize($shipment) + [
+            'can_simulate' => $shipment->is_demo && in_array($shipment->status, ['in_transit', 'arrived'], true)
+                && (app()->environment(['local', 'testing']) || config('services.pharma.simulator_enabled')),
             'inspection_detail' => $safeInspection, 'approval' => $shipment->latestApproval,
             'assignment' => $shipment->latestAssignment, 'courier' => $shipment->courier?->only(['id', 'name']),
             'open_issues_count' => $shipment->issues()->where('status', 'open')->count(),

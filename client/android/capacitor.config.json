@@ -1,0 +1,14 @@
+{
+  "appId": "com.anteraja.pharma",
+  "appName": "Anteraja Pharma",
+  "webDir": "www",
+  "android": { "path": "native", "allowMixedContent": false },
+  "server": {
+    "hostname": "localhost",
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "plugins": {
+    "SystemBars": { "insetsHandling": "css", "style": "LIGHT", "hidden": false }
+  }
+}
