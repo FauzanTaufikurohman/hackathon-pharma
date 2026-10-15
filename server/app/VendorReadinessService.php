@@ -23,7 +23,7 @@ class VendorReadinessService
 
                     return ['data' => $previous->metadata['result'], 'replayed' => true];
                 }
-                abort_if(in_array($shipment->status, ['completed', 'delivered', 'returned'], true), 409, 'Kiriman sudah selesai; kesiapan tidak dapat diubah.');
+                abort_if(in_array($shipment->status, ['completed', 'delivered', 'returned', 'cancelled'], true), 409, 'Kiriman sudah selesai; kesiapan tidak dapat diubah.');
                 abort_unless($shipment->version === (int) $data['version'], 409, 'Data kiriman berubah. Muat ulang sebelum menyimpan.');
                 $shipment->recipient_ready = (bool) $data['recipient_ready'];
                 $shipment->version++;

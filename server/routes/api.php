@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminShipmentsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourierDashboardController;
 use App\Http\Controllers\CourierDeliveryController;
@@ -17,6 +18,14 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'throttle:vendor'])->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::get('/admin/shipments', [AdminShipmentsController::class, 'index']);
+        Route::post('/admin/shipments', [AdminShipmentsController::class, 'store']);
+        Route::get('/admin/lookups', [AdminShipmentsController::class, 'lookups']);
+        Route::get('/admin/metrics', [AdminShipmentsController::class, 'metrics']);
+        Route::get('/admin/shipments/export', [AdminShipmentsController::class, 'export']);
+        Route::get('/admin/shipments/{awb}', [AdminShipmentsController::class, 'show']);
+        Route::post('/admin/shipments/{awb}/cancel', [AdminShipmentsController::class, 'cancel']);
+        Route::get('/admin/shipments/{awb}/inspection-photo', [AdminShipmentsController::class, 'inspectionPhoto'])->name('admin.inspection.photo');
         Route::get('/courier/dashboard', [CourierDashboardController::class, 'show']);
         Route::get('/courier/tasks', [CourierTasksController::class, 'index']);
         Route::get('/courier/tasks/{awb}/handover', [CourierHandoverController::class, 'show']);

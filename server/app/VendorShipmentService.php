@@ -10,7 +10,7 @@ class VendorShipmentService
 {
     public const CATEGORY_STATUSES = [
         'transit' => ['assigned', 'accepted', 'in_transit', 'arrived', 'returning'],
-        'qc' => ['created', 'inspection', 'pending_approval', 'approved', 'rejected', 'pending_assignment', 'deviation_hold', 'held'],
+        'qc' => ['created', 'inspection', 'pending_approval', 'approved', 'rejected', 'pending_assignment', 'deviation_hold', 'held', 'cancelled'],
         'delivered' => ['delivered', 'completed', 'returned'],
     ];
 
@@ -23,11 +23,13 @@ class VendorShipmentService
         'deviation_hold' => 'Ditahan karena penyimpangan', 'held' => 'Ditahan untuk pemeriksaan',
         'delivered' => 'Sudah diterima', 'completed' => 'Selesai dan ditutup',
         'returning' => 'Dalam proses retur', 'returned' => 'Sudah dikembalikan',
+        'cancelled' => 'Dibatalkan',
     ];
 
     public function owned(User $user): Builder
     {
         abort_unless(in_array($user->role, ['buyer', 'vendor'], true), 403, 'Halaman ini khusus vendor atau penerima.');
+        abort_unless($user->is_active, 403, 'Akun tidak aktif.');
         abort_unless($user->tokenCan('vendor'), 403, 'Token tidak memiliki akses vendor.');
 
         return Shipment::query()->where('buyer_id', $user->id);
