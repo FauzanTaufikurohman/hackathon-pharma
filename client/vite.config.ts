@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target:
             env.API_PROXY_TARGET ||
-            "https://phoenix-venue-possession-logistics.trycloudflare.com",
+            "https://lightbox-clan-meanwhile-motorcycles.trycloudflare.com",
           changeOrigin: true,
         },
       },
