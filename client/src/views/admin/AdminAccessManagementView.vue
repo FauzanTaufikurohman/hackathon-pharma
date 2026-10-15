@@ -1,195 +1,331 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import AdminNavbar from '../../components/admin/AdminNavbar.vue'
-
-type AccessRole = 'admin' | 'checker' | 'courier' | 'vendor'
-type AccountStatus = 'Aktif' | 'Nonaktif'
-
+import ApiState from '../../components/layout/ApiState.vue'
+import { useApi, useMutation } from '../../services/useApi'
+import { query } from '../../services/api'
+import { currentUser } from '../../services/auth'
 interface ManagedUser {
   id: number
   name: string
   email: string
-  role: AccessRole
-  status: AccountStatus
+  role: string
+  is_active: boolean
+  courier_profile: { capacity_kg?: number } | null
 }
-
-const roles: { value: AccessRole; label: string; access: string }[] = [
-  { value: 'admin', label: 'Admin', access: 'Pengiriman, persetujuan, pemantauan, laporan, pengguna' },
-  { value: 'checker', label: 'Checker', access: 'Pemeriksaan awal dan bukti barang' },
-  { value: 'courier', label: 'Kurir', access: 'Tugas, status perjalanan, dan kendala' },
-  { value: 'vendor', label: 'Vendor / Customer', access: 'Pantau pengiriman dan lihat laporan' },
+interface Directory {
+  data: ManagedUser[]
+  total: number
+  last_page: number
+}
+const page = ref(1),
+  search = ref(''),
+  filter = ref(''),
+  adding = ref(false),
+  name = ref(''),
+  email = ref(''),
+  role = ref('checker'),
+  password = ref(''),
+  capacity = ref<number | string>(''),
+  chatIds = ref<Record<number, string>>({})
+const users = useApi<Directory>(
+  () => '/admin/users' + query({ page: page.value, search: filter.value }),
+)
+const mutation = useMutation()
+const roles = [
+  { value: 'admin', label: 'Admin' },
+  { value: 'checker', label: 'Checker' },
+  { value: 'courier', label: 'Kurir' },
+  { value: 'buyer', label: 'Vendor / penerima' },
 ]
-
-const users = ref<ManagedUser[]>([
-  { id: 1, name: 'Ayu Pratama', email: 'ayu.admin@pharma.test', role: 'admin', status: 'Aktif' },
-  { id: 2, name: 'Rian Hendra', email: 'rian.checker@pharma.test', role: 'checker', status: 'Aktif' },
-  { id: 3, name: 'Bambang Suryono', email: 'bambang.kurir@pharma.test', role: 'courier', status: 'Aktif' },
-  { id: 4, name: 'RS Medika Sehat', email: 'farmasi@medika.test', role: 'vendor', status: 'Aktif' },
-])
-
-const isAddingUser = ref(false)
-const newName = ref('')
-const newEmail = ref('')
-const newRole = ref<AccessRole>('checker')
-const notice = ref('')
-
-const activeUserCount = computed(() => users.value.filter((user) => user.status === 'Aktif').length)
-
-function roleLabel(role: AccessRole): string {
-  return roles.find((item) => item.value === role)?.label ?? role
-}
-
-function toggleStatus(user: ManagedUser) {
-  user.status = user.status === 'Aktif' ? 'Nonaktif' : 'Aktif'
-  notice.value = `Status ${user.name} diubah menjadi ${user.status.toLowerCase()}.`
-}
-
-function addUser() {
-  const name = newName.value.trim()
-  const email = newEmail.value.trim().toLowerCase()
-  if (!name || !email) return
-  if (users.value.some((user) => user.email === email)) {
-    notice.value = 'Email tersebut sudah terdaftar pada daftar prototipe.'
-    return
+async function create() {
+  const payload = {
+    name: name.value,
+    email: email.value,
+    password: password.value,
+    role: role.value,
+    ...(role.value === 'courier'
+      ? { capacity_kg: Number(capacity.value) }
+      : {}),
   }
-
-  users.value.push({
-    id: Date.now(),
-    name,
-    email,
-    role: newRole.value,
-    status: 'Aktif',
-  })
-  notice.value = `${name} ditambahkan sebagai ${roleLabel(newRole.value)}. Perubahan ini hanya berlaku di prototipe.`
-  newName.value = ''
-  newEmail.value = ''
-  newRole.value = 'checker'
-  isAddingUser.value = false
+  if (await mutation.run('/admin/users', payload)) {
+    name.value = ''
+    email.value = ''
+    password.value = ''
+    capacity.value = ''
+    adding.value = false
+    await users.reload()
+  }
+}
+async function update(user: ManagedUser, newRole: string, active: boolean) {
+  const values = {
+    role: newRole,
+    is_active: active,
+    expected_role: user.role,
+    expected_active: user.is_active,
+  }
+  const roleCapacity =
+    newRole === 'courier' && !user.courier_profile?.capacity_kg
+      ? prompt('Kapasitas kurir (kg) yang benar-benar tersedia:')
+      : null
+  if (
+    newRole === 'courier' &&
+    !user.courier_profile?.capacity_kg &&
+    !roleCapacity
+  )
+    return
+  if (
+    !confirm(
+      'Simpan perubahan akses ' +
+        user.name +
+        '? Sesi aktif akun ini akan dicabut jika aksesnya berubah.',
+    )
+  )
+    return
+  if (
+    await mutation.run(
+      '/admin/users/' + user.id,
+      {
+        ...values,
+        ...(roleCapacity ? { capacity_kg: Number(roleCapacity) } : {}),
+      },
+      'PUT',
+    )
+  )
+    await users.reload()
+}
+async function telegram(user: ManagedUser) {
+  const chat = chatIds.value[user.id]?.trim()
+  if (!chat) return
+  if (
+    await mutation.run(
+      '/admin/users/' + user.id + '/telegram',
+      { chat_id: chat },
+      'PUT',
+    )
+  )
+    chatIds.value[user.id] = ''
+}
+function chooseRole(event: Event, user: ManagedUser) {
+  const select = event.target as HTMLSelectElement
+  const selected = select.value
+  select.value = user.role
+  void update(user, selected, user.is_active)
+}
+function submitSearch() {
+  filter.value = search.value.trim()
+  page.value = 1
 }
 </script>
-
 <template>
-  <div class="min-h-screen bg-slate-50 text-slate-900">
+  <div>
     <AdminNavbar active-tab="users" />
-
-    <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
+      <header class="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold tracking-tight">Pengguna &amp; hak akses</h1>
-          <p class="mt-1 text-sm text-slate-600">Atur peran untuk membatasi fitur yang dapat digunakan setiap akun.</p>
+          <h1 class="text-3xl font-semibold tracking-tight">
+            Pengguna dan hak akses
+          </h1>
+          <p class="mt-3 text-on-surface-variant">
+            Role ditentukan oleh akun, bukan dipilih saat login.
+          </p>
         </div>
+        <button type="button" class="live-button" @click="adding = !adding">
+          {{ adding ? 'Tutup formulir' : 'Tambah pengguna' }}
+        </button>
+      </header>
+      <ApiState
+        :loading="users.loading.value"
+        :error="users.error.value || mutation.error.value"
+        :notice="mutation.notice.value"
+        @retry="users.reload"
+      />
+      <form
+        v-if="adding"
+        class="live-panel grid sm:grid-cols-2 gap-4"
+        @submit.prevent="create"
+      >
+        <label class="live-field"
+          ><span>Nama</span
+          ><input
+            v-model="name"
+            name="name"
+            minlength="2"
+            maxlength="255"
+            required
+            :disabled="mutation.busy.value"
+        /></label>
+        <label class="live-field"
+          ><span>Email</span
+          ><input
+            v-model="email"
+            name="email"
+            type="email"
+            maxlength="255"
+            required
+            :disabled="mutation.busy.value"
+        /></label>
+        <label class="live-field"
+          ><span>Peran</span
+          ><select v-model="role" name="role" :disabled="mutation.busy.value">
+            <option
+              v-for="option in roles"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select></label
+        >
+        <label class="live-field"
+          ><span>Password awal (minimal 12 karakter)</span
+          ><input
+            v-model="password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            minlength="12"
+            maxlength="255"
+            required
+            :disabled="mutation.busy.value"
+        /></label>
+        <label v-if="role === 'courier'" class="live-field"
+          ><span>Kapasitas pengantaran (kg)</span
+          ><input
+            v-model.number="capacity"
+            name="capacity_kg"
+            type="number"
+            step="0.01"
+            min="0.01"
+            max="100000"
+            required
+        /></label>
+        <p class="sm:col-span-2">
+          Sampaikan password awal langsung kepada pemilik akun. Password tidak
+          ditampilkan dalam respons atau disimpan sebagai teks biasa.
+        </p>
+        <button
+          type="submit"
+          class="live-button live-primary justify-self-start"
+          :disabled="mutation.busy.value"
+        >
+          Simpan pengguna
+        </button>
+      </form>
+      <form class="flex gap-3 items-end" @submit.prevent="submitSearch">
+        <label class="live-field flex-1"
+          ><span>Cari nama atau email</span
+          ><input
+            v-model="search"
+            name="search"
+            type="search"
+            maxlength="120" /></label
+        ><button type="submit" class="live-button">Cari</button>
+      </form>
+      <p
+        v-if="users.data.value && !users.data.value.data.length"
+        class="live-panel"
+      >
+        Tidak ada akun yang sesuai.
+      </p>
+      <article
+        v-for="user in users.data.value?.data"
+        :key="user.id"
+        class="live-panel"
+      >
+        <div class="flex flex-wrap justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-semibold">{{ user.name }}</h2>
+            <p class="mt-2 break-all">{{ user.email }}</p>
+            <p class="mt-2">
+              {{ user.role }} · {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3 items-start">
+            <label class="live-field"
+              ><span>Ubah peran</span
+              ><select
+                :value="user.role"
+                :name="'role_' + user.id"
+                :disabled="mutation.busy.value || user.id === currentUser?.id"
+                @change="(event) => chooseRole(event, user)"
+              >
+                <option
+                  v-for="option in [
+                    ...roles,
+                    { value: 'vendor', label: 'Vendor' },
+                  ]"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </option>
+              </select></label
+            ><button
+              type="button"
+              class="live-button"
+              :disabled="mutation.busy.value || user.id === currentUser?.id"
+              @click="update(user, user.role, !user.is_active)"
+            >
+              {{ user.is_active ? 'Nonaktifkan akun' : 'Aktifkan akun' }}
+            </button>
+          </div>
+        </div>
+        <details class="mt-5">
+          <summary class="cursor-pointer font-semibold py-2">
+            Pasang Chat ID Telegram
+          </summary>
+          <form
+            class="flex flex-wrap gap-3 items-end mt-3"
+            @submit.prevent="telegram(user)"
+          >
+            <label class="live-field flex-1"
+              ><span>Chat ID pemilik akun yang sudah mengirim /start</span
+              ><input
+                v-model="chatIds[user.id]"
+                :name="'telegram_' + user.id"
+                pattern="-?[0-9]{1,20}"
+                required /></label
+            ><button
+              type="submit"
+              class="live-button"
+              :disabled="mutation.busy.value"
+            >
+              Simpan Chat ID
+            </button>
+          </form>
+          <p class="mt-3 text-on-surface-variant">
+            Menyimpan Chat ID belum berarti pesan terkirim. Bot token tetap
+            disimpan privat di server.
+          </p>
+        </details>
+      </article>
+      <nav
+        v-if="users.data.value"
+        class="flex gap-3 items-center"
+        aria-label="Halaman pengguna"
+      >
         <button
           type="button"
-          @click="isAddingUser = !isAddingUser"
-          class="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+          class="live-button"
+          :disabled="page <= 1 || users.loading.value"
+          @click="page--"
         >
-          {{ isAddingUser ? 'Tutup' : 'Tambah pengguna' }}
+          Sebelumnya
         </button>
-      </div>
-
-      <div class="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <section
-          v-for="role in roles"
-          :key="role.value"
-          class="rounded-xl border border-slate-200 bg-white p-4"
+        <p>
+          {{ page }} / {{ users.data.value.last_page }} ·
+          {{ users.data.value.total }} akun
+        </p>
+        <button
+          type="button"
+          class="live-button"
+          :disabled="page >= users.data.value.last_page || users.loading.value"
+          @click="page++"
         >
-          <h2 class="text-sm font-semibold">{{ role.label }}</h2>
-          <p class="mt-1 text-sm text-slate-600">{{ role.access }}</p>
-        </section>
-      </div>
-
-      <form
-        v-if="isAddingUser"
-        class="mb-6 grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-4"
-        @submit.prevent="addUser"
-      >
-        <label class="text-sm font-medium text-slate-700">
-          Nama
-          <input v-model="newName" required class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 font-normal" />
-        </label>
-        <label class="text-sm font-medium text-slate-700">
-          Email
-          <input v-model="newEmail" required type="email" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 font-normal" />
-        </label>
-        <label class="text-sm font-medium text-slate-700">
-          Peran
-          <select v-model="newRole" class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal">
-            <option v-for="role in roles" :key="role.value" :value="role.value">{{ role.label }}</option>
-          </select>
-        </label>
-        <div class="flex items-end">
-          <button type="submit" class="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
-            Simpan pengguna
-          </button>
-        </div>
-      </form>
-
-      <p
-        v-if="notice"
-        role="status"
-        class="mb-4 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-900"
-      >
-        {{ notice }}
-      </p>
-
-      <section class="overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <h2 class="font-semibold">Daftar pengguna</h2>
-          <span class="text-sm text-slate-500">{{ activeUserCount }} aktif</span>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[640px] text-left text-sm">
-            <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-              <tr>
-                <th class="px-4 py-3 font-medium">Pengguna</th>
-                <th class="px-4 py-3 font-medium">Peran</th>
-                <th class="px-4 py-3 font-medium">Status</th>
-                <th class="px-4 py-3 font-medium">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr v-for="user in users" :key="user.id">
-                <td class="px-4 py-3">
-                  <p class="font-medium text-slate-900">{{ user.name }}</p>
-                  <p class="mt-0.5 text-slate-500">{{ user.email }}</p>
-                </td>
-                <td class="px-4 py-3">
-                  <select
-                    v-model="user.role"
-                    :aria-label="`Peran ${user.name}`"
-                    class="rounded-md border border-slate-300 bg-white px-2.5 py-1.5"
-                    @change="notice = `Peran ${user.name} diubah menjadi ${roleLabel(user.role)}. Perubahan ini hanya berlaku di prototipe.`"
-                  >
-                    <option v-for="role in roles" :key="role.value" :value="role.value">{{ role.label }}</option>
-                  </select>
-                </td>
-                <td class="px-4 py-3">
-                  <span
-                    class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium"
-                    :class="user.status === 'Aktif' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'"
-                  >
-                    {{ user.status }}
-                  </span>
-                </td>
-                <td class="px-4 py-3">
-                  <button
-                    type="button"
-                    class="font-medium text-primary hover:underline"
-                    @click="toggleStatus(user)"
-                  >
-                    {{ user.status === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan' }}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <p class="mt-4 text-xs text-slate-500">
-        Prototipe: perubahan pengguna dan peran hanya tersimpan sementara di halaman ini. Penerapan hak akses sebenarnya memerlukan API backend.
-      </p>
+          Berikutnya
+        </button>
+      </nav>
     </main>
   </div>
 </template>

@@ -1,65 +1,61 @@
 <script setup lang="ts">
+import RoleFooter from './RoleFooter.vue'
 </script>
-
 <template>
-  <footer class="w-full bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] mt-space-xl border-t border-surface-container">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-space-xl pb-space-lg">
+  <footer class="w-full bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] mt-space-xl border-t border-border-subtle/50">
+    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-space-xl pb-space-lg">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-space-xl pb-space-xl">
-        <!-- Col 1: Brand & Desc & Quick Channels (4 cols) -->
+        <!-- Col 1: Brand & Desc (4 cols) -->
         <div class="lg:col-span-4 flex flex-col items-start gap-space-md">
           <div class="flex items-center gap-space-xs">
             <img
               alt="Anteraja Pharma"
               class="h-9 w-auto object-contain"
-              src="/images/anteraja-pharma-logo.png"
+              src="/pharma-logo.webp"
             />
           </div>
           <p class="font-body-md text-body-md text-on-surface-variant max-w-sm leading-relaxed">
-            Solusi pengiriman logistik pintar berbasis teknologi dengan armada Satria terpercaya untuk kebutuhan farmasi dan rantai dingin di seluruh Indonesia.
+            Solusi pengiriman logistik pintar berbasis teknologi dengan armada Satria terpercaya untuk kebutuhan perorangan maupun korporasi di seluruh Indonesia.
           </p>
-          <div class="flex items-center gap-space-sm pt-space-xs">
-            <a
-              aria-label="Official Portal Channel"
-              class="w-9 h-9 rounded-full bg-surface-container-lowest flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors shadow-2xs border border-surface-container"
-              href="#"
-            >
-              <span class="material-symbols-outlined text-[18px]">public</span>
-            </a>
-            <a
-              aria-label="Official Chat"
-              class="w-9 h-9 rounded-full bg-surface-container-lowest flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors shadow-2xs border border-surface-container"
-              href="https://wa.me/6281119603333"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span class="material-symbols-outlined text-[18px]">chat</span>
-            </a>
-            <a
-              aria-label="Official Share Community"
-              class="w-9 h-9 rounded-full bg-surface-container-lowest flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors shadow-2xs border border-surface-container"
-              href="#"
-            >
-              <span class="material-symbols-outlined text-[18px]">share</span>
-            </a>
-            <a
-              aria-label="Official Feed News"
-              class="w-9 h-9 rounded-full bg-surface-container-lowest flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors shadow-2xs border border-surface-container"
-              href="#"
-            >
-              <span class="material-symbols-outlined text-[18px]">rss_feed</span>
-            </a>
-          </div>
         </div>
 
-        <!-- Col 2: Layanan (Vendor / Faskes Portal Features) (2 cols) -->
+        <!-- Col 2: Layanan (2 cols) -->
         <div class="lg:col-span-2 flex flex-col gap-space-md">
-          <span class="font-headline-sm text-headline-sm text-on-surface font-bold">Layanan Faskes</span>
+          <span class="font-headline-sm text-headline-sm text-on-surface font-bold">Layanan</span>
           <nav class="flex flex-col gap-space-sm font-body-md text-body-md text-on-surface-variant">
-            <router-link to="/" class="hover:text-primary transition-colors">Beranda Faskes</router-link>
-            <router-link to="/paket-saya" class="hover:text-primary transition-colors">Lacak Kiriman</router-link>
-            <router-link to="/vendor/monitor/PHA-260104?screen=1" class="hover:text-primary transition-colors">Monitor Kesiapan</router-link>
-            <router-link to="/vendor/monitor/PHA-260104?screen=2" class="hover:text-primary transition-colors">Telemetri Suhu &amp; GPS</router-link>
-            <router-link to="/vendor/monitor/PHA-260104?screen=3" class="hover:text-primary transition-colors">Laporan &amp; Dokumen BAP</router-link>
+            <router-link
+              to="/"
+              class="text-left hover:text-primary transition-colors cursor-pointer"
+            >
+              Beranda
+            </router-link>
+            <router-link
+              to="/paket-saya"
+              class="text-left hover:text-primary transition-colors cursor-pointer"
+            >
+              Paket Saya
+            </router-link>
+            <button
+              type="button"
+              @click="navigateToTab(1)"
+              class="text-left hover:text-primary transition-colors cursor-pointer"
+            >
+              Halaman Pantau
+            </button>
+            <button
+              type="button"
+              @click="navigateToTab(2)"
+              class="text-left hover:text-primary transition-colors cursor-pointer"
+            >
+              Pelacakan GPS
+            </button>
+            <button
+              type="button"
+              @click="navigateToTab(3)"
+              class="text-left hover:text-primary transition-colors cursor-pointer"
+            >
+              Laporan
+            </button>
           </nav>
         </div>
 
@@ -91,7 +87,7 @@
           </div>
         </div>
 
-        <!-- Col 4: Sosial Media & App Downloads (3 cols) -->
+        <!-- Col 4: Sosial Media (3 cols) -->
         <div class="lg:col-span-3 flex flex-col gap-space-md">
           <span class="font-headline-sm text-headline-sm text-on-surface font-bold">Sosial Media</span>
           <div class="flex flex-col gap-space-sm pt-space-xs">
@@ -132,7 +128,7 @@
                   <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.49 6.27 6.27 0 0 0 1.95-4.48V8.75a8.28 8.28 0 0 0 4.82 1.56V6.86a4.86 4.86 0 0 1-1-.17z"></path>
                 </svg>
               </a>
-              <!-- X / Twitter -->
+              <!-- X Twitter -->
               <a
                 aria-label="X Twitter Anteraja"
                 class="w-9 h-9 rounded-full bg-[#EC008C] hover:opacity-90 transition-all flex items-center justify-center text-white shadow-sm"
@@ -158,7 +154,7 @@
               </a>
             </div>
 
-            <!-- App Store & Google Play badges -->
+            <!-- Download Badges -->
             <div class="flex flex-wrap items-center gap-2 pt-1">
               <a
                 class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black text-white hover:bg-neutral-800 transition-colors shadow-sm"
@@ -187,17 +183,14 @@
                   <span class="text-[13px] font-bold leading-tight tracking-tight">Google Play</span>
                 </div>
               </a>
-
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Bottom Copyright & Compliance Strip -->
-      <div class="text-center text-sm text-on-surface-variant py-4 border-t border-surface-container mt-space-lg flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span>&copy; 2026 PT Tri Adi Bersama (Anteraja). Hak Cipta Dilindungi Undang-Undang.</span>
-        <span class="text-xs text-on-surface-variant font-medium">Standar Kepatuhan Distribusi Farmasi CDOB &amp; ISO 9001 / ISO 27001</span>
-
+      <!-- Bottom Copyright Strip -->
+      <div class="text-center text-sm text-on-surface-variant py-4 border-t border-border-subtle/50 mt-space-lg">
+        © 2026 PT Tri Adi Bersama (Anteraja). Hak Cipta Dilindungi Undang-Undang.
       </div>
     </div>
   </footer>

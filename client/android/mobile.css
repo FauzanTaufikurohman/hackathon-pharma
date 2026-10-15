@@ -1,0 +1,62 @@
+/* capacitor injects these insets for phones with a notch or gesture navigation. */
+html.pharma-android {
+  --pharma-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --pharma-bottom: var(
+    --safe-area-inset-bottom,
+    env(safe-area-inset-bottom, 0px)
+  );
+  background: #faf8ff;
+}
+.pharma-android body {
+  padding-top: var(--pharma-top);
+  padding-bottom: var(--pharma-bottom);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+}
+.pharma-android header.fixed,
+.pharma-android header.sticky {
+  top: var(--pharma-top);
+}
+.pharma-android .min-h-screen {
+  min-height: calc(100dvh - var(--pharma-top) - var(--pharma-bottom));
+}
+.pharma-android input,
+.pharma-android select,
+.pharma-android textarea {
+  font-size: max(16px, 1em);
+  scroll-margin-block: 7rem;
+}
+.pharma-android .live-button,
+.pharma-android button,
+.pharma-android input[type="submit"] {
+  min-height: 48px;
+  min-width: 48px;
+  touch-action: manipulation;
+}
+.pharma-connection {
+  position: fixed;
+  inset-inline: 16px;
+  bottom: calc(16px + var(--pharma-bottom, 0px));
+  z-index: 1000;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: #123f3b;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.5;
+  box-shadow: 0 8px 24px #123f3b26;
+  pointer-events: none;
+}
+.pharma-connection[hidden] {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pharma-android *,
+  .pharma-android *::before,
+  .pharma-android *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -11,6 +11,7 @@ use App\Models\ShipmentIssue;
 use App\Models\ShipmentReport;
 use App\Models\User;
 use App\OperationsWorkflow;
+use App\ReportDistribution;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,19 +38,11 @@ class AdminReportsController extends Controller
             'regulatory_certification' => false]])->header('Cache-Control', 'private, no-store');
     }
 
-    public function reportDistribution(Request $request, int $report, OperationsWorkflow $workflow): JsonResponse
+    public function reportDistribution(Request $request, int $report, OperationsWorkflow $workflow, ReportDistribution $distribution): JsonResponse
     {
         $workflow->authorize($request->user(), 'admin');
         $record = ShipmentReport::findOrFail($report);
-        abort_unless(hash_equals($record->sha256, $record->snapshotHash()), 409, 'Integritas laporan tidak cocok.');
-        $ids = User::where('role', 'admin')->where('is_active', true)->pluck('id');
-        $s = Shipment::findOrFail($record->shipment_id);
-        $ids->push($s->buyer_id)->push($s->courier_id);
-        foreach ($ids->filter()->unique() as $id) {
-            Message::firstOrCreate(['dedupe_key' => 'report:'.$record->id.':'.$id], [
-                'user_id' => $id, 'shipment_id' => $s->id, 'subject' => 'Laporan pengiriman tersedia',
-                'body' => $s->tracking_number.' | Laporan '.$record->id.' | SHA256 '.$record->sha256, 'status' => 'pending']);
-        }
+        $distribution->queue($record);
 
         return response()->json(['data' => ['report_id' => $record->id, 'status' => 'queued', 'channel' => 'telegram']], 202);
     }
