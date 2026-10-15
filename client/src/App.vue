@@ -10,14 +10,11 @@ const route = useRoute()
 const isCourier = computed(() => route.path.startsWith('/courier') || route.path.startsWith('/kurir'))
 const isChecker = computed(() => route.path.startsWith('/checker') || route.path.startsWith('/pemeriksa'))
 const isAdmin = computed(() => route.path.startsWith('/admin'))
-
-const isCourierDetail = computed(() => route.name === 'courier-task-detail' || route.path.includes('/courier/tugas/') || route.path.includes('/kurir/tugas/'))
 </script>
 
 <template>
-  <!-- Checker, Admin, & Dedicated Detail Portal Layouts -->
-  <div v-if="isChecker || isAdmin || isCourierDetail" class="min-h-screen bg-surface font-sans text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
-
+  <!-- Checker, Admin, & Courier Dedicated Portal Layouts -->
+  <div v-if="isChecker || isAdmin || isCourier" class="min-h-screen bg-[#F8FAFC] font-sans text-slate-800 antialiased selection:bg-rose-100 selection:text-rose-900">
     <router-view />
   </div>
 
