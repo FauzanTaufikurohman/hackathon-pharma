@@ -1,112 +1,109 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import HeroSection from '../../components/vendor/HeroSection.vue'
-import SearchCard from '../../components/vendor/SearchCard.vue'
-import MetricCards from '../../components/vendor/MetricCards.vue'
-import PriorityShipmentCard from '../../components/vendor/PriorityShipmentCard.vue'
-import CdobGuidelines from '../../components/vendor/CdobGuidelines.vue'
-import NotificationToast from '../../components/vendor/NotificationToast.vue'
-import type { Shipment } from '../../types/shipment'
-import { mockShipments } from '../../data/mockShipments'
-
-const router = useRouter()
-const toastRef = ref<InstanceType<typeof NotificationToast> | null>(null)
-
-// Kargo prioritas pertama: PHA-260104
-const priorityShipment = ref<Shipment>(mockShipments[0]!)
-
-function handleSearch(query: string) {
-  const found = mockShipments.find(
-    s => s.tracking_number.toLowerCase().includes(query.toLowerCase()) ||
-         s.item_summary.toLowerCase().includes(query.toLowerCase())
-  )
-
-  if (found) {
-    priorityShipment.value = found
-    toastRef.value?.show(
-      `Kargo Ditemukan: ${found.tracking_number}`,
-      `Menampilkan data ${found.item_summary}`
-    )
-  } else {
-    toastRef.value?.show(
-      `Pencarian: ${query}`,
-      `Menghubungkan ke telemetri kargo ${query}...`
-    )
+import { currentUser } from '../../services/auth'
+import { useApi } from '../../services/useApi'
+import { query } from '../../services/api'
+import type { LiveShipment, Response } from '../../services/models'
+import ApiState from '../../components/layout/ApiState.vue'
+import ShipmentRecord from '../../components/layout/ShipmentRecord.vue'
+interface Dashboard {
+  metrics: {
+    active_shipments_count: number
+    critical_count: number
+    average_temperature_str: string
+    available_reports_count: number
+    incident_count: number
   }
+  priority_shipment: LiveShipment | null
 }
-
-function handleChipSelect(awb: string, itemName: string) {
-  const found = mockShipments.find(s => s.tracking_number === awb)
-  if (found) {
-    priorityShipment.value = found
-  }
-  toastRef.value?.show(
-    `Resi Terpilih: ${awb}`,
-    `Data muatan (${itemName}) telah disinkronkan ke panel pantau.`
-  )
-}
-
-function handleOpenMonitor(awb: string, screenNumber?: number) {
-  const screenNames: Record<number, string> = {
-    1: 'Layar 1: Monitor Kesiapan Faskes',
-    2: 'Layar 2: Lacak Suhu & GPS Satria Pharma',
-    3: 'Layar 3: Laporan Audit & BAP Digital',
-  }
-
-  const screenName = screenNumber ? screenNames[screenNumber] : 'Halaman Monitor Pengiriman'
-  toastRef.value?.show(
-    `Membuka ${awb}`,
-    `Mengalihkan ke ${screenName}...`
-  )
-
-  // Navigate to monitor page with query param
-  setTimeout(() => {
-    router.push({
-      path: `/vendor/monitor/${awb}`,
-      query: screenNumber ? { screen: screenNumber.toString() } : undefined,
-    })
-  }, 600)
-}
-
-function handleConfirmReady(awb: string) {
-  priorityShipment.value.recipient_ready = true
-  toastRef.value?.show(
-    `Kesiapan Faskes Dikonfirmasi!`,
-    `Data tersimpan dan notifikasi otomatis diteruskan ke Kurir Satria.`
-  )
+const router = useRouter(),
+  search = ref(''),
+  submitted = ref('')
+const { data, loading, error, reload } = useApi<Response<Dashboard>>(
+  () => '/vendor/dashboard' + query({ awb: submitted.value }),
+)
+const shipment = computed(() => data.value?.data.priority_shipment)
+function resetSearch() {
+  search.value = ''
+  submitted.value = ''
 }
 </script>
-
 <template>
-  <div class="w-full flex flex-col gap-space-xl pb-space-xl">
-    <!-- 1. Hero Greeting & Facility Badge -->
-    <HeroSection />
-
-    <!-- 2. Quick Search & Lacak Resi Card -->
-    <SearchCard
-      :initial-awb="priorityShipment.tracking_number"
-      @track="handleSearch"
-      @select-chip="handleChipSelect"
-    />
-
-    <!-- 3. Operational Metrics Overview (3 Cards) -->
-    <MetricCards
-      @open-monitor="handleOpenMonitor"
-      @open-reports="() => handleOpenMonitor(priorityShipment.tracking_number, 3)"
-    />
-
-    <!-- 4. Hero Highlight: Pengiriman Prioritas yang Memerlukan Tindakan Anda -->
-    <PriorityShipmentCard
-      :shipment="priorityShipment"
-      @open-monitor="handleOpenMonitor"
-      @confirm-ready="handleConfirmReady"
-    />
-
-    <!-- 5. Standar Protokol & Panduan Penerimaan Faskes (CPOB & GDP) -->
-    <CdobGuidelines />
-
-    <!-- Notification Toast Simulation -->
-    <NotificationToast ref="toastRef" />
+  <div class="flex flex-col gap-6">
+    <header>
+      <p class="text-primary font-semibold">
+        Selamat datang, {{ currentUser?.name }}
+      </p>
+      <h1 class="text-3xl font-semibold tracking-tight mt-2">
+        Pusat pantau kiriman Anda
+      </h1>
+      <p class="mt-3 text-on-surface-variant">
+        Periksa kesiapan penerimaan, ikuti perjalanan kiriman, dan simpan bukti
+        serah terima.
+      </p>
+    </header>
+    <form
+      class="live-panel flex flex-col sm:flex-row gap-3 items-end"
+      @submit.prevent="submitted = search.trim()"
+    >
+      <label class="live-field flex-1"
+        ><span>Cari nomor resi</span
+        ><input
+          v-model="search"
+          name="tracking_number"
+          maxlength="100"
+          placeholder="Masukkan nomor resi milik akun Anda" /></label
+      ><button type="submit" class="live-button" :disabled="loading">
+        Cari kiriman</button
+      ><button type="button" class="live-button" @click="resetSearch">
+        Reset
+      </button>
+    </form>
+    <ApiState :loading="loading" :error="error" @retry="reload" />
+    <div v-if="data" class="grid sm:grid-cols-3 gap-4">
+      <section class="live-panel">
+        <p>Kiriman aktif</p>
+        <p class="text-3xl tabular-nums font-semibold mt-3">
+          {{ data.data.metrics.active_shipments_count }}
+        </p>
+      </section>
+      <section class="live-panel">
+        <p>Kendala terbuka</p>
+        <p class="text-3xl tabular-nums font-semibold mt-3 text-error">
+          {{ data.data.metrics.incident_count }}
+        </p>
+      </section>
+      <section class="live-panel">
+        <p>Laporan tersedia</p>
+        <p class="text-3xl tabular-nums font-semibold mt-3">
+          {{ data.data.metrics.available_reports_count }}
+        </p>
+      </section>
+    </div>
+    <template v-if="shipment"
+      ><ShipmentRecord :shipment="shipment" />
+      <div class="flex flex-wrap gap-3">
+        <button
+          type="button"
+          class="live-button live-primary"
+          @click="
+            router.push(
+              '/vendor/monitor/' + encodeURIComponent(shipment.tracking_number),
+            )
+          "
+        >
+          Pantau kiriman ini →</button
+        ><RouterLink to="/paket-saya" class="live-button"
+          >Semua kiriman saya</RouterLink
+        >
+      </div></template
+    >
+    <p v-else-if="data && !loading" class="live-panel">
+      Belum ada kiriman aktif untuk akun ini.
+      <RouterLink class="text-primary underline" to="/paket-saya"
+        >Lihat riwayat kiriman</RouterLink
+      >.
+    </p>
   </div>
 </template>
