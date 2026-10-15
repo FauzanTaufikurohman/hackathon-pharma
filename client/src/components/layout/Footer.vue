@@ -1,5 +1,31 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import RoleFooter from './RoleFooter.vue'
+
+const route = useRoute()
+const router = useRouter()
+
+const currentAwb = computed(() => {
+  const param = route.params.awb as string | undefined
+  if (param) return decodeURIComponent(param)
+  return '#PHA-260104'
+})
+
+function navigateToTab(screen: number) {
+  if (route.path.startsWith('/vendor/monitor')) {
+    router.replace({
+      query: { ...route.query, screen: screen.toString() },
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  } else {
+    router.push({
+      path: `/vendor/monitor/${encodeURIComponent(currentAwb.value)}`,
+      query: { screen: screen.toString() },
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
 </script>
 <template>
   <footer class="w-full bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] mt-space-xl border-t border-border-subtle/50">

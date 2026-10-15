@@ -33,7 +33,6 @@ function handleSearch() {
     )
     router.push(`/vendor/monitor/${encodeURIComponent(query)}?screen=1`)
   }
-  priority_shipment: LiveShipment | null
 }
 
 function openMonitor(screen = 1, awb = '#PHA-260104') {
