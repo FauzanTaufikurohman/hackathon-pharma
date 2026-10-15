@@ -14,111 +14,127 @@ const activeScreen = computed(() => Number(route.query.screen) || 1)
 const emit = defineEmits<{
   (e: 'search', query: string): void
 }>()
+function handleHeaderSearch() {
+  if (searchInput.value.trim()) {
+    emit('search', searchInput.value.trim())
+    if (route.path !== '/paket-saya') {
+      router.push({ path: '/paket-saya', query: { q: searchInput.value.trim() } })
+    }
+  }
 
-function switchMonitorTab(tab: number) {
-  router.replace({
-    query: { ...route.query, screen: tab.toString() },
-  })
-}
-
-function handleLogout() {
-  return logoutAndRedirect(router)
 }
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-sm">
-    <div class="max-w-7xl mx-auto px-6 sm:px-8 h-20 flex items-center justify-between gap-4">
-      <!-- Brand & Navigation Tabs Group -->
-      <div class="flex items-center gap-8">
-        <router-link to="/" aria-label="Beranda Anteraja Pharma" class="flex items-center shrink-0">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-surface-container/40">
+    <div class="h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-space-md">
+      <!-- Left: Logo & Navigation Tabs -->
+      <div class="flex items-center gap-space-lg lg:gap-space-xl">
+        <!-- Official Brand Logo -->
+        <router-link
+          to="/"
+          class="flex items-center gap-space-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg group shrink-0"
+          title="Anteraja Pharma Cold-Chain Logistics"
+        >
           <img
             alt="Anteraja Pharma"
-            class="h-9 w-auto object-contain"
-            src="/pharma-logo.webp"
+            class="h-9 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
+            src="/images/anteraja-pharma-logo.png"
           />
         </router-link>
 
-        <!-- Monitor Tabs (when on vendor monitor page) -->
-        <nav v-if="isMonitorPage" class="hidden md:flex items-center gap-2">
-          <button
-            type="button"
-            @click="switchMonitorTab(1)"
-            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer flex items-center gap-1.5"
-            :class="activeScreen === 1
-              ? 'bg-[#FCE7F3] text-[#D81E5B] font-bold shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
-          >
-            <span v-if="activeScreen === 1" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
-            <span>Halaman Pantau</span>
-          </button>
-
-          <button
-            type="button"
-            @click="switchMonitorTab(2)"
-            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer flex items-center gap-1.5"
-            :class="activeScreen === 2
-              ? 'bg-[#FCE7F3] text-[#D81E5B] font-bold shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
-          >
-            <span v-if="activeScreen === 2" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
-            <span>Pelacakan GPS</span>
-          </button>
-
-          <button
-            type="button"
-            @click="switchMonitorTab(3)"
-            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer flex items-center gap-1.5"
-            :class="activeScreen === 3
-              ? 'bg-[#FCE7F3] text-[#D81E5B] font-bold shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
-          >
-            <span v-if="activeScreen === 3" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
-            <span>Laporan</span>
-          </button>
-        </nav>
-
-        <!-- Global Vendor Navigation (when on home or package list) -->
-        <nav v-else class="hidden md:flex items-center gap-2">
+        <!-- Navigation Tabs -->
+        <nav class="flex items-center gap-space-xs sm:gap-space-sm">
           <router-link
             to="/"
-            class="font-medium px-4 py-1.5 rounded-full text-sm transition-all"
+            class="font-label-lg text-label-lg transition-colors py-2 px-3.5 sm:px-4 rounded-full"
             :class="route.path === '/' || route.path === '/vendor'
-              ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
+              ? 'text-primary font-bold bg-primary-fixed/40 shadow-2xs'
+              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
+
           >
             Beranda
           </router-link>
           <router-link
             to="/paket-saya"
-            class="font-medium px-4 py-1.5 rounded-full text-sm transition-all"
+            class="font-label-lg text-label-lg transition-colors py-2 px-3.5 sm:px-4 rounded-full"
             :class="route.path === '/paket-saya'
-              ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold shadow-xs'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'"
+              ? 'text-primary font-bold bg-primary-fixed/40 shadow-2xs'
+              : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
+
           >
-            Paket Saya
+            Lacak Kiriman
           </router-link>
         </nav>
       </div>
 
-      <!-- Right Side Badges -->
-      <div class="flex items-center gap-3">
-        <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-left shadow-xs">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="material-symbols-outlined text-emerald-600 text-[18px]">local_hospital</span>
-          <div>
-            <p class="text-xs font-bold text-slate-800 leading-tight">{{ currentFacility.name }}</p>
-            <p class="text-[10px] text-slate-500 leading-none">{{ currentFacility.department }}</p>
-          </div>
+      <!-- Right: Search Input & Profile Badge -->
+      <div class="flex items-center gap-space-md">
+        <!-- Search bar in header -->
+        <div class="relative hidden md:block w-60 lg:w-72">
+          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none">
+            search
+          </span>
+          <input
+            v-model="searchInput"
+            @keyup.enter="handleHeaderSearch"
+            type="text"
+            placeholder="Lacak No. AWB / Resi Klinis..."
+            class="w-full h-10 pl-10 pr-3.5 bg-surface-container-low border border-outline-variant/60 rounded-full font-body-sm text-[13px] text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-inner"
+          />
         </div>
 
-        <button
-          type="button"
-          @click="handleLogout"
-          class="inline-flex items-center rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
-        >
-          Keluar
-        </button>
+        <!-- Facility Info & Profile -->
+        <div class="flex items-center gap-space-sm pl-space-xs border-l border-surface-container-high/80">
+          <div class="flex flex-col items-end hidden sm:flex">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+              <span class="font-label-md text-label-md text-on-surface font-bold leading-tight">
+                {{ currentFacility.name }}
+              </span>
+            </div>
+            <span class="font-label-sm text-[10px] text-secondary uppercase font-extrabold tracking-wider">
+              {{ currentFacility.verified_status }}
+            </span>
+          </div>
+
+          <div class="relative shrink-0">
+            <img
+              alt="Profile Faskes"
+              class="w-9 h-9 rounded-full object-cover ring-2 ring-primary/20 shadow-xs"
+              src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=120"
+            />
+            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span>
+          </div>
+
+          <!-- Switch to other roles quick link -->
+          <div class="hidden xl:flex items-center gap-1.5 pl-2">
+            <router-link
+              to="/courier"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-primary font-label-sm text-[11px] font-semibold transition-all border border-surface-container"
+              title="Beralih ke Portal Kurir"
+            >
+              <span class="material-symbols-outlined text-[14px]">two_wheeler</span>
+              <span>Kurir</span>
+            </router-link>
+            <router-link
+              to="/checker"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-primary font-label-sm text-[11px] font-semibold transition-all border border-surface-container"
+              title="Beralih ke Portal Checker QC"
+            >
+              <span class="material-symbols-outlined text-[14px]">verified</span>
+              <span>Checker</span>
+            </router-link>
+            <router-link
+              to="/admin"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-primary font-label-sm text-[11px] font-semibold transition-all border border-surface-container"
+              title="Beralih ke Portal Admin"
+            >
+              <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+              <span>Admin</span>
+            </router-link>
+          </div>
+        </div>
       </div>
     </div>
   </header>

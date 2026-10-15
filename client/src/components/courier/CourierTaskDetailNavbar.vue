@@ -21,32 +21,40 @@ function handleLogout() {
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest border-b border-surface-container-high shadow-[0_1px_8px_rgba(0,0,0,0.03)]">
-    <div class="h-16 max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
-      <!-- Left: Logo & Role Pill -->
-      <div class="flex items-center gap-3 shrink-0">
-        <router-link to="/courier/tugas-saya" aria-label="Kembali ke tugas pengiriman" class="inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
-          <img src="/pharma-logo.webp" alt="Anteraja Pharma" width="110" height="45" class="h-10 w-auto shrink-0 object-contain mix-blend-multiply" />
+  <header class="fixed top-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-surface-container/40">
+    <div class="h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-space-md shrink-0">
+        <router-link
+          to="/courier/tugas-saya"
+          class="flex items-center gap-space-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg group shrink-0"
+          title="Kembali ke Daftar Tugas Pengiriman"
+        >
+          <img
+            alt="Anteraja Pharma"
+            class="h-9 md:h-10 w-auto object-contain transition-transform group-hover:scale-105"
+            src="/images/anteraja-pharma-logo.png"
+          />
         </router-link>
 
-        <span class="px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm uppercase tracking-wider font-bold">
-          Satria Pharma
+        <span class="hidden sm:inline-flex bg-inverse-surface text-inverse-on-surface font-label-sm text-label-sm px-2.5 py-1 rounded-full uppercase tracking-widest items-center gap-1.5 shadow-sm font-bold">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span>
+          SATRIA PHARMA
         </span>
       </div>
 
       <!-- Center: 4-Tab Navigation for Courier Task Execution -->
       <nav
-        class="hidden lg:flex items-center gap-1.5 bg-surface-container-low p-1.5 rounded-full border border-surface-container"
-        data-active-classes="bg-primary-fixed text-primary font-label-lg text-label-lg font-bold rounded-full shadow-sm"
+        class="hidden lg:flex items-center gap-1.5"
+        data-active-classes="bg-primary-fixed/40 text-primary font-label-lg text-label-lg font-bold rounded-full shadow-2xs"
       >
         <!-- Tab 1: Tugas Masuk -->
         <button
           type="button"
           @click="emit('tab-change', 1)"
-          class="px-5 py-2 transition-all font-label-lg text-label-lg cursor-pointer"
+          class="px-4 py-2 transition-all font-label-lg text-label-lg rounded-full cursor-pointer"
           :class="activeTab === 1
-            ? 'bg-primary-fixed text-primary font-bold rounded-full shadow-xs'
-            : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-full'"
+            ? 'bg-primary-fixed/40 text-primary font-bold shadow-2xs'
+            : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
         >
           Tugas Masuk
         </button>
@@ -55,10 +63,10 @@ function handleLogout() {
         <button
           type="button"
           @click="emit('tab-change', 2)"
-          class="px-5 py-2 transition-all font-label-lg text-label-lg cursor-pointer"
+          class="px-4 py-2 transition-all font-label-lg text-label-lg rounded-full cursor-pointer"
           :class="activeTab === 2
-            ? 'bg-primary-fixed text-primary font-bold rounded-full shadow-xs'
-            : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-full'"
+            ? 'bg-primary-fixed/40 text-primary font-bold shadow-2xs'
+            : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
         >
           Pengantaran &amp; Monitor
         </button>
@@ -67,10 +75,10 @@ function handleLogout() {
         <button
           type="button"
           @click="emit('tab-change', 3)"
-          class="px-5 py-2 transition-all font-label-lg text-label-lg cursor-pointer"
+          class="px-4 py-2 transition-all font-label-lg text-label-lg rounded-full cursor-pointer"
           :class="activeTab === 3
-            ? 'bg-primary-fixed text-primary font-bold rounded-full shadow-xs'
-            : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-full'"
+            ? 'bg-primary-fixed/40 text-primary font-bold shadow-2xs'
+            : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
         >
           Lapor Kendala
         </button>
@@ -79,10 +87,10 @@ function handleLogout() {
         <button
           type="button"
           @click="emit('tab-change', 4)"
-          class="px-5 py-2 transition-all font-label-lg text-label-lg cursor-pointer"
+          class="px-4 py-2 transition-all font-label-lg text-label-lg rounded-full cursor-pointer"
           :class="activeTab === 4
-            ? 'bg-primary-fixed text-primary font-bold rounded-full shadow-xs'
-            : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-full'"
+            ? 'bg-primary-fixed/40 text-primary font-bold shadow-2xs'
+            : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'"
         >
           Serah Terima &amp; Laporan
         </button>
@@ -91,21 +99,18 @@ function handleLogout() {
       <!-- Right: Courier Duty & Profile -->
       <div class="flex items-center gap-3 shrink-0">
         <div class="text-right hidden sm:block">
-          <div class="font-label-lg text-label-lg text-on-surface font-semibold">Bambang Suryono</div>
+          <div class="font-label-md text-label-md text-on-surface font-bold">Bambang Suryono</div>
           <div class="font-label-sm text-label-sm text-on-surface-variant">ID: KURIR-007</div>
         </div>
 
-        <div class="flex items-center gap-1.5 bg-surface-container px-3 py-1 rounded-full border border-surface-container-high shadow-2xs">
-          <span class="w-2 h-2 rounded-full bg-secondary"></span>
-          <span class="font-label-sm text-label-sm text-on-surface font-semibold">Aktif</span>
-        </div>
-        <button
-          type="button"
-          @click="handleLogout"
-          class="text-sm font-medium text-slate-500 transition-colors hover:text-primary"
+        <router-link
+          to="/courier/tugas-saya"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-all border border-surface-container"
         >
-          Keluar
-        </button>
+          <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+          <span class="hidden sm:inline">Daftar Tugas</span>
+        </router-link>
+
       </div>
     </div>
   </header>

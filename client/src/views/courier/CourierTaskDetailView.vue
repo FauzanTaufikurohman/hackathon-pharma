@@ -214,7 +214,7 @@ function handleShareWhatsappDispatcher() {
     />
 
     <!-- Main Workspace Content -->
-    <main class="w-full pt-16 flex-1 bg-surface">
+    <main class="w-full pt-24 flex-1 bg-surface">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <!-- TAB 1: TUGAS MASUK -->
         <div v-if="activeTab === 1" class="flex flex-col w-full space-y-6">
