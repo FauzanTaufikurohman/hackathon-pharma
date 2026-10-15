@@ -22,14 +22,8 @@ function handleLogout() {
     <div class="h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
       <!-- Left: Logo & Role Pill -->
       <div class="flex items-center gap-3 shrink-0">
-        <router-link to="/courier" class="flex items-center gap-2 group">
-          <span class="font-headline-md font-bold tracking-tight text-on-surface flex items-center gap-1.5">
-            <span class="text-primary-container font-extrabold group-hover:scale-105 transition-transform">anteraja</span>
-            <span class="font-medium text-slate-700">pharma</span>
-          </span>
-          <span class="px-2 py-0.5 rounded-full border border-pink-200 bg-pink-50 text-[10px] font-bold text-primary-container tracking-wider uppercase">
-            Satria Pharma
-          </span>
+        <router-link to="/courier" aria-label="Beranda Anteraja Pharma" class="inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+          <img src="/pharma-logo.webp" alt="Anteraja Pharma" width="110" height="45" class="h-10 w-auto shrink-0 object-contain mix-blend-multiply" />
         </router-link>
       </div>
 

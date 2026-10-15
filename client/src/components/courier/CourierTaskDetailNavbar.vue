@@ -25,20 +25,8 @@ function handleLogout() {
     <div class="h-16 max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
       <!-- Left: Logo & Role Pill -->
       <div class="flex items-center gap-3 shrink-0">
-        <router-link
-          to="/courier/tugas-saya"
-          class="flex items-center gap-2 group cursor-pointer"
-          title="Kembali ke Daftar Tugas Pengiriman"
-        >
-          <img
-            alt="Profile Satria"
-            class="w-8 h-8 rounded-full object-cover ring-1 ring-primary/20 group-hover:scale-105 transition-transform"
-            src="https://lh3.googleusercontent.com/aida/AEtjO1VlCA1gT2NeF63LTHp4NUdJAzu3ELNjJ5-m0kgFZNK49vAhP9XAhblMao72jPxkMQXWXUcrGR4gJwFV0TTrw1MDoA8iKQzj0frZjK1a9XOklpKAEL1uqX8w2z1rAblx52T0aV3HF28xs8S0Zonq7ZRYg08yGG-YXIK1g5zb-9pYCFSuAKN9DbyClgxNf7mSeaUNHR_Y9BZImWQ7b_q28f8z4WxtEHhd74pOaBe-JF4AREOF12VAzJZya5XQan6ITd4eUWQnHfxnGG4"
-          />
-          <div class="flex flex-col">
-            <span class="font-headline-sm text-headline-sm text-primary leading-none tracking-tight">Anteraja Pharma</span>
-            <span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Cold-Chain Logistics</span>
-          </div>
+        <router-link to="/courier/tugas-saya" aria-label="Kembali ke tugas pengiriman" class="inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+          <img src="/pharma-logo.webp" alt="Anteraja Pharma" width="110" height="45" class="h-10 w-auto shrink-0 object-contain mix-blend-multiply" />
         </router-link>
 
         <span class="px-2.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm uppercase tracking-wider font-bold">
