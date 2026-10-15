@@ -1,7 +1,11 @@
 <?php
 
 return [
-    'pharma' => ['dispatcher_phone' => env('PHARMA_DISPATCHER_PHONE')],
+    'pharma' => ['dispatcher_phone' => env('PHARMA_DISPATCHER_PHONE'),
+        'simulator_enabled' => env('PHARMA_SIMULATOR_ENABLED', false)],
+
+    'telegram' => ['enabled' => env('TELEGRAM_ENABLED', false), 'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173')],
 
     'openai' => [
         'key' => env('OPENAI_API_KEY'),
