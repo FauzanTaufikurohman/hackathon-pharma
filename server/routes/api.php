@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminApprovalsController;
+use App\Http\Controllers\AdminMonitorController;
 use App\Http\Controllers\AdminShipmentsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckerHistoryController;
@@ -33,6 +34,12 @@ Route::prefix('v1')->group(function () {
         Route::post('/admin/shipments/{awb}/recheck', [AdminApprovalsController::class, 'recheck']);
         Route::post('/admin/shipments/{awb}/cancel', [AdminShipmentsController::class, 'cancel']);
         Route::get('/admin/shipments/{awb}/inspection-photo', [AdminShipmentsController::class, 'inspectionPhoto'])->name('admin.inspection.photo');
+        Route::get('/admin/shipments/{awb}/telemetry', [AdminMonitorController::class, 'telemetry']);
+        Route::get('/admin/shipments/{awb}/prediction', [AdminMonitorController::class, 'prediction']);
+        Route::get('/admin/monitor', [AdminMonitorController::class, 'monitor']);
+        Route::get('/admin/issues', [AdminMonitorController::class, 'issues']);
+        Route::post('/admin/shipments/{awb}/issues/{issue}/decision', [AdminMonitorController::class, 'decide'])->whereNumber('issue');
+        Route::get('/admin/issues/{issue}/photo', [AdminMonitorController::class, 'issuePhoto'])->whereNumber('issue');
         Route::get('/checker/queue', [CheckerQueueController::class, 'queue']);
         Route::get('/checker/shipments/{awb}', [CheckerInspectionController::class, 'show']);
         Route::post('/checker/shipments/{awb}/inspection', [CheckerInspectionController::class, 'submit']);
