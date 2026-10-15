@@ -824,33 +824,208 @@ function handlePrintBap() {
     </div>
 
     <!-- ========================================================================= -->
-    <!-- TAB 3: Laporan & Riwayat Audit (Dokumen BAP & CPOB)                        -->
+    <!-- TAB 3: Laporan & Bukti Serah Terima (Desain Baru)                         -->
     <!-- ========================================================================= -->
     <div v-else-if="activeTab === 3" class="flex flex-col w-full space-y-6">
-      <AuditSubHeaderBanner
-        :tracking-number="shipment.tracking_number"
-        :recipient-name="shipment.recipient_name"
-        delivered-time="14 Okt 2026, 15:18 WIB"
-        :final-temperature="4.4"
-        :audit-transaction-id="mockBapReport.audit_transaction_id"
-      />
+      <!-- 1. Hero Header & Search Bar -->
+      <div class="space-y-4">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xs">
+          <span class="material-symbols-outlined text-[14px]">auto_awesome</span> AI-POWERED PHARMA DIAGNOSTICS
+        </div>
+        <div>
+          <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Lacak Pengiriman Smart AI</h1>
+          <p class="text-sm text-slate-500 mt-1 max-w-3xl">
+            Pengiriman telah selesai dan terverifikasi. Seluruh dokumen Berita Acara Penerimaan (BAP) dan sertifikat CDOB telah diterbitkan secara sah.
+          </p>
+        </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        <AuditTrailTimeline :events="mockAuditEvents" />
+        <!-- Clean Search Card -->
+        <form @submit.prevent="handleSearchAwb" class="bg-white rounded-2xl border border-slate-200 p-2.5 sm:p-3 shadow-sm flex flex-col sm:flex-row items-center gap-2.5">
+          <div class="flex-1 flex items-center gap-3 px-3 w-full">
+            <span class="material-symbols-outlined text-slate-400 text-[20px]">tag</span>
+            <input
+              v-model="searchAwbInput"
+              class="w-full bg-transparent border-none text-slate-800 font-mono font-bold text-sm focus:outline-none focus:ring-0 p-0"
+              type="text"
+              placeholder="Masukkan Nomor AWB..."
+            />
+          </div>
+          <button
+            class="w-full sm:w-auto bg-[#D81E5B] hover:bg-[#b10045] text-white rounded-xl px-6 py-2.5 font-semibold text-xs flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer"
+            type="submit"
+          >
+            <span class="material-symbols-outlined text-[16px]">search</span> Lacak Paket
+          </button>
+        </form>
+      </div>
 
-        <div class="flex flex-col gap-6">
-          <BapCertificateCard
-            :bap="mockBapReport"
-            :tracking-number="shipment.tracking_number"
-            @download-bap="handleDownloadBap"
-            @share-telegram="handleShareTelegram"
-            @print-bap="handlePrintBap"
-          />
+      <!-- 2. Prominent Status Banner (Emerald Gradient) -->
+      <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-5 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[28px] text-white">task_alt</span>
+          </div>
+          <div>
+            <div class="text-[11px] font-bold tracking-wider uppercase text-emerald-100">• STATUS PESANAN</div>
+            <div class="text-base font-extrabold text-white mt-0.5">
+              SUDAH DITERIMA — Paket Telah Diserahterimakan dengan Aman &amp; Sesuai Standar CPOB
+            </div>
+          </div>
+        </div>
 
-          <PackagingAssuranceCard
-            :cooler-box-id="mockBapReport.cooler_box_id"
-            :description="mockBapReport.cooler_box_desc"
-          />
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="bg-white/20 backdrop-blur-md text-white text-xs font-semibold px-3 py-1 rounded-full">100% CDOB Compliance</span>
+          <span class="bg-amber-400 text-slate-900 font-bold text-xs px-3 py-1 rounded-full shadow-sm">Tuntas Terverifikasi</span>
+          <span class="bg-white/10 text-emerald-100 text-xs font-medium px-3 py-1 rounded-full">Selesai: 14 Okt, 11:30 WIB</span>
+        </div>
+      </div>
+
+      <!-- 3. 3-Point Summary Card (Buku Catatan Serah Terima Utama) -->
+      <section class="rounded-2xl bg-white border border-slate-200 p-6 md:p-8 shadow-sm">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">BUKU CATATAN SERAH TERIMA UTAMA</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+          <div class="pt-4 md:pt-0 md:first:pt-0 flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+              <span class="material-symbols-outlined text-[20px]">person_check</span>
+            </div>
+            <div>
+              <span class="text-xs font-medium text-slate-500 block">Diterima Oleh</span>
+              <span class="text-base font-bold text-slate-900 block mt-0.5">Apt. Sarah Johnson, S.Farm</span>
+              <span class="text-xs text-slate-500 block mt-0.5">Kepala Instalasi Farmasi RS Medika Sehat</span>
+            </div>
+          </div>
+
+          <div class="pt-4 md:pt-0 md:pl-6 flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+              <span class="material-symbols-outlined text-[20px]">schedule</span>
+            </div>
+            <div>
+              <span class="text-xs font-medium text-slate-500 block">Waktu Serah Terima</span>
+              <span class="text-base font-bold text-slate-900 block mt-0.5">14 Okt 2026, 11:30 WIB</span>
+              <span class="text-xs text-slate-500 block mt-0.5">Tersinkronisasi NTP (WIB)</span>
+            </div>
+          </div>
+
+          <div class="pt-4 md:pt-0 md:pl-6 flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+              <span class="material-symbols-outlined text-[20px]">ac_unit</span>
+            </div>
+            <div>
+              <span class="text-xs font-medium text-slate-500 block">Kepatuhan Suhu Termal</span>
+              <span class="text-base font-bold text-emerald-700 block mt-0.5">100% Terjaga pada 2.0°C – 8.0°C</span>
+              <span class="text-xs text-slate-500 block mt-0.5">Nol deviasi suhu tercatat selama transit</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Proof Photo & Dossier Actions (12 cols) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <!-- Left: Bukti Serah Terima & e-POD (5 cols) -->
+        <div class="lg:col-span-5 rounded-2xl bg-white border border-slate-200 p-6 md:p-7 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">BUKTI SERAH TERIMA &amp; e-POD</span>
+              <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                <span class="material-symbols-outlined text-[13px]">lock</span> Segel Terverifikasi
+              </span>
+            </div>
+
+            <!-- Verification Photo -->
+            <div class="relative w-full h-48 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 mb-4 group">
+              <img
+                alt="Hospital Airlock Handover Verification"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                src="https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&q=80&w=800"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent flex items-end p-3.5">
+                <div class="text-white">
+                  <div class="text-xs font-bold flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Inspeksi Ruang Antara (Airlock) Ruang Dingin
+                  </div>
+                  <div class="text-[11px] text-slate-200">Probe Suhu: +4.2°C • Segel Utuh (#TS-7821)</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Digital Signature Box -->
+            <div class="rounded-xl bg-slate-50 border border-slate-200/80 p-3.5">
+              <div class="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+                <span class="font-medium">Tanda Tangan Digital Apoteker</span>
+                <span class="text-[11px] text-emerald-600 font-bold flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[12px]">verified</span> Sah / Valid
+                </span>
+              </div>
+              <div class="h-14 flex items-center justify-center">
+                <svg class="w-56 h-10 text-slate-800" fill="none" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 42C35 40 50 15 62 24C74 33 60 62 48 60C38 58 45 42 75 38C105 34 118 18 130 28C142 38 120 55 140 48C160 41 185 30 198 36C211 42 200 58 220 50C240 42 265 25 285 32C295 35 305 45 312 40" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+                  <path d="M70 54L180 50" stroke="currentColor" stroke-dasharray="2 4" stroke-linecap="round" stroke-width="1.8"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <span>Penandatangan: Apt. Sarah Johnson</span>
+            <span class="font-mono text-[11px]">SIPA: 19890512/SIPA/2022</span>
+          </div>
+        </div>
+
+        <!-- Right: Certificate & Actions (7 cols) -->
+        <div class="lg:col-span-7 rounded-2xl bg-white border border-slate-200 p-6 md:p-8 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 text-[#b10045] mb-2">
+              <span class="material-symbols-outlined text-[20px]">verified</span>
+              <span class="text-xs font-bold uppercase tracking-wider">DOKUMEN AUDIT RESMI BERSERTIFIKASI</span>
+            </div>
+            <h2 class="text-xl md:text-2xl font-bold text-slate-900 leading-snug">
+              Sertifikat Integritas Rantai Pengawasan &amp; Suhu Anteraja Pharma
+            </h2>
+            <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+              Dokumen resmi yang mengesahkan kepatuhan pendinginan aktif berkelanjutan, keutuhan segel antipengrusakan, dan verifikasi penerimaan rumah sakit sesuai regulasi CDOB BPOM.
+            </p>
+
+            <div class="mt-4 flex flex-wrap gap-2 text-xs">
+              <span class="px-3 py-1 rounded-lg bg-slate-100 text-slate-700 font-medium border border-slate-200">
+                ID Lot: <strong>{{ shipment.batch_number || 'VAX-INF-09941' }}</strong>
+              </span>
+              <span class="px-3 py-1 rounded-lg bg-slate-100 text-slate-700 font-medium border border-slate-200">
+                Kode Dok: <strong>COC-AP-2026-X88</strong>
+              </span>
+              <span class="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-medium border border-emerald-200 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">check</span> Tervalidasi BPOM
+              </span>
+            </div>
+          </div>
+
+          <div class="mt-8 pt-6 border-t border-slate-100 space-y-3">
+            <button
+              type="button"
+              @click="handleDownloadLogPdf"
+              class="w-full py-3.5 px-6 rounded-xl bg-[#D81E5B] hover:bg-[#b10045] text-white font-bold text-sm shadow-md shadow-[#D81E5B]/20 flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[20px]">download</span>
+              Unduh Laporan Kepatuhan Resmi BPOM (PDF)
+            </button>
+            <div class="flex flex-col sm:flex-row items-center gap-3">
+              <button
+                type="button"
+                @click="handleShareTelegram('+62 811-9876-5432')"
+                class="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <span class="material-symbols-outlined text-[18px]">chat</span>
+                Kirim Laporan PDF ke WhatsApp
+              </button>
+              <button
+                type="button"
+                @click="handlePrintBap"
+                class="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              >
+                <span class="material-symbols-outlined text-[18px]">print</span>
+                Cetak Ringkasan Arsip
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
