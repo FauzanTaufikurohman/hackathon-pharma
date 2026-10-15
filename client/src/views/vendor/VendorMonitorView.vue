@@ -126,6 +126,19 @@ function handleToggleWa() {
   }
 }
 
+function handleContactCourier() {
+  toastRef.value?.show(
+    'Menghubungi Satria Dimas Prasetyo',
+    'Menghubungkan ke armada pendingin Satria (B 9482 PBF)...'
+  )
+  window.open(
+    `https://wa.me/6281234567890?text=${encodeURIComponent(
+      `Halo Satria, saya dari RS Medika Sehat Jakarta mengenai kiriman AWB ${shipment.value.tracking_number}.`
+    )}`,
+    '_blank'
+  )
+}
+
 function handleCopyAwb() {
   toastRef.value?.show(
     'No. Resi Disalin!',
@@ -491,67 +504,323 @@ function handlePrintBap() {
     </div>
 
     <!-- ========================================================================= -->
-    <!-- TAB 2: Pelacakan GPS & Telemetri Suhu Live                                -->
+    <!-- TAB 2: Pelacakan GPS & Telemetri Suhu Live (Desain Baru)                  -->
     <!-- ========================================================================= -->
-    <div v-else-if="activeTab === 2" class="flex flex-col w-full space-y-6">
-      <TelemetrySubHeader
-        :shipment="shipment"
-        @copy-awb="handleCopyAwb"
-      />
-
-      <!-- Live Location Ribbon -->
-      <LiveLocationRibbon
-        :location-text="shipment.last_location || 'Tol Dalam Kota - Cawang (Menuju RS Medika Sehat, Kuningan)'"
-        updated-ago="Baru saja"
-      />
-
-      <!-- 2-Column Responsive Layout -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left Column: Live Map & Courier Assignment -->
-        <div class="lg:col-span-2 flex flex-col gap-6">
-          <LiveGpsMapCard
-            :origin-name="shipment.sender_name"
-            origin-time="Pukul 11:20 WIB"
-            last-gps-point="KM 02 Tol Cawang"
-            last-gps-time="Pukul 15:06 WIB"
-            :destination-name="shipment.recipient_name"
-            destination-eta="Est. 15:30 WIB"
-            remaining-distance="8.4 KM"
-            reefer-plate="Reefer Satria B 9482 PBF"
-            average-temp="Stabil 4.5°C"
-          />
-
-          <CourierCard
-            courier-name="Bambang Suryono"
-            courier-id="STR-PHR-094"
-            fleet-plate="Reefer Dedicated Box B 9482 PBF"
-            status-text="Satria siap mengantar / Aktif di rute"
-            reefer-range="2.0°C – 8.0°C Aktif"
-            scheduled-at="14 Okt 2026, 15:30 WIB"
-            :phone-url="`https://wa.me/6281234567890?text=Halo%20Satria%20Bambang,%20konfirmasi%20kiriman%20${encodeURIComponent(shipment.item_summary)}%20RS%20Medika%20Sehat%20AWB%20${shipment.tracking_number}`"
-          />
+    <div v-else-if="activeTab === 2" class="flex flex-col w-full gap-6">
+      <!-- 1. Hero Header & Search Bar -->
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold w-fit shadow-xs">
+            <span class="text-[13px]">✦</span> AI-POWERED PHARMA DIAGNOSTICS
+          </div>
+          <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Lacak Pengiriman Smart AI</h1>
+          <p class="text-sm text-slate-500">Pantau posisi armada berpendingin, integritas suhu real-time IoT, dan estimasi waktu ketibaan presisi.</p>
         </div>
 
-        <!-- Right Column: Temperature Telemetry & Field Issue Monitor -->
-        <div class="flex flex-col gap-6">
-          <TemperatureTelemetryChart
-            sensor-id="SNS-CO-8821"
-            :current-temp="shipment.current_temperature || 4.5"
-            :target-temp="4.0"
-            :battery-pct="94"
-            calibration-expiry="Aktif s/d 2027"
-          />
+        <!-- Clean White Search Card -->
+        <form @submit.prevent="handleSearchAwb" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+          <div class="flex-1 flex items-center gap-3 bg-slate-50 border border-slate-200/80 rounded-xl px-4 py-2.5">
+            <span class="material-symbols-outlined text-slate-400 text-[20px]">search</span>
+            <input
+              v-model="searchAwbInput"
+              class="bg-transparent border-none text-sm font-bold text-slate-800 focus:outline-none w-full"
+              placeholder="Masukkan Nomor AWB / Resi..."
+              type="text"
+            />
+            <span class="text-xs text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded font-mono">AWB</span>
+          </div>
+          <button
+            class="bg-[#C2185B] hover:bg-[#b10045] text-white rounded-xl px-6 py-3 font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-sm shrink-0 cursor-pointer"
+            type="submit"
+          >
+            <span class="material-symbols-outlined text-[18px]">radar</span> Lacak Paket
+          </button>
+          <div class="hidden lg:flex items-center gap-2 text-xs text-slate-400 border-l border-slate-200 pl-4">
+            <span>Riwayat:</span>
+            <button
+              type="button"
+              @click="selectRiwayat('PHA-260104')"
+              class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium transition-colors cursor-pointer"
+            >
+              # PHA-260104
+            </button>
+            <button
+              type="button"
+              @click="selectRiwayat('PHA-259810')"
+              class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium transition-colors cursor-pointer"
+            >
+              # PHA-259810
+            </button>
+            <button
+              type="button"
+              @click="selectRiwayat('PHA-258442')"
+              class="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium transition-colors cursor-pointer"
+            >
+              # PHA-258442
+            </button>
+          </div>
+        </form>
+      </div>
 
-          <FieldIssueCard
-            :active-issues-count="0"
-            qa-on-duty="dr. Ardiansyah (Apoteker QA)"
-          />
+      <!-- 2. Prominent Magenta Status Banner -->
+      <div class="bg-gradient-to-r from-[#D81E5B] to-[#AD1457] text-white p-5 sm:p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/20 shadow-inner">
+            <span class="material-symbols-outlined text-white text-[24px]">local_shipping</span>
+          </div>
+          <div>
+            <span class="text-[11px] uppercase tracking-wider font-extrabold text-white/80 block">• STATUS PESANAN AKTIF</span>
+            <h2 class="text-base sm:text-lg font-bold text-white tracking-tight leading-snug">
+              DALAM PERJALANAN — Paket Sedang Diantar Menuju RS Medika Sehat
+            </h2>
+          </div>
+        </div>
+
+        <!-- Right Badges in Banner -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 backdrop-blur-sm border border-emerald-400/40 text-emerald-100 text-xs font-bold">
+            <span class="w-2 h-2 rounded-full bg-emerald-300"></span> Suhu Stabil {{ (shipment.current_temperature || 4.5).toFixed(1) }}°C
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400 text-slate-900 font-bold text-xs shadow-xs">
+            <span class="material-symbols-outlined text-[14px]">navigation</span> On Route (Tol Cawang)
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs font-semibold">
+            <span class="material-symbols-outlined text-[14px]">schedule</span> Est. Tiba: 15:10 WIB (20 Mnt)
+          </span>
         </div>
       </div>
 
-      <DeliveryHandoverFooter
-        @download-log-pdf="handleDownloadLogPdf"
-      />
+      <!-- 3. Main Two-Column Tracking Viewport -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        <!-- LEFT COLUMN: Interactive GPS Map Card (7 cols) -->
+        <div class="lg:col-span-7 flex flex-col relative">
+          <div class="relative w-full h-[620px] rounded-2xl overflow-hidden border border-slate-100 bg-slate-50 shadow-sm flex flex-col justify-between p-4 sm:p-6">
+            <!-- Vector Map Graphic -->
+            <svg class="absolute inset-0 w-full h-full object-cover pointer-events-none" preserveAspectRatio="xMidYMid slice" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern height="48" id="minimalGridNew" patternUnits="userSpaceOnUse" width="48">
+                  <path d="M 48 0 L 0 0 0 48" fill="none" opacity="0.6" stroke="#E2E8F0" stroke-width="0.8"></path>
+                </pattern>
+                <linearGradient id="routeGradientNew" x1="0%" x2="100%" y1="100%" y2="0%">
+                  <stop offset="0%" stop-color="#b10045"></stop>
+                  <stop offset="55%" stop-color="#d81e5b"></stop>
+                  <stop offset="100%" stop-color="#059669"></stop>
+                </linearGradient>
+                <filter height="120%" id="softShadowNew" width="120%" x="-10%" y="-10%">
+                  <feDropShadow dx="0" dy="2" flood-opacity="0.12" stdDeviation="3"></feDropShadow>
+                </filter>
+              </defs>
+              <!-- Map Background Fill & Street Blocks -->
+              <rect fill="#F8FAFC" height="600" width="800"></rect>
+              <rect fill="url(#minimalGridNew)" height="600" width="800"></rect>
+              <!-- Land Blocks -->
+              <path d="M 60,60 L 220,40 L 250,140 L 90,160 Z" fill="#EEF2F6" opacity="0.85"></path>
+              <path d="M 320,50 L 520,30 L 540,150 L 340,170 Z" fill="#EEF2F6" opacity="0.75"></path>
+              <path d="M 120,220 L 280,200 L 310,340 L 140,360 Z" fill="#EEF2F6" opacity="0.8"></path>
+              <path d="M 400,200 L 620,180 L 650,330 L 420,360 Z" fill="#EEF2F6" opacity="0.8"></path>
+              <path d="M 100,420 L 280,400 L 300,540 L 120,550 Z" fill="#EEF2F6" opacity="0.7"></path>
+              <path d="M 380,410 L 620,390 L 650,560 L 400,570 Z" fill="#EEF2F6" opacity="0.85"></path>
+              <!-- Roads -->
+              <path d="M 0,120 Q 350,110 800,100" fill="none" stroke="#E2E8F0" stroke-linecap="round" stroke-width="5"></path>
+              <path d="M 0,320 Q 400,300 800,280" fill="none" stroke="#E2E8F0" stroke-linecap="round" stroke-width="5"></path>
+              <path d="M 0,480 Q 450,460 800,430" fill="none" stroke="#E2E8F0" stroke-linecap="round" stroke-width="4"></path>
+              <path d="M 230,0 Q 240,300 250,600" fill="none" stroke="#E2E8F0" stroke-linecap="round" stroke-width="5"></path>
+              <path d="M 580,0 Q 570,300 590,600" fill="none" stroke="#E2E8F0" stroke-linecap="round" stroke-width="5"></path>
+              <!-- Expressway -->
+              <path d="M 90,510 C 260,460 380,360 520,270 S 680,180 730,120" fill="none" stroke="#CBD5E1" stroke-linecap="round" stroke-width="8"></path>
+              <!-- Route Traveled -->
+              <path d="M 110,500 C 250,450 370,365 470,295" fill="none" stroke="url(#routeGradientNew)" stroke-linecap="round" stroke-width="5"></path>
+              <!-- Route Remaining -->
+              <path d="M 470,295 C 550,240 650,180 710,130" fill="none" opacity="0.5" stroke="#b10045" stroke-dasharray="6,6" stroke-linecap="round" stroke-width="3.5"></path>
+              <!-- Origin Marker: Cikarang Hub -->
+              <g transform="translate(110, 500)">
+                <circle fill="#b10045" fill-opacity="0.15" r="16"></circle>
+                <circle fill="#b10045" r="7"></circle>
+                <circle fill="#ffffff" r="3"></circle>
+              </g>
+              <!-- Destination Marker: RS Medika Sehat -->
+              <g transform="translate(710, 130)">
+                <circle fill="#059669" fill-opacity="0.18" r="18"></circle>
+                <circle fill="#059669" r="8"></circle>
+                <circle fill="#ffffff" r="3.5"></circle>
+              </g>
+              <!-- Courier Van Marker Moving on Route -->
+              <g transform="translate(470, 295)">
+                <circle fill="#b10045" fill-opacity="0.18" r="24">
+                  <animate attributeName="r" dur="2.4s" repeatCount="indefinite" values="16;28;16"></animate>
+                  <animate attributeName="opacity" dur="2.4s" repeatCount="indefinite" values="0.4;0.05;0.4"></animate>
+                </circle>
+                <circle fill="#b10045" filter="url(#softShadowNew)" r="14"></circle>
+                <circle fill="#ffffff" r="6"></circle>
+              </g>
+            </svg>
+
+            <!-- Top Map Waypoints -->
+            <div class="relative z-10 flex items-start justify-between w-full pointer-events-none">
+              <!-- Hub Asal -->
+              <div class="bg-white/95 backdrop-blur-sm border border-slate-200/80 px-3.5 py-2 rounded-xl shadow-xs pointer-events-auto">
+                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">HUB ASAL</span>
+                <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-[#b10045]"></span> {{ shipment.origin_city || 'Cikarang Cold Hub' }} (08:45 WIB)
+                </span>
+              </div>
+              <!-- Tujuan Pengantaran -->
+              <div class="bg-white/95 backdrop-blur-sm border border-emerald-200 px-3.5 py-2 rounded-xl shadow-xs pointer-events-auto">
+                <span class="text-[10px] uppercase font-bold tracking-wider text-emerald-600 block">TUJUAN PENGANTARAN</span>
+                <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[15px] text-emerald-600">local_hospital</span> {{ shipment.recipient_name || 'RS Medika Sehat Jakarta' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Bottom Overlaid Card: Driver & Vehicle Info -->
+            <div class="relative z-10 w-full bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-xl p-4 sm:p-5 shadow-lg mt-auto">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                  <div class="relative shrink-0">
+                    <img
+                      alt="Satria Dimas Prasetyo"
+                      class="w-12 h-12 rounded-full object-cover ring-2 ring-emerald-500/30 shadow-sm"
+                      src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+                    />
+                    <span class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-600 ring-2 ring-white flex items-center justify-center">
+                      <span class="material-symbols-outlined text-white text-[10px]">check</span>
+                    </span>
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="font-bold text-slate-900 text-sm sm:text-base leading-snug">Satria Dimas Prasetyo</h3>
+                      <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">Armada Pendingin Khusus</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                      Plat Armada: <strong class="text-slate-800 font-semibold">B 9482 PBF</strong> • Reefer Box 2–8°C
+                    </p>
+                  </div>
+                </div>
+
+                <div class="flex flex-col sm:items-end justify-center pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                  <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-xs">
+                    <span class="material-symbols-outlined text-[16px] text-emerald-600">schedule</span>
+                    <span class="text-xs sm:text-sm font-bold">Tiba ~20-25 menit (Est. 15:10 WIB)</span>
+                  </div>
+                  <div class="text-[12px] text-slate-500 font-medium mt-1.5 flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1 text-slate-700 font-semibold">
+                      <span class="material-symbols-outlined text-[14px] text-emerald-600">speed</span> 38 km/jam
+                    </span>
+                    <span>•</span>
+                    <span class="text-emerald-700 font-medium">Jalur Cepat Lancar</span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                      <span class="material-symbols-outlined text-[12px] text-[#b10045]">inventory_2</span> AWB {{ shipment.tracking_number }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Essential Status Panel (5 cols) -->
+        <aside class="lg:col-span-5 flex flex-col gap-5">
+          <!-- Suhu Langsung Card -->
+          <div class="w-full bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between pb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">SUHU LANGSUNG</span>
+              <span class="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Probe IoT Aktif
+              </span>
+            </div>
+            <div class="my-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-baseline gap-1">
+                <span class="text-6xl sm:text-7xl font-extrabold text-slate-900 tracking-tight">
+                  {{ (shipment.current_temperature || 4.5).toFixed(1) }}
+                </span>
+                <span class="text-3xl font-bold text-slate-400">°C</span>
+              </div>
+              <div class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-sm self-start sm:self-auto">
+                <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                <span>Rentang Aman (2.0°C – 8.0°C)</span>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-slate-400 text-[15px]">sensors</span>
+              Probe termal IoT aktif berkelanjutan • 0 deviasi terdeteksi
+            </p>
+          </div>
+
+          <!-- Riwayat Suhu Chart Card -->
+          <div class="w-full bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Riwayat Suhu</h3>
+                <p class="text-xs text-slate-400">Pembacaan ruang pendingin stabil selama transit</p>
+              </div>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600">Standar 2–8°C</span>
+            </div>
+
+            <!-- Sparkline with Safe Band -->
+            <div class="w-full h-36 bg-slate-50/80 rounded-xl p-3 border border-slate-100 flex flex-col justify-between">
+              <svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 360 80">
+                <defs>
+                  <linearGradient id="safeBandNew" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#10B981" stop-opacity="0.12"></stop>
+                    <stop offset="100%" stop-color="#10B981" stop-opacity="0.04"></stop>
+                  </linearGradient>
+                </defs>
+                <rect fill="url(#safeBandNew)" height="58" rx="4" width="360" x="0" y="10"></rect>
+                <line opacity="0.4" stroke="#10B981" stroke-dasharray="3,3" stroke-width="0.8" x1="0" x2="360" y1="10" y2="10"></line>
+                <line opacity="0.4" stroke="#10B981" stroke-dasharray="3,3" stroke-width="0.8" x1="0" x2="360" y1="68" y2="68"></line>
+                <path d="M 10,43 C 55,41 75,44 110,42 S 165,45 200,43 S 255,41 290,44 S 325,42 350,42" fill="none" stroke="#059669" stroke-linecap="round" stroke-width="2.5"></path>
+                <circle cx="10" cy="43" fill="#059669" r="3"></circle>
+                <circle cx="110" cy="42" fill="#059669" r="3"></circle>
+                <circle cx="200" cy="43" fill="#059669" r="3"></circle>
+                <circle cx="290" cy="44" fill="#059669" r="3"></circle>
+                <circle cx="350" cy="42" fill="#059669" r="4.5"></circle>
+                <circle cx="350" cy="42" fill="#059669" opacity="0.25" r="8"></circle>
+              </svg>
+              <div class="flex justify-between text-[11px] font-semibold text-slate-400 px-1 pt-1 border-t border-slate-200/60">
+                <span>09:00</span>
+                <span>09:30</span>
+                <span>10:00</span>
+                <span>10:30</span>
+                <span class="text-emerald-700 font-bold">Sekarang</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Button & WhatsApp Notification Card -->
+          <div class="w-full bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col gap-3.5">
+            <!-- Primary Contact Button -->
+            <button
+              type="button"
+              @click="handleContactCourier"
+              class="w-full py-3 px-4 rounded-xl border-2 border-[#b10045] text-[#b10045] hover:bg-[#b10045]/5 font-bold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[18px]">call</span>
+              <span>Hubungi Satria (Telepon / Chat)</span>
+            </button>
+
+            <!-- Notification Toggle -->
+            <div class="flex items-center justify-between pt-2 px-1">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-emerald-600 text-[20px]">chat</span>
+                <div>
+                  <p class="text-xs font-bold text-slate-800">Notifikasi Langsung WhatsApp Aktif</p>
+                  <p class="text-[11px] text-slate-400">Pembaruan dikirim langsung ke apoteker bertugas</p>
+                </div>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  class="sr-only peer"
+                  v-model="waNotificationEnabled"
+                  @change="handleToggleWa"
+                />
+                <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+              </label>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
 
     <!-- ========================================================================= -->

@@ -27,11 +27,11 @@ function handleLogout() {
 </script>
 
 <template>
-  <header class="w-full bg-white border-b border-slate-100 sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between gap-6">
-      <!-- Brand & Navigation Tabs -->
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-sm">
+    <div class="max-w-7xl mx-auto px-6 sm:px-8 h-20 flex items-center justify-between gap-4">
+      <!-- Brand & Navigation Tabs Group -->
       <div class="flex items-center gap-8">
-        <router-link to="/" aria-label="Beranda Anteraja Pharma" class="inline-flex shrink-0 items-center">
+        <router-link to="/" aria-label="Beranda Anteraja Pharma" class="flex items-center shrink-0">
           <img
             alt="Anteraja Pharma"
             class="h-9 w-auto object-contain"
@@ -40,41 +40,46 @@ function handleLogout() {
         </router-link>
 
         <!-- Monitor Tabs (when on vendor monitor page) -->
-        <nav v-if="isMonitorPage" class="flex items-center gap-2">
+        <nav v-if="isMonitorPage" class="hidden md:flex items-center gap-2">
           <button
             type="button"
             @click="switchMonitorTab(1)"
-            class="font-semibold px-4 py-1.5 rounded-full text-sm transition-all cursor-pointer"
+            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer flex items-center gap-1.5"
             :class="activeScreen === 1
-              ? 'bg-[#FCE7F3] text-[#D81E5B]'
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-bold shadow-xs'
               : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
           >
-            Halaman Pantau
+            <span v-if="activeScreen === 1" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
+            <span>Halaman Pantau</span>
           </button>
+
           <button
             type="button"
             @click="switchMonitorTab(2)"
-            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer"
+            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer flex items-center gap-1.5"
             :class="activeScreen === 2
-              ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold'
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-bold shadow-xs'
               : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
           >
-            Pelacakan GPS
+            <span v-if="activeScreen === 2" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
+            <span>Pelacakan GPS</span>
           </button>
+
           <button
             type="button"
             @click="switchMonitorTab(3)"
-            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer"
+            class="px-3.5 py-1.5 rounded-full text-sm transition-all cursor-pointer flex items-center gap-1.5"
             :class="activeScreen === 3
-              ? 'bg-[#FCE7F3] text-[#D81E5B] font-semibold'
+              ? 'bg-[#FCE7F3] text-[#D81E5B] font-bold shadow-xs'
               : 'text-slate-600 hover:text-slate-900 font-medium hover:bg-slate-100'"
           >
-            Laporan
+            <span v-if="activeScreen === 3" class="w-1.5 h-1.5 rounded-full bg-[#D81E5B]"></span>
+            <span>Laporan</span>
           </button>
         </nav>
 
         <!-- Global Vendor Navigation (when on home or package list) -->
-        <nav v-else class="flex items-center gap-2">
+        <nav v-else class="hidden md:flex items-center gap-2">
           <router-link
             to="/"
             class="font-medium px-4 py-1.5 rounded-full text-sm transition-all"
@@ -96,13 +101,15 @@ function handleLogout() {
         </nav>
       </div>
 
-      <!-- Right: Facility Badge & Actions -->
+      <!-- Right Side Badges -->
       <div class="flex items-center gap-3">
-        <!-- Right Badge: RS Medika Sehat Jakarta with green dot -->
-        <div class="hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium shadow-sm">
+        <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-left shadow-xs">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="font-semibold text-slate-800">{{ currentFacility.name }}</span>
-          <span class="text-slate-400 font-normal hidden lg:inline">• {{ currentFacility.department }}</span>
+          <span class="material-symbols-outlined text-emerald-600 text-[18px]">local_hospital</span>
+          <div>
+            <p class="text-xs font-bold text-slate-800 leading-tight">{{ currentFacility.name }}</p>
+            <p class="text-[10px] text-slate-500 leading-none">{{ currentFacility.department }}</p>
+          </div>
         </div>
 
         <button
