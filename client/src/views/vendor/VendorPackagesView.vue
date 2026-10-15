@@ -156,7 +156,6 @@ function handleOpenExcursionGuide() {
   )
 }
 </script>
-
 <template>
   <div class="w-full flex flex-col gap-6">
     <!-- 1. Top Header & Actions -->

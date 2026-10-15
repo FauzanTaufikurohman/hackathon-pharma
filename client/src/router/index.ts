@@ -15,7 +15,7 @@ import AdminLiveMonitorView from "../views/admin/AdminLiveMonitorView.vue";
 import AdminReportsView from "../views/admin/AdminReportsView.vue";
 import AdminAccessManagementView from "../views/admin/AdminAccessManagementView.vue";
 import LoginView from "../views/auth/LoginView.vue";
-import { currentUser } from "../services/auth";
+import { currentUser, restoreSession } from "../services/auth";
 import type { AppRole } from "../services/auth";
 
 declare module "vue-router" {
@@ -168,7 +168,8 @@ const router = createRouter({
   },
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
+  await restoreSession();
   if (to.name === "login") return true;
 
   const user = currentUser.value;
@@ -183,5 +184,13 @@ router.beforeEach((to) => {
 
   return true;
 });
+
+const handleUnauthorized = () => {
+  if (router.currentRoute.value.name !== 'login') {
+    void router.replace({ name: 'login', query: { redirect: router.currentRoute.value.fullPath } });
+  }
+};
+window.addEventListener('pharma:unauthorized', handleUnauthorized);
+import.meta.hot?.dispose(() => window.removeEventListener('pharma:unauthorized', handleUnauthorized));
 
 export default router;
