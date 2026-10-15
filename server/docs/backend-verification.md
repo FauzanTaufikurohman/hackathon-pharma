@@ -81,7 +81,7 @@ Suhu/GPS dari endpoint adalah data yang dikirim perangkat atau simulator, bukan 
 
 Fondasi Admin, Checker, ekstensi tab Vendor dan outbox Telegram dipisah menjadi sembilan branch server per fitur. Setiap branch memuat repo lengkap dan mewarisi fondasi sebelumnya; urutan penggabungan ada di operations-api.md. Perubahan backend tidak mengubah client acuan main b93d302, tidak menambah pemilih role atau prototype tambahan.
 
-Sesudah pemisahan controller per fitur, suite SQLite terakhir lulus **63 tes / 415 assertions**. Setiap modul juga diuji terisolasi pada branch-nya sebelum commit. Hasil PostgreSQL sesudah pemisahan dicatat pada pembaruan berikutnya; angka historis sebelum pemisahan adalah 59 tes / 388 assertions pada kedua database. Selain regresi lama, tes meliputi:
+Sesudah pemisahan controller per fitur, seluruh suite lulus **63 tes / 415 assertions** pada SQLite in-memory dan PostgreSQL pharma_v2_test, dijalankan berurutan. Setiap modul juga diuji terisolasi pada branch-nya sebelum commit. Selain regresi lama, tes meliputi:
 
 - Admin membuat manifest, Checker yang ditugaskan melihatnya dan mengunggah foto wajib.
 - Penghitungan passed di server; inspeksi gagal tidak dapat disetujui.
