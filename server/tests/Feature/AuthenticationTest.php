@@ -28,6 +28,17 @@ class AuthenticationTest extends TestCase
         $this->withToken($login->json('token'))->getJson('/api/v1/vendor/packages')->assertOk();
     }
 
+    public function test_vercel_frontend_origin_is_allowed_for_api_preflight_requests(): void
+    {
+        $this->withHeaders([
+            'Origin' => 'https://pharma-hackathon.vercel.app',
+            'Access-Control-Request-Method' => 'POST',
+            'Access-Control-Request-Headers' => 'authorization,content-type',
+        ])->options('/api/v1/auth/login')
+            ->assertNoContent()
+            ->assertHeader('Access-Control-Allow-Origin', 'https://pharma-hackathon.vercel.app');
+    }
+
     public function test_login_issues_expiring_token_without_leaking_password(): void
     {
         User::factory()->create(['email' => 'vendor@example.test', 'password' => 'secret-test']);
