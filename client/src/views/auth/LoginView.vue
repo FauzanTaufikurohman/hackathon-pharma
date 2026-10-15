@@ -44,6 +44,11 @@ async function handleLogin() {
     isSubmitting.value = false
   }
 }
+
+function fillDemo(demoEmail: string, demoPass: string) {
+  email.value = demoEmail
+  password.value = demoPass
+}
 </script>
 
 <template>
@@ -127,11 +132,68 @@ async function handleLogin() {
         <button
           type="submit"
           :disabled="isSubmitting"
-          class="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+          class="w-full rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60 cursor-pointer shadow-sm"
         >
           {{ isSubmitting ? 'Memeriksa akun...' : 'Masuk' }}
         </button>
       </form>
+
+      <!-- Quick Demo Account Switcher -->
+      <div class="mt-6 pt-5 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-xs font-bold text-slate-700 uppercase tracking-wider">Pilih Akun Demo Cepat</p>
+          <span class="text-[11px] text-slate-400">Klik untuk isi otomatis</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button
+            type="button"
+            @click="fillDemo('vendor@pharma.test', 'PharmaVendor!2026')"
+            class="p-2.5 rounded-xl border border-slate-200 hover:border-primary/50 hover:bg-rose-50/40 text-left transition-all cursor-pointer group"
+          >
+            <div class="flex items-center gap-1.5 font-bold text-xs text-slate-800 group-hover:text-primary">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>Vendor / Faskes</span>
+            </div>
+            <div class="text-[11px] text-slate-500 truncate mt-0.5">vendor@pharma.test</div>
+          </button>
+
+          <button
+            type="button"
+            @click="fillDemo('satria@pharma.test', 'PharmaKurir!2026')"
+            class="p-2.5 rounded-xl border border-slate-200 hover:border-primary/50 hover:bg-rose-50/40 text-left transition-all cursor-pointer group"
+          >
+            <div class="flex items-center gap-1.5 font-bold text-xs text-slate-800 group-hover:text-primary">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              <span>Kurir / Satria</span>
+            </div>
+            <div class="text-[11px] text-slate-500 truncate mt-0.5">satria@pharma.test</div>
+          </button>
+
+          <button
+            type="button"
+            @click="fillDemo('checker@pharma.test', 'PharmaChecker!2026')"
+            class="p-2.5 rounded-xl border border-slate-200 hover:border-primary/50 hover:bg-rose-50/40 text-left transition-all cursor-pointer group"
+          >
+            <div class="flex items-center gap-1.5 font-bold text-xs text-slate-800 group-hover:text-primary">
+              <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              <span>Checker QC</span>
+            </div>
+            <div class="text-[11px] text-slate-500 truncate mt-0.5">checker@pharma.test</div>
+          </button>
+
+          <button
+            type="button"
+            @click="fillDemo('admin@pharma.test', 'PharmaAdmin!2026')"
+            class="p-2.5 rounded-xl border border-slate-200 hover:border-primary/50 hover:bg-rose-50/40 text-left transition-all cursor-pointer group"
+          >
+            <div class="flex items-center gap-1.5 font-bold text-xs text-slate-800 group-hover:text-primary">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+              <span>Admin Center</span>
+            </div>
+            <div class="text-[11px] text-slate-500 truncate mt-0.5">admin@pharma.test</div>
+          </button>
+        </div>
+      </div>
     </section>
   </main>
 </template>

@@ -63,8 +63,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/courier",
     name: "courier-home",
-    component: CourierHomeView,
-    alias: ["/kurir", "/courier/beranda"],
+    component: CourierTaskDetailView,
+    alias: [
+      "/kurir",
+      "/courier/beranda",
+      "/courier/tugas-masuk",
+      "/kurir/tugas-masuk",
+    ],
     meta: { roles: ["courier"] },
   },
   {
@@ -75,10 +80,10 @@ const routes: RouteRecordRaw[] = [
     meta: { roles: ["courier"] },
   },
   {
-    path: "/courier/tugas/:awb",
+    path: "/courier/tugas/:awb?",
     name: "courier-task-detail",
     component: CourierTaskDetailView,
-    alias: ["/courier/task/:awb", "/kurir/tugas/:awb"],
+    alias: ["/courier/task/:awb?", "/kurir/tugas/:awb?"],
     meta: { roles: ["courier"] },
   },
   {
