@@ -268,7 +268,7 @@ async function reportPdf() {
       </button>
     </nav>
     <ApiState
-      :loading="record.loading.value"
+      :loading="record.loading.value && !record.data.value"
       :error="record.error.value || mutation.error.value || localError"
       :notice="mutation.notice.value"
       @retry="reload"
@@ -511,7 +511,7 @@ async function reportPdf() {
       </template>
       <template v-else-if="tab === 3">
         <ApiState
-          :loading="issues.loading.value"
+          :loading="issues.loading.value && !issues.data.value"
           :error="issues.error.value"
           @retry="issues.reload"
         />
@@ -595,7 +595,7 @@ async function reportPdf() {
       </template>
       <template v-else>
         <ApiState
-          :loading="handover.loading.value"
+          :loading="handover.loading.value && !handover.data.value"
           :error="handover.error.value"
           @retry="handover.reload"
         />

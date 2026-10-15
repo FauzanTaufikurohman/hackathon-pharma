@@ -45,9 +45,7 @@ const isCourierTaskDetail = computed(() => route.name === 'courier-task-detail')
     <!-- Main Content Area with Top Padding for fixed Navbar -->
     <main
       class="w-full flex-1"
-      :class="
-        isCourier ? 'pt-28 sm:pt-20 bg-[#F8FAFC]' : 'pt-28 sm:pt-20 bg-slate-50'
-      "
+      :class="isCourier ? 'pt-20 bg-[#F8FAFC]' : 'pt-20 bg-slate-50'"
     >
       <div
         :class="

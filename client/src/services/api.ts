@@ -52,10 +52,18 @@ export async function request<T>(
         clearSession()
         window.dispatchEvent(new Event('pharma:unauthorized'))
       }
-      const fields: Record<string, string[]> = body.errors || {}
+      const fields: Record<string, string[]> =
+        response.status === 422 ? body.errors || {} : {}
       const message =
-        Object.values(fields).flat()[0] ||
-        body.message ||
+        (response.status === 404
+          ? 'Data tidak ditemukan atau akunmu tidak memiliki akses.'
+          : response.status === 403
+            ? 'Akunmu tidak memiliki izin untuk tindakan ini.'
+            : response.status === 401
+              ? 'Sesi berakhir. Silakan masuk kembali.'
+              : response.status >= 500
+                ? 'Server sedang bermasalah. Coba lagi setelah beberapa saat.'
+                : Object.values(fields).flat()[0] || body.message) ||
         'Permintaan belum berhasil.'
       throw new ApiError(
         response.status === 409

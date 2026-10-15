@@ -120,7 +120,7 @@ const predictionMessage = computed(() =>
       </button>
     </div>
     <ApiState
-      :loading="record.loading.value"
+      :loading="record.loading.value && !record.data.value"
       :error="record.error.value || mutation.error.value || downloadError"
       :notice="mutation.notice.value"
       @retry="reload"

@@ -10,9 +10,9 @@ export interface AuthUser {
   facility?: Record<string, unknown> | null
 }
 export const currentUser = ref<AuthUser | null>(null)
-export const apiBaseUrl = (
-  import.meta.env.VITE_API_BASE_URL || '/api/v1'
-).trim().replace(/\/+$/, '')
+export const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api/v1')
+  .trim()
+  .replace(/\/+$/, '')
 const sessionKey = 'pharma.session'
 let accessToken: string | null = null
 let restorePromise: Promise<void> | undefined
@@ -112,6 +112,8 @@ export async function login(
       body: JSON.stringify({ email, password, device_name: 'pharma-web' }),
       signal: controller.signal,
     })
+    if (response.status >= 500)
+      throw new Error('Server sedang bermasalah. Silakan coba lagi.')
     const body = await response.json()
     if (!response.ok) {
       const first = Object.values(body.errors || {}).flat()[0]
@@ -129,6 +131,10 @@ export async function login(
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError')
       throw new Error('Server belum merespons. Silakan coba lagi.')
+    if (error instanceof TypeError || error instanceof SyntaxError)
+      throw new Error(
+        'Tidak dapat membaca respons server. Periksa koneksi lalu coba lagi.',
+      )
     throw error
   } finally {
     clearTimeout(timer)
