@@ -87,11 +87,9 @@ const handleTabChange = (tab: number) => {
   if (tab === 1) {
     triggerToast('Menampilkan Antrean Pemeriksaan Staging Hub Cawang')
   } else if (tab === 2) {
-    triggerToast('Membuka Form Initial Exam (Pemeriksaan Awal Gudang)...')
-    // Later when Form Initial Exam is built, route to /checker/exam
+    router.push('/checker/form-initial-exam')
   } else if (tab === 3) {
-    triggerToast('Membuka Riwayat & Status Approval Checker...')
-    // Later when Riwayat is built, route to /checker/history
+    router.push('/checker/riwayat')
   }
 }
 
@@ -113,12 +111,12 @@ const handleActionClick = (item: CheckerQueueItem) => {
   if (item.status === 'inspection') {
     triggerToast(`Membuka Form Initial Exam untuk resi: ${item.awb}`)
     setTimeout(() => {
-      activeTab.value = 2
+      router.push('/checker/form-initial-exam')
     }, 450)
   } else if (item.status === 'recheck') {
     triggerToast(`Memulai Verifikasi Ulang (Re-test) untuk resi: ${item.awb}`)
     setTimeout(() => {
-      activeTab.value = 2
+      router.push('/checker/form-initial-exam')
     }, 450)
   } else if (item.status === 'scheduled') {
     selectedManifestItem.value = item

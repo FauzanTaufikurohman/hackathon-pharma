@@ -241,5 +241,176 @@ export interface CheckerQueueItem {
   accent_color: 'primary' | 'tertiary' | 'secondary'
 }
 
+export interface CheckerChecklistParam {
+  label: string
+  value: string
+  icon: string
+  is_error?: boolean
+  is_highlight?: boolean
+}
 
+export interface CheckerColdChainStrip {
+  type: 'temperature' | 'verifier' | 'alert' | 'shipping'
+  icon: string
+  label: string
+  value: string
+  badge_text: string
+  is_error?: boolean
+}
+
+export interface CheckerAdminDecision {
+  status: 'pending' | 'approved' | 'rejected'
+  status_label: string
+  reviewer_role_title: string
+  timestamp?: string
+  note: string
+  footer_status_icon: string
+  footer_status_label: string
+  action_button_label: string
+  action_button_icon: string
+  action_button_type: 'exam_detail' | 'pdf_download' | 'quarantine_doc' | 'audit_trail'
+}
+
+export interface CheckerHistoryItem {
+  id: number
+  awb: string
+  commodity_title: string
+  package_count_str: string
+  submitted_at: string
+  qc_passed: boolean
+  checklist_params: CheckerChecklistParam[]
+  cold_chain_strip: CheckerColdChainStrip
+  admin_decision: CheckerAdminDecision
+  is_alert?: boolean
+}
+
+export interface AdminProfile {
+  name: string
+  role: string
+  avatar_url: string
+  bot_status: string
+}
+
+export interface AdminShipmentItem {
+  id: number
+  awb: string
+  sender_origin: string
+  recipient_name: string
+  recipient_city: string
+  commodity: string
+  koli: string
+  temp_profile: string
+  temp_type: 'chilled' | 'ambient'
+  officer_name: string
+  officer_role: string
+  status: 'pending_approval' | 'in_transit' | 'held' | 'inspection' | 'delivered'
+  action_label: string
+  action_type: 'review_qc' | 'monitor_gps' | 'open_ticket' | 'detail' | 'view_epod'
+}
+
+export interface AdminApprovalShipment {
+  id: number
+  awb: string
+  batch_number: string
+  status: 'pending_approval' | 'approved' | 'held'
+  status_label: string
+  commodity: string
+  koli: string
+  origin_hub: string
+  destination: string
+  checker_name: string
+  checker_id: string
+  submitted_at: string
+  packaging_ok: boolean
+  seal_ok: boolean
+  seal_code: string
+  label_ok: boolean
+  temp_manual: number
+  temp_ocr: number
+  ocr_match: boolean
+  temp_min: number
+  temp_max: number
+  photo_url: string
+  checker_note: string
+  passed: boolean
+  default_admin_reason: string
+}
+
+export interface AdminAvailableCourier {
+  id: string
+  code: string
+  initials: string
+  name: string
+  vehicle_type: string
+  plate_number: string
+  chiller_temp: number
+  battery_pct?: number
+  active_tasks: number
+  active_tasks_desc: string
+  rating: number
+  credential_cpob: string
+  vehicle_icon: string
+}
+
+export interface AdminIncidentData {
+  ticket_id: string
+  awb: string
+  destination: string
+  reporter_name: string
+  reported_at: string
+  category: string
+  category_label: string
+  description: string
+  photo_url: string
+  gps_coords: string
+  hash: string
+  default_action: 'return' | 'recheck' | 'resume'
+  default_reason: string
+  signing_officer: string
+  officer_title: string
+}
+
+export interface AdminAuditEvent {
+  id: string
+  time: string
+  date: string
+  awb: string
+  actor: string
+  role: string
+  event_type: 'decide' | 'issue' | 'telemetry' | 'depart' | 'accept' | 'assign' | 'approve' | 'inspect' | 'temp_excursion' | string
+  from_status?: string
+  to_status?: string
+  description: string
+  is_new?: boolean
+}
+
+export interface AdminBotGatewayLog {
+  id: string
+  recipient: string
+  channel: 'whatsapp' | 'telegram' | 'webhook' | string
+  channel_label: string
+  time: string
+  title: string
+  payload_label: string
+  payload_val: string
+  status_label: string
+  status_icon: string
+  status_badge_class: string
+}
+
+export interface AdminDailyComplianceReport {
+  report_id: string
+  cycle_date: string
+  verified: boolean
+  total_shipments: number
+  total_shipments_note: string
+  temp_optimal_pct: number
+  excursion_rate_desc: string
+  qc_passed_pct: number
+  hub_quarantine_desc: string
+  incident_count: number
+  incident_desc: string
+  pharmacist_name: string
+  pharmacist_sip: string
+}
 
