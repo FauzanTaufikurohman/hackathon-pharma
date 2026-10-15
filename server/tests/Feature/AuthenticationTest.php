@@ -28,6 +28,17 @@ class AuthenticationTest extends TestCase
         $this->withToken($login->json('token'))->getJson('/api/v1/vendor/packages')->assertOk();
     }
 
+    public function test_vercel_frontend_origin_is_allowed_for_api_preflight_requests(): void
+    {
+        $this->withHeaders([
+            'Origin' => 'https://pharma-hackathon.vercel.app',
+            'Access-Control-Request-Method' => 'POST',
+            'Access-Control-Request-Headers' => 'authorization,content-type',
+        ])->options('/api/v1/auth/login')
+            ->assertNoContent()
+            ->assertHeader('Access-Control-Allow-Origin', 'https://pharma-hackathon.vercel.app');
+    }
+
     public function test_login_issues_expiring_token_without_leaking_password(): void
     {
         User::factory()->create(['email' => 'vendor@example.test', 'password' => 'secret-test']);
@@ -37,6 +48,19 @@ class AuthenticationTest extends TestCase
         $this->withToken($token)->getJson('/api/v1/auth/me')->assertOk();
         $this->withToken($token)->postJson('/api/v1/auth/logout')->assertOk();
         $this->assertDatabaseCount('personal_access_tokens', 0);
+    }
+
+    public function test_cors_does_not_allow_an_unlisted_origin_or_delete_method(): void
+    {
+        $this->withHeaders([
+            'Origin' => 'https://untrusted.example',
+            'Access-Control-Request-Method' => 'POST',
+            'Access-Control-Request-Headers' => 'authorization,content-type',
+        ])->options('/api/v1/auth/login')->assertHeaderMissing('Access-Control-Allow-Origin');
+        $this->withHeaders([
+            'Origin' => 'https://pharma-hackathon.vercel.app',
+            'Access-Control-Request-Method' => 'DELETE',
+        ])->options('/api/v1/auth/login')->assertHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS');
     }
 
     public function test_invalid_password_and_unknown_email_have_same_error(): void

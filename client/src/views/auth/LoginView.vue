@@ -20,6 +20,7 @@ const roleHome: Record<AppRole, string> = {
 }
 
 async function handleLogin() {
+  if (isSubmitting.value) return
   errorMessage.value = ''
   isSubmitting.value = true
 

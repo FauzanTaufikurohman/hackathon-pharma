@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { currentUser, logoutAndRedirect } from '../../services/auth'
 const props = defineProps<{
@@ -7,6 +7,9 @@ const props = defineProps<{
 }>()
 const route = useRoute(),
   router = useRouter()
+const menuOpen = ref(false)
+const signingOut = ref(false)
+watch(() => route.fullPath, () => { menuOpen.value = false })
 const menus = {
   admin: [
     {
@@ -51,6 +54,19 @@ const menus = {
 }
 const links = computed(() => menus[props.role])
 const home = computed(() => links.value[0]!.path)
+const facilityName = computed(() => {
+  const name = currentUser.value?.facility?.name
+  return typeof name === 'string' && name.trim() ? name : currentUser.value?.name
+})
+async function signOut() {
+  if (signingOut.value) return
+  signingOut.value = true
+  try {
+    await logoutAndRedirect(router)
+  } finally {
+    signingOut.value = false
+  }
+}
 </script>
 <template>
   <header
@@ -58,7 +74,7 @@ const home = computed(() => links.value[0]!.path)
     :class="role === 'admin' ? 'sticky top-0' : 'fixed inset-x-0 top-0'"
   >
     <div
-      class="max-w-7xl mx-auto grid grid-cols-[auto_minmax(0,1fr)_auto] gap-x-4 gap-y-2 px-4 sm:px-6 py-2 items-center"
+      class="relative max-w-7xl mx-auto grid grid-cols-[auto_minmax(0,1fr)_auto] gap-3 px-4 sm:px-6 min-h-20 items-center"
     >
       <RouterLink
         :to="home"
@@ -72,29 +88,34 @@ const home = computed(() => links.value[0]!.path)
           class="h-10 w-auto object-contain"
       /></RouterLink>
       <nav
+        :id="'portal-nav-' + role"
         :aria-label="'Navigasi ' + role"
-        class="row-start-2 col-span-3 flex gap-1 overflow-x-auto min-w-0 sm:row-start-1 sm:col-start-2 sm:col-span-1"
+        class="absolute inset-x-0 top-full bg-surface-container-lowest border-b border-outline/15 px-4 py-3 gap-1 flex-col min-w-0 sm:static sm:p-0 sm:border-0 sm:flex-row sm:overflow-x-auto sm:col-start-2"
+        :class="menuOpen ? 'flex' : 'hidden sm:flex'"
+        @keydown.esc="menuOpen = false"
       >
         <RouterLink
           v-for="link in links"
           :key="link.path"
           :to="link.path"
-          class="live-button whitespace-nowrap border-transparent"
-          :class="route.name === link.name ? 'bg-primary/10 text-primary' : ''"
+          class="live-button whitespace-nowrap border-transparent rounded-full font-semibold"
+          :class="route.name === link.name ? 'bg-primary/10 text-primary' : 'text-on-surface-variant'"
           :aria-current="route.name === link.name ? 'page' : undefined"
           >{{ link.label }}</RouterLink
         >
       </nav>
       <div class="col-start-3 row-start-1 flex items-center gap-3">
-        <p class="hidden md:block max-w-32 truncate" :title="currentUser?.name">
-          {{ currentUser?.name }}
+        <p class="hidden lg:block max-w-44 truncate rounded-full bg-secondary/10 px-3 py-2 text-secondary" :title="facilityName">
+          {{ facilityName }}
         </p>
+        <button type="button" class="live-button sm:hidden" :aria-controls="'portal-nav-' + role" :aria-expanded="menuOpen" @click="menuOpen = !menuOpen">Menu</button>
         <button
           type="button"
           class="live-button"
-          @click="logoutAndRedirect(router)"
+          :disabled="signingOut"
+          @click="signOut"
         >
-          Keluar
+          {{ signingOut ? 'Keluar…' : 'Keluar' }}
         </button>
       </div>
     </div>

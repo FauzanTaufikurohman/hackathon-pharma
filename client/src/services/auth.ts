@@ -12,7 +12,7 @@ export interface AuthUser {
 export const currentUser = ref<AuthUser | null>(null)
 export const apiBaseUrl = (
   import.meta.env.VITE_API_BASE_URL || '/api/v1'
-).replace(/\/+$/, '')
+).trim().replace(/\/+$/, '')
 const sessionKey = 'pharma.session'
 let accessToken: string | null = null
 let restorePromise: Promise<void> | undefined

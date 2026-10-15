@@ -23,7 +23,7 @@ const isCourierTaskDetail = computed(() => route.name === 'courier-task-detail')
   <!-- Dedicated role portal layouts -->
   <div
     v-if="isChecker || isAdmin || isLogin || isCourierTaskDetail"
-    class="min-h-screen bg-surface font-sans text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed"
+    class="isolate min-h-screen bg-surface font-sans text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed"
   >
     <router-view />
   </div>
@@ -31,11 +31,11 @@ const isCourierTaskDetail = computed(() => route.name === 'courier-task-detail')
   <!-- Courier or Vendor Role Layout -->
   <div
     v-else
-    class="min-h-screen flex flex-col font-sans text-on-surface antialiased"
+    class="isolate min-h-screen flex flex-col font-sans text-on-surface antialiased"
     :class="
       isCourier
         ? 'bg-[#F8FAFC]'
-        : 'bg-surface selection:bg-primary-fixed selection:text-primary'
+        : 'bg-slate-50 selection:bg-primary-fixed selection:text-primary'
     "
   >
     <!-- Role-based Navigation Bar -->
@@ -46,14 +46,14 @@ const isCourierTaskDetail = computed(() => route.name === 'courier-task-detail')
     <main
       class="w-full flex-1"
       :class="
-        isCourier ? 'pt-28 sm:pt-20 bg-[#F8FAFC]' : 'pt-28 sm:pt-20 bg-surface'
+        isCourier ? 'pt-28 sm:pt-20 bg-[#F8FAFC]' : 'pt-28 sm:pt-20 bg-slate-50'
       "
     >
       <div
         :class="
           isCourier
             ? 'max-w-6xl mx-auto px-4 sm:px-6 py-8'
-            : 'max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-space-xl'
+            : 'max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-space-xl'
         "
       >
         <router-view />
