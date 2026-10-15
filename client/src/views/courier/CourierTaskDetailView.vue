@@ -4,19 +4,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { mockCourierTasks } from '../../data/mockShipments'
 import type { CourierTaskItem } from '../../types/shipment'
 import CourierTaskDetailNavbar from '../../components/courier/CourierTaskDetailNavbar.vue'
-// Tab 3: Lapor Kendala Components
-import CourierIssueNoticeBanner from '../../components/courier/CourierIssueNoticeBanner.vue'
-import CourierIssueReportForm from '../../components/courier/CourierIssueReportForm.vue'
-import CourierIssueDecisionCard from '../../components/courier/CourierIssueDecisionCard.vue'
-import CourierIssueAuditLogStrip from '../../components/courier/CourierIssueAuditLogStrip.vue'
-
-// Tab 4: Serah Terima & Laporan Components
-import CourierHandoverBanner from '../../components/courier/CourierHandoverBanner.vue'
-import CourierHandoverEpodCard from '../../components/courier/CourierHandoverEpodCard.vue'
-import CourierHandoverCargoSummaryCard from '../../components/courier/CourierHandoverCargoSummaryCard.vue'
-import CourierHandoverTimelineCard from '../../components/courier/CourierHandoverTimelineCard.vue'
-import CourierHandoverReportCard from '../../components/courier/CourierHandoverReportCard.vue'
-
 import CourierFooter from '../../components/courier/CourierFooter.vue'
 import NotificationToast from '../../components/vendor/NotificationToast.vue'
 
@@ -219,11 +206,15 @@ function handleOpenIssueForm() {
   handleTabChange(3)
 }
 
-// Tab 3 Actions
+// Tab 3 State & Actions
+const selectedIssueType = ref<'seal' | 'temperature' | 'packaging' | 'recipient_unavailable'>('seal')
+const issueDescription = ref(
+  'Saat tiba dan akan diserahterimakan di instalasi farmasi RS Medika Sehat, ditemukan segel plastik tamper-evident nomor SL-8891 robek sebagian dan kait boks renggang saat proses penurunan dari reefer van.'
+)
 const isHeld = ref(true)
 const isReturning = ref(false)
 
-function handleIssueSubmit(payload: { category: string; description: string }) {
+function handleIssueSubmitDirect() {
   isHeld.value = true
   task.value.status = 'hold'
   task.value.status_label = 'Ditahan (HELD)'
@@ -236,13 +227,16 @@ function handleIssueSubmit(payload: { category: string; description: string }) {
 function handleConfirmReturn() {
   isReturning.value = true
   task.value.status = 'hold'
+  task.value.status_label = 'Retur (returning)'
   toastRef.value?.show(
     'Instruksi Retur Dikonfirmasi!',
     `Status pengiriman diperbarui menjadi returning. Rute navigasi diarahkan kembali ke Hub Cawang.`
   )
 }
 
-// Tab 4 Actions
+// Tab 4 State & Actions
+const handoverMode = ref<'normal' | 'return'>('normal')
+
 function handleDownloadBapPdf() {
   toastRef.value?.show(
     'Mengunduh Salinan Dokumen BAP',
@@ -1072,69 +1066,694 @@ function handleShareWhatsappDispatcher() {
       </div>
 
       <!-- TAB 3: LAPOR KENDALA -->
-      <div v-else-if="activeTab === 3" class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <div class="flex flex-col w-full space-y-6">
-          <CourierIssueNoticeBanner />
+      <div v-else-if="activeTab === 3" class="max-w-5xl mx-auto py-8 px-4 sm:px-6 space-y-6">
+        <!-- Header Title & CDOB Badge -->
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-[#FCE7F3] text-[#D81E5B] font-bold text-xs uppercase tracking-wider">
+              ✦ INSIDEN COLD-CHAIN &amp; KEPATUHAN CDOB
+            </span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            3. Lapor Kendala &amp; Keputusan Admin
+          </h1>
+          <p class="text-slate-600 text-sm">
+            Pelaporan anomali lapangan berstatus HELD dan eksekusi instruksi resmi Tim QA Control Tower.
+          </p>
+        </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-            <CourierIssueReportForm
-              :awb="task.awb"
-              :is-held="isHeld"
-              @submit-issue="handleIssueSubmit"
-            />
+        <!-- 2-Column Grid Anatomy -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <!-- LEFT COLUMN: Form Input Laporan Kendala Lapangan (FR-04) -->
+          <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col gap-5">
+            <div class="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#D81E5B]">assignment_late</span>
+                  <h2 class="font-bold text-lg text-slate-900">Form Input Laporan Kendala Lapangan</h2>
+                </div>
+                <p class="text-xs text-slate-500 mt-1">
+                  Tabel basis data: <span class="font-mono text-slate-700">issues</span> • Terkait AWB:
+                  <span class="font-bold text-slate-800">{{ task.awb }}</span>
+                </p>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-mono font-bold">FR-04</span>
+            </div>
 
-            <CourierIssueDecisionCard
-              :awb="task.awb"
-              :is-returning="isReturning"
-              @confirm-return="handleConfirmReturn"
-            />
+            <!-- Issue Category Selector -->
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between">
+                <label class="text-sm font-semibold text-slate-800">
+                  Kategori Kendala (<code class="text-xs font-mono text-slate-500">issues.type</code>)
+                </label>
+                <span class="text-xs text-[#DC2626] font-semibold">*Wajib dipilih</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <!-- Option 1: Segel Rusak -->
+                <button
+                  type="button"
+                  @click="selectedIssueType = 'seal'"
+                  class="text-left p-3.5 rounded-xl transition-all flex items-start justify-between cursor-pointer"
+                  :class="selectedIssueType === 'seal'
+                    ? 'bg-red-50 border-2 border-red-500 text-red-900 shadow-xs'
+                    : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700'"
+                >
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-1.5 text-xs font-bold" :class="selectedIssueType === 'seal' ? 'text-red-700' : 'text-slate-800'">
+                      <span class="material-symbols-outlined text-[16px]">lock_open</span>
+                      <span>Segel Rusak / Terbuka</span>
+                    </div>
+                    <div class="text-[11px]" :class="selectedIssueType === 'seal' ? 'text-red-500' : 'text-slate-400'">
+                      Kode: <span class="font-mono">seal</span>
+                    </div>
+                  </div>
+                  <span
+                    v-if="selectedIssueType === 'seal'"
+                    class="material-symbols-outlined text-red-600 text-[18px]"
+                    style="font-variation-settings: 'FILL' 1;"
+                  >check_circle</span>
+                  <span v-else class="w-3.5 h-3.5 rounded-full border border-slate-300 mt-1"></span>
+                </button>
+
+                <!-- Option 2: Suhu Melebihi Batas -->
+                <button
+                  type="button"
+                  @click="selectedIssueType = 'temperature'"
+                  class="text-left p-3.5 rounded-xl transition-all flex items-start justify-between cursor-pointer"
+                  :class="selectedIssueType === 'temperature'
+                    ? 'bg-red-50 border-2 border-red-500 text-red-900 shadow-xs'
+                    : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700'"
+                >
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-1.5 text-xs font-semibold" :class="selectedIssueType === 'temperature' ? 'text-red-700 font-bold' : 'text-slate-800'">
+                      <span class="material-symbols-outlined text-[16px] text-amber-600">device_thermostat</span>
+                      <span>Suhu Melebihi Batas (&gt;8.0°C)</span>
+                    </div>
+                    <div class="text-[11px]" :class="selectedIssueType === 'temperature' ? 'text-red-500' : 'text-slate-400'">
+                      Kode: <span class="font-mono">temperature</span>
+                    </div>
+                  </div>
+                  <span
+                    v-if="selectedIssueType === 'temperature'"
+                    class="material-symbols-outlined text-red-600 text-[18px]"
+                    style="font-variation-settings: 'FILL' 1;"
+                  >check_circle</span>
+                  <span v-else class="w-3.5 h-3.5 rounded-full border border-slate-300 mt-1"></span>
+                </button>
+
+                <!-- Option 3: Kemasan Bocor -->
+                <button
+                  type="button"
+                  @click="selectedIssueType = 'packaging'"
+                  class="text-left p-3.5 rounded-xl transition-all flex items-start justify-between cursor-pointer"
+                  :class="selectedIssueType === 'packaging'
+                    ? 'bg-red-50 border-2 border-red-500 text-red-900 shadow-xs'
+                    : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700'"
+                >
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-1.5 text-xs font-semibold" :class="selectedIssueType === 'packaging' ? 'text-red-700 font-bold' : 'text-slate-800'">
+                      <span class="material-symbols-outlined text-[16px] text-slate-500">inventory_2</span>
+                      <span>Kemasan Bocor / Rusak Fisik</span>
+                    </div>
+                    <div class="text-[11px]" :class="selectedIssueType === 'packaging' ? 'text-red-500' : 'text-slate-400'">
+                      Kode: <span class="font-mono">packaging</span>
+                    </div>
+                  </div>
+                  <span
+                    v-if="selectedIssueType === 'packaging'"
+                    class="material-symbols-outlined text-red-600 text-[18px]"
+                    style="font-variation-settings: 'FILL' 1;"
+                  >check_circle</span>
+                  <span v-else class="w-3.5 h-3.5 rounded-full border border-slate-300 mt-1"></span>
+                </button>
+
+                <!-- Option 4: Penerima Tidak di Tempat -->
+                <button
+                  type="button"
+                  @click="selectedIssueType = 'recipient_unavailable'"
+                  class="text-left p-3.5 rounded-xl transition-all flex items-start justify-between cursor-pointer"
+                  :class="selectedIssueType === 'recipient_unavailable'
+                    ? 'bg-red-50 border-2 border-red-500 text-red-900 shadow-xs'
+                    : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700'"
+                >
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-1.5 text-xs font-semibold" :class="selectedIssueType === 'recipient_unavailable' ? 'text-red-700 font-bold' : 'text-slate-800'">
+                      <span class="material-symbols-outlined text-[16px] text-slate-500">person_off</span>
+                      <span>Penerima / APJ Tidak di Tempat</span>
+                    </div>
+                    <div class="text-[11px]" :class="selectedIssueType === 'recipient_unavailable' ? 'text-red-500' : 'text-slate-400'">
+                      Kode: <span class="font-mono">recipient_unavailable</span>
+                    </div>
+                  </div>
+                  <span
+                    v-if="selectedIssueType === 'recipient_unavailable'"
+                    class="material-symbols-outlined text-red-600 text-[18px]"
+                    style="font-variation-settings: 'FILL' 1;"
+                  >check_circle</span>
+                  <span v-else class="w-3.5 h-3.5 rounded-full border border-slate-300 mt-1"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Deskripsi Kronologi -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <label class="text-sm font-semibold text-slate-800">
+                  Deskripsi Kronologi Kejadian (<code class="text-xs font-mono text-slate-500">issues.description</code>)
+                </label>
+                <span class="text-xs text-slate-400">{{ issueDescription.length }} / 500 karakter</span>
+              </div>
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 focus-within:bg-white focus-within:border-[#D81E5B] focus-within:ring-2 focus-within:ring-[#FCE7F3] transition-all">
+                <textarea
+                  v-model="issueDescription"
+                  class="w-full bg-transparent text-sm text-slate-800 focus:outline-none resize-none leading-relaxed"
+                  rows="4"
+                  maxlength="500"
+                ></textarea>
+              </div>
+              <p class="text-xs text-slate-500">Cantumkan lokasi fisik, identitas saksi di tempat (jika ada), serta penanda segel unik.</p>
+            </div>
+
+            <!-- Bukti Foto Lapangan -->
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between">
+                <label class="text-sm font-semibold text-slate-800">Bukti Foto Lapangan &amp; Tag Lokasi Otomatis</label>
+                <span class="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[15px]">verified</span>
+                  <span>GPS Terverifikasi</span>
+                </span>
+              </div>
+
+              <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex items-center gap-4">
+                <div class="w-20 h-20 rounded-xl overflow-hidden shrink-0 relative bg-slate-200">
+                  <img
+                    class="w-full h-full object-cover"
+                    alt="Foto segel rusak"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAM4NnuboCZQugl3-VrgxXMTnwcFuSPgOtFJfW6y91Xo8OrKEjb82RY9gvgMmQaKLRKzqp2zSbvVYc_2neOjw35Pe60KO5vzd3fRBMC_7gY53Rf9_Mh0cAaGby_k-bBnlMcEg-aXuc17qFJCIaf8KpYWGarko7jzSGtzfe6pH8Tnz3WRBKtAEdlyQEcvjMAWnfPl63CCBIuNYL7zV9LU4c4QC64fsqw52GBOwIu9j3azj8mm8FjHYtWLw"
+                  />
+                  <div class="absolute bottom-1 right-1 bg-black/70 rounded px-1 text-[9px] text-white font-mono">JPG</div>
+                </div>
+                <div class="flex-1 min-w-0 space-y-1">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-xs text-slate-800 font-semibold truncate">foto_segel_rusak_8891.jpg</span>
+                    <span class="material-symbols-outlined text-emerald-600 text-[18px]">check_circle</span>
+                  </div>
+                  <p class="text-xs text-slate-500 truncate">Watermark GPS Tol Cawang / Salemba, 14 Okt 2026 15:15 WIB</p>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-slate-200 text-slate-600 font-mono text-[11px]">3.4 MB</span>
+                    <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-semibold text-[11px]">Exif Metadata OK</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-xl border border-dashed border-slate-300 hover:border-[#D81E5B] bg-slate-50 hover:bg-pink-50/40 p-3 flex items-center justify-center gap-2 cursor-pointer text-slate-600 transition-colors">
+                <span class="material-symbols-outlined text-[18px] text-[#D81E5B]">add_a_photo</span>
+                <span class="text-xs font-semibold">Ambil / Tambah Foto Tambahan (Maks. 3)</span>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="button"
+              @click="handleIssueSubmitDirect"
+              class="w-full py-3.5 px-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer active:scale-[0.99]"
+            >
+              <span class="material-symbols-outlined text-[20px]">lock_clock</span>
+              <span>Kirim Laporan Kendala &amp; Tahan Pengiriman (status → HELD)</span>
+            </button>
           </div>
 
-          <CourierIssueAuditLogStrip />
+          <!-- RIGHT COLUMN: Keputusan Resmi Admin QA & Eksekusi Retur -->
+          <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col gap-5">
+            <!-- Live Status Banner -->
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <span class="w-3 h-3 rounded-full bg-red-600 animate-ping shrink-0"></span>
+                <div>
+                  <div class="text-sm font-bold text-red-900 uppercase tracking-wide">STATUS SHIPMENT: HELD</div>
+                  <p class="text-xs text-red-700">Ditahan untuk Pemeriksaan QA • AWB: {{ task.awb }}</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-red-600 text-white text-xs font-bold tracking-wider uppercase shrink-0">
+                Akses Dikunci
+              </span>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex items-start gap-3">
+              <span class="material-symbols-outlined text-amber-600 text-[18px] shrink-0 mt-0.5">hourglass_top</span>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Menunggu instruksi lanjutan dari Dispatcher &amp; QA Lead Anteraja Pharma. Sesuai CDOB, dilarang membuka muatan atau meninggalkan titik pengantaran tanpa verifikasi.
+              </p>
+            </div>
+
+            <!-- QA Admin Decision Card -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#D81E5B]">verified_user</span>
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-900">Keputusan Resmi Admin QA Control Tower</h3>
+                    <p class="text-[11px] text-slate-500 font-mono">Mapped to: decisions table</p>
+                  </div>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-md bg-white border border-slate-200 font-mono text-slate-800 text-xs font-bold">DEC-2026-0941</span>
+              </div>
+
+              <!-- Decision Action Banner -->
+              <div class="space-y-1.5">
+                <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Aksi Putusan (<code class="font-mono">decisions.action</code>):</span>
+                <div class="p-3 rounded-xl bg-red-600 text-white font-bold text-sm tracking-wide flex items-center gap-2 shadow-sm">
+                  <span class="material-symbols-outlined text-[20px]">assignment_return</span>
+                  <span>RETURN (Instruksi: Retur Kargo ke Gudang Asal)</span>
+                </div>
+              </div>
+
+              <!-- Decision Reason -->
+              <div class="space-y-1.5">
+                <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Alasan Keputusan (<code class="font-mono">decisions.reason</code>):</span>
+                <div class="bg-white border border-slate-200 p-3.5 rounded-xl text-xs text-slate-700 leading-relaxed">
+                  “Segel fisik terbukti tidak utuh dan berpotensi merusak sterilitas biologis sesuai regulasi BPOM CDOB. <span class="font-bold text-red-600">JANGAN serahkan kargo ke pihak rumah sakit.</span> Segera kunci ulang cooler box dan bawa kembali kargo ke Hub Cawang untuk investigasi karantina.”
+                </div>
+              </div>
+
+              <!-- Authorizer info -->
+              <div class="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
+                <div class="flex items-center gap-2.5">
+                  <img
+                    class="w-9 h-9 rounded-full object-cover"
+                    alt="dr. Ardiansyah, Apt."
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEIlLZxb-hUUU4MDB1meeVROOug4xALin76GqHpRqBMrJCcsK6a9IRba37BLGbGlp29pQpJQSHTR5ll5YgLqwjkQZVXQxpDrhRPDTOQr4XPiyNw71yw3UOtUSqLOb8sEzIvkOLvxA_laWVU5Hx7hIPdfrCCSBF0wZf1JioCxB-JHG7PZcDH7NZUKNRP7rU94xthyKvDckl8q0s9abJ21kDC6q8qowtVW8vDmwzGpmy6wWZTILNsOxRJA"
+                  />
+                  <div>
+                    <div class="text-xs font-bold text-slate-900">dr. Ardiansyah, Apt.</div>
+                    <div class="text-[11px] text-slate-500">QA Lead &amp; Penanggung Jawab Teknis CDOB</div>
+                  </div>
+                </div>
+                <div class="text-left sm:text-right font-mono text-[11px]">
+                  <div class="text-slate-800 font-semibold">14 Okt 2026, 15:22 WIB</div>
+                  <div class="text-emerald-600 flex items-center sm:justify-end gap-1">
+                    <span class="material-symbols-outlined text-[13px]">lock</span>
+                    <span>RSA-2048 Signed</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Telemetry snapshot -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-pink-100 flex items-center justify-center text-[#D81E5B] shrink-0">
+                  <span class="material-symbols-outlined text-[20px]">sensors</span>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-800">Sensor S-CLD-991 Aktif</div>
+                  <div class="text-xs text-slate-500">Suhu Kargo: <span class="font-mono font-bold text-emerald-600">3.4°C</span> (Aman dalam rentang 2–8°C)</div>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold shrink-0">Logger ON</span>
+            </div>
+
+            <!-- Action Button -->
+            <div class="space-y-2 mt-auto pt-2">
+              <button
+                type="button"
+                @click="handleConfirmReturn"
+                :disabled="isReturning"
+                class="w-full py-3.5 px-6 rounded-xl bg-[#D81E5B] hover:bg-[#C2185B] text-white text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-80 disabled:cursor-not-allowed active:scale-[0.99]"
+              >
+                <span class="material-symbols-outlined text-[20px]">sync_alt</span>
+                <span v-if="isReturning">✓ Instruksi Retur Dikonfirmasi (returning)</span>
+                <span v-else>Konfirmasi &amp; Jalankan Instruksi Retur (Update shipments → returning)</span>
+              </button>
+              <p class="text-center text-xs text-slate-500">
+                Sistem akan memperbarui rute navigasi kembali ke Gudang Cawang dan otomatis menerbitkan e-Berita Acara Retur Karantina.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Log Kejadian Cold-Chain underneath -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-slate-500 text-[18px]">history</span>
+              <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">Audit Log Kejadian Cold-Chain</span>
+            </div>
+            <span class="text-xs text-slate-500 font-mono">ISO 13485:2016 Compliant</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-start gap-2.5">
+              <span class="material-symbols-outlined text-emerald-600 text-[16px] shrink-0 mt-0.5">check_circle</span>
+              <div>
+                <div class="text-xs font-semibold text-slate-800">15:15 WIB • Issue Logged</div>
+                <div class="text-xs text-slate-500">Kurir melaporkan anomali segel fisik SL-8891.</div>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-start gap-2.5">
+              <span class="material-symbols-outlined text-emerald-600 text-[16px] shrink-0 mt-0.5">check_circle</span>
+              <div>
+                <div class="text-xs font-semibold text-slate-800">15:16 WIB • Status Changed: HELD</div>
+                <div class="text-xs text-slate-500">Otomatisasi ERP Anteraja mengunci AWB {{ task.awb }}.</div>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-start gap-2.5">
+              <span class="material-symbols-outlined text-[#D81E5B] text-[16px] shrink-0 mt-0.5">mark_chat_read</span>
+              <div>
+                <div class="text-xs font-semibold text-slate-800">15:22 WIB • QA Decision Authorized</div>
+                <div class="text-xs text-slate-500">Instruksi RETUR disahkan oleh dr. Ardiansyah.</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- TAB 4: SERAH TERIMA & LAPORAN -->
-      <div v-else-if="activeTab === 4" class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <div class="flex flex-col w-full space-y-6">
-          <CourierHandoverBanner
-            :awb="task.awb"
-            facility-name="RS Medika Sehat Jakarta"
-            completed-time="14 Okt 2026, 15:18 WIB"
-          />
+      <div v-else-if="activeTab === 4" class="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        <!-- Header Title & Subtitle -->
+        <div class="space-y-2">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold tracking-wide uppercase">
+            <span>✦ SERAH TERIMA KLINIS BERSTANDAR CDOB</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            4. Serah Terima &amp; Laporan BAP
+          </h1>
+          <p class="text-sm text-slate-600 max-w-3xl">
+            Verifikasi identitas apoteker penanggung jawab, bukti foto, e-POD, dan unduhan salinan BAP.
+          </p>
+        </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 space-y-6">
-              <CourierHandoverEpodCard
-                :awb="task.awb"
-                recipient-name="Apt. Siti Rahma, S.Farm"
-                recipient-role="Kepala Depo Farmasi & Logistik Medik"
-                sipa-num="SIPA: 19880412/SIPA-DKI/2022"
-                completion-date="14 Okt 2026, 15:18 WIB"
-                handover-temp="4.4°C"
-                @download-pdf="handleDownloadBapPdf"
-                @share-whatsapp="handleShareWhatsappDispatcher"
-              />
-
-              <CourierHandoverCargoSummaryCard
-                :commodity="task.item_title"
-                :batch-number="task.batch_number"
-                :box-id="task.coldbox_id || 'CBX-882'"
-                :seal-number="task.seal_str || 'SL-8891'"
-                package-weight="2 Koli • 4.8 kg"
-              />
+        <!-- 2-Column Grid Anatomy -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <!-- LEFT COLUMN: Form Bukti Serah Terima (e-POD) -->
+          <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-6">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-xs text-[#D81E5B] uppercase font-bold tracking-wider">Kepatuhan Regulasi BPOM</div>
+                <h2 class="text-lg font-bold text-slate-900 mt-0.5">Form Bukti Serah Terima (e-POD) &amp; Validasi CDOB</h2>
+              </div>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                <span>CDOB Terverifikasi</span>
+              </span>
             </div>
 
-            <div class="space-y-6">
-              <CourierHandoverTimelineCard
-                origin-time="14:10 WIB (Dispatched)"
-                arrived-time="14:52 WIB (Arrived)"
-                verified-time="15:18 WIB (Accepted by APJ)"
-              />
+            <!-- Toggle Mode: Serah Terima Normal vs Retur Gudang -->
+            <div class="grid grid-cols-2 p-1 bg-slate-100 rounded-xl">
+              <button
+                type="button"
+                id="tab-normal"
+                @click="handoverMode = 'normal'"
+                class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer"
+                :class="handoverMode === 'normal'
+                  ? 'bg-white text-[#D81E5B] shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'"
+              >
+                <span class="material-symbols-outlined text-base font-bold">check_circle</span>
+                <span>Serah Terima Normal</span>
+              </button>
+              <button
+                type="button"
+                id="tab-return"
+                @click="handoverMode = 'return'"
+                class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all cursor-pointer"
+                :class="handoverMode === 'return'
+                  ? 'bg-white text-[#D81E5B] font-bold shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'"
+              >
+                <span class="material-symbols-outlined text-base">assignment_return</span>
+                <span>Retur Gudang</span>
+              </button>
+            </div>
 
-              <CourierHandoverReportCard
-                @download-report="handleDownloadBapPdf"
-              />
+            <div class="space-y-4">
+              <!-- APJ Card -->
+              <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                  <span class="text-xs text-slate-500 uppercase font-semibold">Petugas Penerima Farmasi Resmi (APJ)</span>
+                  <div class="text-base font-bold text-slate-900">Apt. Siti Rahma, S.Farm</div>
+                  <div class="text-xs text-slate-600 flex items-center gap-2">
+                    <span>{{ task.destination_name || 'RS Medika Sehat Jakarta' }}</span>
+                    <span>•</span>
+                    <span class="font-mono text-xs font-medium">NIPA: 19890412/APJ-RSMS</span>
+                  </div>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-xl">medical_services</span>
+                </div>
+              </div>
+
+              <!-- 2 Stat Boxes -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl space-y-1.5">
+                  <span class="text-xs text-slate-500 uppercase font-semibold">Suhu Fisik Serah Terima</span>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-2xl font-bold text-emerald-700">4.4°C</span>
+                    <span class="text-xs text-slate-500 font-medium">IoT #TH-902</span>
+                  </div>
+                  <div class="inline-flex items-center gap-1 text-[11px] text-emerald-800 bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold">
+                    <span class="material-symbols-outlined text-xs">thermostat</span>
+                    <span>Lolos CPOB (2.0° - 8.0°C)</span>
+                  </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl space-y-1.5">
+                  <span class="text-xs text-slate-500 uppercase font-semibold">Kondisi Segel Boks</span>
+                  <div class="text-base font-bold text-slate-900 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-emerald-600 text-lg">lock</span>
+                    <span>{{ task.seal_str ? task.seal_str.split(' ')[0] : 'SL-8891' }}</span>
+                  </div>
+                  <div class="inline-flex items-center gap-1 text-[11px] text-emerald-800 bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-full font-semibold">
+                    <span class="material-symbols-outlined text-xs">verified_user</span>
+                    <span>Utuh &amp; Sesuai Manifest</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Documentation Photos -->
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-slate-500 uppercase font-semibold">Dokumentasi Foto Serah Terima Fisik</span>
+                  <span class="text-xs text-emerald-700 font-bold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm font-bold">location_on</span>
+                    <span>Geo-Tagged Valid</span>
+                  </span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="relative group rounded-xl overflow-hidden bg-slate-100 aspect-video">
+                    <img
+                      class="w-full h-full object-cover"
+                      alt="Boks Vaksin #BX-01"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6I3ZdAyE_fXfAVRm4MYTHaCZ1DY8w9hGvtnQClFq-HGUFxaf0TibWgutUXTVe_4CxHcimC7Lb-8W2-64xE4S5CoSUp-pwVCEgCLsTaTpP-XrcA36rtNW-hem1bMCFwj_ivmjH8ZmAcVmQp5g-WnPMhOAf3CzQ3mqm81aniQmC3kN6RHUDSDwphUsui1aCK3M0UWoJfdMzxhj5sIDA2fMzpyyYdcO1kooh4aGZVrsqVq8GwTf51DxXeg"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent flex flex-col justify-end p-2.5 text-white">
+                      <span class="text-xs font-bold">Boks Vaksin #BX-01</span>
+                      <span class="text-[10px] text-slate-200">14/10/2026 15:16:22 WIB</span>
+                    </div>
+                  </div>
+
+                  <div class="relative group rounded-xl overflow-hidden bg-slate-100 aspect-video">
+                    <img
+                      class="w-full h-full object-cover"
+                      alt="Inspeksi Segel SL-8891"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTOgwSQjoJLqKgis2rLUvej38QhxlL9rG2OwNVYWs2WdcJklUugG84V879p89hCOFJX7lj5iTRzoynk0PdjLnHMr1un8Dbb6oVgcIcEGrXtqU9Si-e3bJ1yDLvgHitT2uEwn80HBITXg0rj5TZaMd7U9jaEp0y_HWZk9ig26sDCckdqC9FId-WEUGeYBceppuIhKA60Cn1roFtcSn7BaEEYmGS9Wg_pFHGwPgcmebesITLwBO8M5Kvyw"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent flex flex-col justify-end p-2.5 text-white">
+                      <span class="text-xs font-bold">Inspeksi Segel SL-8891</span>
+                      <span class="text-[10px] text-slate-200">14/10/2026 15:17:05 WIB</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Digital Signature -->
+              <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-slate-500 uppercase font-semibold">Tanda Tangan Digital Apoteker (NIPA Disahkan)</span>
+                  <span class="font-mono text-xs text-slate-500">SHA256: 8f4a...91b2</span>
+                </div>
+                <div class="relative bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center min-h-[110px] overflow-hidden">
+                  <svg class="w-48 h-16 text-slate-800 opacity-80" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 200 60">
+                    <path d="M15 45 C 30 10, 40 50, 55 25 C 65 10, 75 35, 90 20 C 105 10, 110 40, 130 15 C 145 0, 155 35, 175 25 C 185 20, 190 28, 195 22"></path>
+                    <path d="M40 50 L 170 48"></path>
+                  </svg>
+                  <div class="absolute bottom-2 right-3 flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-white border border-emerald-200 px-2.5 py-0.5 rounded shadow-sm">
+                    <span class="material-symbols-outlined text-xs font-bold">verified</span>
+                    <span>Tervalidasi Digital Token</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="w-full py-3.5 px-4 rounded-xl bg-slate-100 text-slate-500 font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed border border-slate-200"
+              disabled
+            >
+              <span class="material-symbols-outlined text-emerald-600 text-xl font-bold">task_alt</span>
+              <span>✓ Tugas Pengiriman Selesai &amp; Ditutup (15:18 WIB)</span>
+            </button>
+          </div>
+
+          <!-- RIGHT COLUMN: Ringkasan Kargo, Riwayat Kronologis & BAP -->
+          <div class="space-y-6">
+            <!-- Ringkasan Kargo Cold-Chain -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-500 uppercase font-semibold">Ringkasan Kargo Cold-Chain</span>
+                <span class="px-2.5 py-0.5 rounded-full bg-[#FCE7F3] text-[#D81E5B] text-xs font-bold">
+                  {{ task.weight_str ? (task.weight_str.split('•')[0] || '2 Koli').trim() : '2 Koli' }} Terverifikasi
+                </span>
+              </div>
+              <div class="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="w-12 h-12 rounded-xl bg-[#FCE7F3] text-[#D81E5B] flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-2xl">vaccines</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h3 class="text-base font-bold text-slate-900 truncate">
+                    {{ task.item_title || 'Vaksin Meningococcal Konjugat ACYW' }}
+                  </h3>
+                  <p class="text-xs text-slate-500 mt-0.5">
+                    Batch: <span class="font-mono font-semibold text-slate-800">{{ task.batch_number || '#MCV-2026-X12' }}</span> • Exp: Nov 2027
+                  </p>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3 pt-1">
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                  <span class="text-xs text-slate-500">Asal Titik Muat</span>
+                  <p class="text-xs sm:text-sm text-slate-800 font-bold truncate mt-0.5">
+                    {{ task.origin_name || 'Hub Pharma Cawang (DC)' }}
+                  </p>
+                </div>
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-100">
+                  <span class="text-xs text-slate-500">Fasilitas Tujuan</span>
+                  <p class="text-xs sm:text-sm text-slate-800 font-bold truncate mt-0.5">
+                    {{ task.destination_name || 'RS Medika Sehat Jakarta' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Riwayat Kronologis (Chain of Custody) -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-xs text-[#D81E5B] uppercase font-bold tracking-wider">Log Audit Peristiwa</span>
+                  <h3 class="text-base font-bold text-slate-900 mt-0.5">Riwayat Kronologis (Chain of Custody)</h3>
+                </div>
+                <span class="text-xs font-mono bg-slate-100 px-2.5 py-1 rounded-md text-slate-600 font-semibold">4 Events</span>
+              </div>
+              <div class="space-y-3 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-200">
+                <!-- Event 1 -->
+                <div class="relative flex items-start gap-4">
+                  <div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 ring-4 ring-white z-10">
+                    <span class="material-symbols-outlined text-sm font-bold">check</span>
+                  </div>
+                  <div class="flex-1 min-w-0 bg-slate-50 border border-slate-100 p-3 rounded-xl">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-xs font-bold text-emerald-700 uppercase">15:18 WIB • DELIVER</span>
+                      <span class="font-mono text-xs text-emerald-700 font-bold">4.4°C</span>
+                    </div>
+                    <p class="text-xs text-slate-700 mt-1">
+                      Kargo diserahkan sah ke APJ Apt. Siti Rahma di Farmasi RS Medika Sehat.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Event 2 -->
+                <div class="relative flex items-start gap-4">
+                  <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center shrink-0 ring-4 ring-white z-10">
+                    <span class="material-symbols-outlined text-sm">location_on</span>
+                  </div>
+                  <div class="flex-1 min-w-0 bg-slate-50 border border-slate-100 p-3 rounded-xl">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-xs font-bold text-slate-600 uppercase">15:05 WIB • ARRIVE</span>
+                      <span class="font-mono text-xs text-slate-600 font-semibold">4.5°C</span>
+                    </div>
+                    <p class="text-xs text-slate-700 mt-1">
+                      Tiba di area drop-off Instalasi Farmasi RS Medika Sehat.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Event 3 -->
+                <div class="relative flex items-start gap-4">
+                  <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center shrink-0 ring-4 ring-white z-10">
+                    <span class="material-symbols-outlined text-sm">local_shipping</span>
+                  </div>
+                  <div class="flex-1 min-w-0 bg-slate-50 border border-slate-100 p-3 rounded-xl">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-xs font-bold text-slate-600 uppercase">13:45 WIB • DEPART</span>
+                      <span class="font-mono text-xs text-slate-600 font-semibold">4.3°C</span>
+                    </div>
+                    <p class="text-xs text-slate-700 mt-1">
+                      Berangkat dari Hub Cawang via Tol Dalam Kota. Kotak pendingin aktif.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Event 4 -->
+                <div class="relative flex items-start gap-4">
+                  <div class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center shrink-0 ring-4 ring-white z-10">
+                    <span class="material-symbols-outlined text-sm">assignment_turned_in</span>
+                  </div>
+                  <div class="flex-1 min-w-0 bg-slate-50 border border-slate-100 p-3 rounded-xl">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-xs font-bold text-slate-600 uppercase">12:45 WIB • ACCEPT</span>
+                      <span class="font-mono text-xs text-slate-600 font-semibold">4.2°C</span>
+                    </div>
+                    <p class="text-xs text-slate-700 mt-1">
+                      Kurir Bambang menerima penugasan &amp; validasi pra-pendinginan.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- BAP Report Document Card -->
+            <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-5">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-rose-50 text-[#D81E5B] border border-rose-100 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-2xl">picture_as_pdf</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <span class="text-xs text-[#D81E5B] uppercase font-bold">Dokumen Resmi Terbit</span>
+                  <h3 class="text-base font-bold text-slate-900 leading-snug mt-0.5">
+                    Berita Acara Penerimaan (BAP) &amp; Laporan Audit Rantai Dingin
+                  </h3>
+                  <p class="font-mono text-xs text-slate-500 mt-1">ID: BAP-PHA-20261014-8891 • PDF CDOB BPOM Validated</p>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                <span class="flex items-center gap-1.5 font-medium">
+                  <span class="material-symbols-outlined text-base text-emerald-600">security</span>
+                  <span>Enkripsi Digital SHA-256 Otentik</span>
+                </span>
+                <span class="font-mono font-semibold">1.8 MB</span>
+              </div>
+
+              <div class="space-y-3 pt-1">
+                <button
+                  type="button"
+                  @click="handleDownloadBapPdf"
+                  class="w-full bg-[#D81E5B] hover:bg-[#C2185B] text-white font-bold text-sm py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer active:scale-[0.99]"
+                >
+                  <span class="material-symbols-outlined text-xl">download</span>
+                  <span>Unduh Salinan Laporan Tugas Kurir (PDF)</span>
+                </button>
+                <button
+                  type="button"
+                  @click="handleShareWhatsappDispatcher"
+                  class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-200 cursor-pointer active:scale-[0.99]"
+                >
+                  <span class="material-symbols-outlined text-emerald-600 text-lg">chat</span>
+                  <span>Kirim Ringkasan Laporan ke WhatsApp Dispatcher</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
