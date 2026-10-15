@@ -10,11 +10,13 @@ const route = useRoute()
 const isCourier = computed(() => route.path.startsWith('/courier') || route.path.startsWith('/kurir'))
 const isChecker = computed(() => route.path.startsWith('/checker') || route.path.startsWith('/pemeriksa'))
 const isAdmin = computed(() => route.path.startsWith('/admin'))
+const isLogin = computed(() => route.name === 'login')
+const isCourierTaskDetail = computed(() => route.name === 'courier-task-detail')
 </script>
 
 <template>
-  <!-- Checker & Admin Dedicated Portal Layouts -->
-  <div v-if="isChecker || isAdmin" class="min-h-screen bg-surface font-sans text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+  <!-- Dedicated role portal layouts -->
+  <div v-if="isChecker || isAdmin || isLogin || isCourierTaskDetail" class="min-h-screen bg-surface font-sans text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
     <router-view />
   </div>
 
@@ -45,4 +47,3 @@ const isAdmin = computed(() => route.path.startsWith('/admin'))
     <Footer v-else />
   </div>
 </template>
-

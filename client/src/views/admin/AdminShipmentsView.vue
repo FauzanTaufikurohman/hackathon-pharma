@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminNavbar from '../../components/admin/AdminNavbar.vue'
 import AdminHeaderBanner from '../../components/admin/AdminHeaderBanner.vue'
-import AdminMetricKpis from '../../components/admin/AdminMetricKpis.vue'
 import AdminManifestRegistrationForm from '../../components/admin/AdminManifestRegistrationForm.vue'
 import AdminShipmentsDirectoryTable from '../../components/admin/AdminShipmentsDirectoryTable.vue'
 import AdminFooter from '../../components/admin/AdminFooter.vue'
@@ -100,11 +99,6 @@ function handleExportCsv() {
   showToast('Manifest .CSV berhasil diunduh secara lokal!', 'success')
 }
 
-// Print Barcode handler
-function handlePrintBarcode() {
-  window.print()
-}
-
 // Action handlers from table
 function handleReviewQc(awb: string) {
   showToast(`Membuka Review QC untuk resi ${awb}...`, 'info')
@@ -134,19 +128,13 @@ function handleViewEpod(awb: string) {
 <template>
   <div class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col">
     <!-- Navbar Header -->
-    <AdminNavbar active-tab="manajemen-pengiriman" />
+    <AdminNavbar active-tab="shipments" />
 
     <!-- Main Content Container -->
     <main class="w-full max-w-7xl mx-auto px-6 py-8 flex-1 bg-surface">
       <div class="flex flex-col w-full">
         <!-- Top Section Header -->
-        <AdminHeaderBanner
-          @export-csv="handleExportCsv"
-          @print-barcode="handlePrintBarcode"
-        />
-
-        <!-- Top Summary Row: 4 Metric Cards -->
-        <AdminMetricKpis />
+        <AdminHeaderBanner @export-csv="handleExportCsv" />
 
         <!-- Main Split Workspace -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-lg items-start">

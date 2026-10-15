@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { logoutAndRedirect } from '../../services/auth'
+
 interface Props {
   activeTab: number
   awb?: string
@@ -9,6 +12,12 @@ defineProps<Props>()
 const emit = defineEmits<{
   (e: 'tab-change', tab: number): void
 }>()
+
+const router = useRouter()
+
+function handleLogout() {
+  return logoutAndRedirect(router)
+}
 </script>
 
 <template>
@@ -102,6 +111,13 @@ const emit = defineEmits<{
           <span class="w-2 h-2 rounded-full bg-secondary"></span>
           <span class="font-label-sm text-label-sm text-on-surface font-semibold">Aktif</span>
         </div>
+        <button
+          type="button"
+          @click="handleLogout"
+          class="text-sm font-medium text-slate-500 transition-colors hover:text-primary"
+        >
+          Keluar
+        </button>
       </div>
     </div>
   </header>

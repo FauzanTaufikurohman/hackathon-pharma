@@ -4,20 +4,15 @@ import AdminNavbar from '../../components/admin/AdminNavbar.vue'
 import AdminReportsHeader from '../../components/admin/AdminReportsHeader.vue'
 import AdminComplianceReportCard from '../../components/admin/AdminComplianceReportCard.vue'
 import AdminAuditEventsTable from '../../components/admin/AdminAuditEventsTable.vue'
-import AdminBotGatewayCard from '../../components/admin/AdminBotGatewayCard.vue'
-import AdminHackathonSimulatorWidget from '../../components/admin/AdminHackathonSimulatorWidget.vue'
 import AdminFooter from '../../components/admin/AdminFooter.vue'
 import {
   mockAdminDailyComplianceReport,
   mockAdminAuditEvents,
-  mockAdminBotGatewayLogs,
 } from '../../data/mockShipments'
-import type { AdminAuditEvent } from '../../types/shipment'
 
 // Reactive state
 const complianceReport = ref({ ...mockAdminDailyComplianceReport })
-const auditEvents = ref<AdminAuditEvent[]>([...mockAdminAuditEvents])
-const botGatewayLogs = ref([...mockAdminBotGatewayLogs])
+const auditEvents = ref([...mockAdminAuditEvents])
 
 // Toast Notification
 const toastMessage = ref<{ title: string; desc: string; isError?: boolean } | null>(null)
@@ -52,79 +47,12 @@ function confirmDistribution() {
     'Dokumen BAP & Laporan Harian CDOB telah disiarkan ke RS Medika Sehat, QA BioFarma, dan APJ Internal.'
   )
 }
-
-// View All Gateway Modal
-const isGatewayModalOpen = ref(false)
-
-function handleViewAllGateway() {
-  isGatewayModalOpen.value = true
-}
-
-// Simulator Trigger Handlers
-function handleTempSpike(val: number) {
-  const time = new Date().toTimeString().split(' ')[0] ?? '15:30:00'
-  const newEvent: AdminAuditEvent = {
-    id: `evt-spike-${Date.now()}`,
-    time,
-    date: '14 Okt 2026',
-    awb: 'PHA-260104',
-    actor: 'IoT Telemetry Daemon',
-    role: 'Auto-Sensor Node',
-    event_type: 'temp_excursion',
-    from_status: 'in_transit',
-    to_status: 'held',
-    description: `Lonjakan suhu melebihi batas CDOB: ${val.toFixed(1)}°C.`,
-    is_new: true,
-  }
-
-  // Prepend new event
-  auditEvents.value.unshift(newEvent)
-
-  // Increment incidents count
-  complianceReport.value.incident_count++
-
-  showToast(
-    'Simulasi Lonjakan Suhu Aktif!',
-    `Suhu kargo melonjak ke ${val.toFixed(1)}°C. Status dieksalasi menjadi HELD dan tercatat ke ledger.`
-  )
-}
-
-function handleSealBreach() {
-  const time = new Date().toTimeString().split(' ')[0] ?? '15:30:00'
-  const newEvent: AdminAuditEvent = {
-    id: `evt-seal-${Date.now()}`,
-    time,
-    date: '14 Okt 2026',
-    awb: 'PHA-260104',
-    actor: 'Kurir Bambang',
-    role: 'Kurir-007',
-    event_type: 'issue',
-    from_status: 'in_transit',
-    to_status: 'held',
-    description: 'Pelaporan segel tamper rusak fisik (simulasi audit).',
-    is_new: true,
-  }
-
-  auditEvents.value.unshift(newEvent)
-
-  showToast(
-    'Simulasi Segel Rusak Diterapkan!',
-    'Segel tamper SL-8891 terdeteksi void. Audit event baru telah disuntikkan ke ledger mutlak.'
-  )
-}
-
-function handleWaWebhook(phone: string) {
-  showToast(
-    'Webhook WhatsApp Terkirim!',
-    `Payload alert otomatis sukses ditembakkan ke ${phone} (HTTP 200 OK via Anteraja Bot).`
-  )
-}
 </script>
 
 <template>
   <div class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col">
     <!-- Navbar Header -->
-    <AdminNavbar active-tab="laporan-audit-log" />
+    <AdminNavbar active-tab="reports" />
 
     <!-- Main Content Container -->
     <main class="w-full max-w-7xl mx-auto px-6 py-8 flex-1 bg-surface">
@@ -139,28 +67,7 @@ function handleWaWebhook(phone: string) {
           @distribute-all="handleDistributeAll"
         />
 
-        <!-- Section 3: Split Bottom Workspace -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <!-- Left Column (8 cols): Immutable Chain of Custody Events Table -->
-          <div class="lg:col-span-8 flex flex-col gap-4">
-            <AdminAuditEventsTable :events="auditEvents" />
-          </div>
-
-          <!-- Right Column (4 cols): Outbound Bot Notification Log -->
-          <div class="lg:col-span-4 flex flex-col gap-4">
-            <AdminBotGatewayCard
-              :logs="botGatewayLogs"
-              @view-all="handleViewAllGateway"
-            />
-          </div>
-        </div>
-
-        <!-- Section 4: FR-06 Demo & Hackathon Simulator Widget -->
-        <AdminHackathonSimulatorWidget
-          @trigger-temp-spike="handleTempSpike"
-          @trigger-seal-breach="handleSealBreach"
-          @trigger-wa-webhook="handleWaWebhook"
-        />
+        <AdminAuditEventsTable :events="auditEvents" />
       </div>
     </main>
 
@@ -308,62 +215,6 @@ function handleWaWebhook(phone: string) {
           >
             <span class="material-symbols-outlined text-lg">send</span>
             <span>Kirim Serentak Sekarang</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL: FULL GATEWAY LOG VIEW -->
-    <div
-      v-if="isGatewayModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
-      @click.self="isGatewayModalOpen = false"
-    >
-      <div class="bg-surface-container-lowest rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-surface-container flex flex-col gap-4 max-h-[85vh] overflow-y-auto">
-        <div class="flex items-center justify-between border-b border-surface-container-low pb-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary text-2xl">cell_tower</span>
-            <div>
-              <h3 class="font-headline-sm text-headline-sm text-on-surface">Riwayat Gateway Notifikasi Bot</h3>
-              <p class="font-body-sm text-body-sm text-on-surface-variant">Log Pengiriman WhatsApp, Telegram, dan Webhook API</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            @click="isGatewayModalOpen = false"
-            class="text-on-surface-variant hover:text-on-surface p-1 rounded-lg"
-          >
-            <span class="material-symbols-outlined text-xl">close</span>
-          </button>
-        </div>
-
-        <div class="space-y-3">
-          <div
-            v-for="log in botGatewayLogs"
-            :key="log.id"
-            class="p-3.5 rounded-xl bg-surface-container-low border border-surface-container"
-          >
-            <div class="flex items-center justify-between text-label-sm mb-1">
-              <span class="font-bold text-on-surface">{{ log.recipient }} {{ log.channel_label }}</span>
-              <span class="text-on-surface-variant">{{ log.time }}</span>
-            </div>
-            <div class="font-label-md font-semibold text-on-surface mb-1">{{ log.title }}</div>
-            <div class="flex justify-between items-center text-body-sm text-on-surface-variant">
-              <span>{{ log.payload_label }}: {{ log.payload_val }}</span>
-              <span class="px-2 py-0.5 rounded-full text-xs" :class="log.status_badge_class">
-                {{ log.status_label }}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-end pt-2">
-          <button
-            type="button"
-            @click="isGatewayModalOpen = false"
-            class="px-4 py-2 rounded-xl bg-surface-container-low text-on-surface font-label-md text-label-md border border-surface-container"
-          >
-            Tutup
           </button>
         </div>
       </div>

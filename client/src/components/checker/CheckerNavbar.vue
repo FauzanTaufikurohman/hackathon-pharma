@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { mockCheckerProfile } from '../../data/mockShipments'
+import { logoutAndRedirect } from '../../services/auth'
 
 interface Props {
   activeTab?: number
@@ -15,6 +16,10 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+
+function handleLogout() {
+  return logoutAndRedirect(router)
+}
 
 const handleTabClick = (tab: number) => {
   emit('tab-change', tab)
@@ -122,14 +127,13 @@ const handleTabClick = (tab: number) => {
             </span>
           </div>
 
-          <!-- Switch portal / logout -->
-          <router-link
-            to="/"
-            class="font-label-sm text-slate-400 hover:text-primary transition-colors pl-2 font-medium"
-            title="Beralih ke Portal Buyer"
+          <button
+            type="button"
+            @click="handleLogout"
+            class="font-label-sm text-slate-500 hover:text-primary transition-colors pl-2 font-medium"
           >
             Keluar
-          </router-link>
+          </button>
         </div>
       </div>
     </div>
