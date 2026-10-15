@@ -36,6 +36,8 @@ class CourierHandoverTest extends TestCase
         $this->post($url.'/handover', $payload, ['Accept' => 'application/json'])->assertOk()->assertJsonPath('replayed', true);
         $this->assertDatabaseCount('delivery_proofs', 1);
         $this->assertDatabaseCount('shipment_reports', 1);
+        $this->assertDatabaseHas('messages', ['shipment_id' => $shipment->id,
+            'shipment_report_id' => $response->json('data.report_id'), 'user_id' => $shipment->buyer_id, 'status' => 'pending']);
         $this->get($url.'/proof/photo')->assertOk()->assertHeader('Content-Type', 'image/png');
         $pdf = $this->get('/api/v1/courier/reports/'.$response->json('data.report_id').'/download')->assertOk();
         $this->assertStringStartsWith('%PDF-', $pdf->getContent());

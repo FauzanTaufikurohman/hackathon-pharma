@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { mockShipments } from '../../data/mockShipments'
 import NotificationToast from '../../components/vendor/NotificationToast.vue'
@@ -33,6 +33,7 @@ function handleSearch() {
     )
     router.push(`/vendor/monitor/${encodeURIComponent(query)}?screen=1`)
   }
+  priority_shipment: LiveShipment | null
 }
 
 function openMonitor(screen = 1, awb = '#PHA-260104') {
@@ -54,7 +55,6 @@ function handleContactHotline() {
   window.open('https://wa.me/6281119603333?text=Halo%20Apoteker%20Anteraja%20Pharma,%20saya%20dari%20RS%20Medika%20Sehat%20butuh%20konsultasi%20pengiriman%20vaksin.', '_blank')
 }
 </script>
-
 <template>
   <div class="flex flex-col w-full space-y-8">
     <!-- 1. Hero & Primary Search Area -->
