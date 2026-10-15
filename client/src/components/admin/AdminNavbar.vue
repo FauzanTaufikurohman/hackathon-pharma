@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { currentUser, logoutAndRedirect } from '../../services/auth'
+import { mockAdminProfile } from '../../data/mockShipments'
 
 interface Props {
   activeTab?: string
@@ -11,6 +13,27 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const router = useRouter()
+
+const activeTabNum = computed(() => {
+  if (props.activeTab === 'shipments' || props.activeTab === '1') return 1
+  if (props.activeTab === 'approvals' || props.activeTab === '2') return 2
+  if (props.activeTab === 'monitor' || props.activeTab === '3') return 3
+  if (props.activeTab === 'reports' || props.activeTab === '4') return 4
+  return 1
+})
+
+function handleTabClick(tabIndex: number) {
+  const routes: Record<number, string> = {
+    1: '/admin/manajemen-pengiriman',
+    2: '/admin/approval-qc-kurir',
+    3: '/admin/live-monitor-kendala',
+    4: '/admin/laporan-audit-log',
+  }
+  const target = routes[tabIndex]
+  if (target) {
+    router.push(target)
+  }
+}
 
 const navigation = [
   { label: 'Pengiriman', path: '/admin/manajemen-pengiriman', tab: 'shipments' },
