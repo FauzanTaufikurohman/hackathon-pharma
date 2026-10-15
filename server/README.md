@@ -143,7 +143,7 @@ Backend dibagi ke branch per fitur sesuai urutan pada docs/operations-api.md. Se
 - [Kontrak API dan pemetaan modul](docs/operations-api.md): sembilan modul client yang belum punya pasangan branch, field request, filter, status dan aturan transisi.
 - [Setup Telegram langsung dari Laravel](docs/telegram-setup.md): token privat, mapping Chat ID, worker, retry dan status pengiriman. Tidak memakai n8n.
 - Tidak menambah pemilih role di login, akun publik Admin, ataupun mode prototype baru. Role ditentukan akun di database. Simulator yang ada hanya boleh mengubah data demo di lingkungan yang diizinkan.
-- View frontend teman belum disambungkan ulang oleh perubahan ini. Jangan menganggap toast/data mock yang masih ada sebagai hasil API nyata.
+- Pada branch feature/frontend-api-integration, view inti frontend terhubung ke API ini. Detail alur, batas integrasi, dan konfigurasi client dicatat di client/docs/README.md pada root repository. Bagian verifikasi sebelumnya di dokumen ini mencatat tahap pengembangan historis.
 
 Sesudah mengambil perubahan server ini, jalankan php artisan migrate, kemudian server API dan scheduler di terminal terpisah. Jangan menjalankan migrate:fresh pada database aplikasi. Worker Telegram aman saat credential belum diisi: tidak mengirim request keluar.
 

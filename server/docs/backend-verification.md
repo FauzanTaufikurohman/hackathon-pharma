@@ -100,3 +100,29 @@ Smoke test browser dari origin 127.0.0.1:5173 ke API 127.0.0.1:8180: login Admin
 Build dan type-check frontend main lulus memakai Node 24.19.0. Build memiliki warning bundle >500 kB pada frontend tim; tidak diklaim sudah dioptimalkan. Halaman Admin diuji terbuka di browser desktop tanpa error console dan tanpa overflow horizontal pada viewport 1452px. Ini bukan pengujian seluruh interaksi frontend/mobile.
 
 Telegram nyata sengaja belum diaktifkan sesuai arahan pengguna; token dan Chat ID menyusul. Worker tanpa credential mengembalikan configured=false/processed=0. Tidak ada bukti pesan sampai HP dan tidak ada klaim demikian. UI mock yang masih ada belum menjadi integrasi penuh hanya karena API-nya sudah siap.
+
+## Integrasi frontend nyata — 15 Oktober 2026
+
+Bagian ini memperbarui batas UI historis di atas. Branch feature/frontend-api-integration memuat view aktif yang mengambil data Laravel, bukan mockShipments. Acuan awal adalah client/viting 5a5fc7d pada main 8883595; main kemudian menggabungkan backend/aset sampai 3f113d3. Pola footer baru mengacu client/footer-update 527e965, dengan tautan placeholder dan klaim sertifikasi yang tidak didukung tidak ditampilkan.
+
+| Pemeriksaan | Hasil |
+| --- | --- |
+| Suite lengkap SQLite in-memory | 68 tes, 440 assertions lulus |
+| Suite lengkap PostgreSQL pharma_v2_test | 68 tes, 440 assertions lulus |
+| Parser seluruh template Vue | 135 file, 0 error |
+| TypeScript dan build Vite | lulus; bundle JS sekitar 208 kB minified, tanpa warning chunk >500 kB |
+| Login lewat form dan refresh halaman | sesi tetap diperiksa melalui server dan role sesuai akun |
+| Admin membuat PHA-UI-20261015-1228 | tersimpan dan muncul pada antrean Checker yang dipilih |
+| Checker mengirim checklist + unggahan PNG fixture | tersimpan; status pending_approval; hasil lolos dihitung server |
+| Admin menyetujui dan menugaskan Satria Demo | persetujuan/penugasan tersimpan, kapasitas diperiksa |
+| Kurir menerima → berangkat → mencatat sampel → tiba | tiap tahap dikonfirmasi API dan terlihat pada UI |
+| POD lewat formulir dan foto fixture | status completed; foto privat termuat sebagai Blob URL; tombol PDF bekerja |
+| Vendor pemilik membuka resi selesai | riwayat lengkap, checksum laporan, foto POD dan unduhan PDF tersedia |
+| Vendor mencoba API Admin | 403; URL Admin diarahkan kembali ke beranda Vendor |
+| Pemeriksaan viewport 375 / 768 / 1440 px | halaman yang diuji tidak overflow horizontal |
+
+Data, koordinat, nama penerima, dan gambar kecil pada resi PHA-UI-20261015-1228 adalah fixture pengujian lokal. Ini bukan pemeriksaan atau serah terima obat nyata. Resi uji dibuat melalui UI dan dibiarkan sebagai catatan pengujian; tidak menghapus kiriman lama.
+
+Empat tes tambahan pengelolaan pengguna meliputi isolasi Admin, password hash, kapasitas kurir, email unik, pencabutan token, konflik data akses, akun sendiri, dan akun dengan kiriman aktif. Satu tes tambahan capability simulator membatasi panel demo menurut role, status, dan is_demo. Pemeriksaan template menangkap handler inline multi-statement yang dapat rusak setelah formatting; handler tersebut sekarang berupa fungsi bernama.
+
+Pengujian ini bukan jaminan semua kombinasi perangkat, beban produksi, atau gangguan jaringan bebas bug. Telegram menggunakan mock pada tes provider dan belum dibuktikan sampai HP. OCR/AI Vision, BLE otomatis, PDF/A dan sertifikasi regulatory bukan hasil integrasi ini. Peta memakai koordinat sampel, bukan bukti posisi fisik kurir terverifikasi.

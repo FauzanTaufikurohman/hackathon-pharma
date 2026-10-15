@@ -7,9 +7,21 @@ Dokumentasi resmi arsitektur sistem, persyaratan produk (*Product Requirement Do
 
 PRD, enam FRD, dan [diagram alur](./diagrams/flowchart.png) di folder ini menjadi acuan scope UI client. Prioritas prototipe adalah urutan kerja pengiriman: admin mendaftarkan kiriman, checker memeriksa, admin menyetujui dan menugaskan kurir, kurir memperbarui perjalanan, lalu admin/vendor melihat pemantauan dan laporan. Login memakai `POST /api/v1/auth/login` sesuai kontrak backend di [server/docs](../../server/docs); sesi dan role ditangani berdasarkan respons API.
 
-Halaman **Pengguna & Hak Akses** memvisualisasikan penetapan role Admin, Checker, Kurir, dan Vendor/Customer sesuai matriks RBAC di bawah. Karena API pengelolaan pengguna belum tersedia, perubahan pada halaman tersebut hanya data prototipe sementara dan bukan kontrol otorisasi backend. Otorisasi data tetap wajib ditegakkan oleh server.
+Halaman **Pengguna & Hak Akses** memakai GET/POST /api/v1/admin/users dan PUT /api/v1/admin/users/{id}. Server membatasi endpoint ke Admin aktif, menyimpan hash password, mencabut token saat akses berubah, serta menolak perubahan akses akun sendiri dan akun yang masih memiliki kiriman aktif. Update menyertakan expected_role dan expected_active agar data lama tidak diam-diam menimpa perubahan akun.
 
-Untuk pengembangan lokal, client mengirim request API ke Laravel pada `http://localhost:8000/api/v1` secara langsung. URL dapat diubah dengan `VITE_API_BASE_URL`; Vite juga menyediakan proxy `/api` ke `http://127.0.0.1:8000` sebagai fallback, yang dapat diubah dengan `API_PROXY_TARGET`.
+Client memakai /api/v1 melalui proxy Vite ke http://127.0.0.1:8000 secara default. Ubah VITE_API_BASE_URL dan API_PROXY_TARGET di client/.env.local jika port backend berbeda; file lokal itu tidak ikut Git. Di laptop Evan, API memakai 127.0.0.1:8180 dan client 127.0.0.1:5173. Jangan menyimpan token Telegram, OpenAI, atau password database dalam variabel VITE_.
+
+## Integrasi UI — 15 Oktober 2026
+
+Branch feature/frontend-api-integration menghubungkan halaman Admin, Checker, Kurir, dan Vendor ke Laravel. Sesi menggunakan Bearer Sanctum, diperiksa ulang melalui /auth/me saat refresh; halaman login tidak menyediakan pemilih role. Request yang ditinggalkan dibatalkan, mutasi mencegah klik ganda, dan retry koneksi mempertahankan request_id untuk payload yang sama.
+
+Admin membuat manifest → Checker mengirim checklist dan foto → Admin memutuskan pemeriksaan dan menugaskan kurir → Kurir menerima tugas, berangkat, mencatat sampel, tiba, dan mengirim POD → Vendor melihat riwayat serta mengunduh PDF. Kiriman asing atau resi yang tidak ada menampilkan error, bukan paket contoh pengganti. Form tidak mengklaim sukses sebelum respons server.
+
+Panel monitor memperbarui data setiap 15 detik saat tab browser aktif, tanpa request yang saling menumpuk; pembaruan dijeda ketika keputusan/kendala sedang ditulis atau disimpan. Simulator hanya tampil jika server mengizinkannya pada kiriman demo. Footer mengadaptasi client/footer-update 527e965 dengan tautan sesuai role dan resi yang sedang dibuka; tautan placeholder, App Store palsu, dan klaim sertifikasi dihapus dari tampilan aktif.
+
+OCR/AI Vision dan koneksi perangkat BLE otomatis belum terintegrasi. Sampel sensor dimasukkan melalui formulir/API, sedangkan tombol lokasi meminta izin Geolocation browser. Grafik memakai sampel tersimpan dan peta menampilkan titik GPS terakhir, bukan rute kurir yang dibuat-buat. Worker Telegram langsung dari Laravel tidak menggunakan n8n; credential dan pengujian pesan sampai HP masih menyusul. Lihat [kontrak API](../../server/docs/operations-api.md), [setup Telegram](../../server/docs/telegram-setup.md), dan [hasil verifikasi](../../server/docs/backend-verification.md).
+
+Jalankan npm run check:templates untuk memeriksa ekspresi seluruh template Vue. npm run build menjalankan pemeriksaan itu sebelum type-check dan build. Kode komponen prototipe yang masih ada di repository tidak menjadi sumber data halaman aktif. PRD, FRD, dan flowchart acuan tidak diubah oleh integrasi ini.
 
 ---
 
