@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminShipmentsController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CheckerHistoryController;
 use App\Http\Controllers\CheckerInspectionController;
 use App\Http\Controllers\CheckerQueueController;
 use App\Http\Controllers\CourierDashboardController;
@@ -31,6 +32,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/checker/queue', [CheckerQueueController::class, 'queue']);
         Route::get('/checker/shipments/{awb}', [CheckerInspectionController::class, 'show']);
         Route::post('/checker/shipments/{awb}/inspection', [CheckerInspectionController::class, 'submit']);
+        Route::get('/checker/history', [CheckerHistoryController::class, 'history']);
         Route::get('/checker/inspections/{inspection}/photo', [CheckerInspectionController::class, 'photo'])->whereNumber('inspection')->name('checker.inspection.photo');
         Route::get('/courier/dashboard', [CourierDashboardController::class, 'show']);
         Route::get('/courier/tasks', [CourierTasksController::class, 'index']);
