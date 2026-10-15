@@ -33,7 +33,7 @@ const menus = {
     {
       path: '/admin/manajemen-pengiriman',
       name: 'admin-shipments',
-      label: 'Pengiriman',
+      label: 'Beranda',
     },
     {
       path: '/admin/approval-qc-kurir',
@@ -127,8 +127,7 @@ async function signOut() {
 </script>
 <template>
   <header
-    class="z-40 w-full border-b border-outline/15 bg-surface-container-lowest"
-    :class="role === 'admin' ? 'sticky top-0' : 'fixed inset-x-0 top-0'"
+    class="sticky top-0 z-40 w-full border-b border-outline/15 bg-surface-container-lowest"
   >
     <div
       class="relative max-w-7xl mx-auto grid grid-cols-[auto_minmax(0,1fr)_auto] gap-3 px-4 sm:px-6 min-h-20 items-center"

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import AdminNavbar from '../../components/admin/AdminNavbar.vue'
-import AdminFooter from '../../components/admin/AdminFooter.vue'
 import ShipmentDirectory from '../../components/layout/ShipmentDirectory.vue'
 import AdminLiveShipment from '../../components/admin/AdminLiveShipment.vue'
 
@@ -22,7 +20,6 @@ function created(awb: string) {
 </script>
 <template>
   <div>
-    <AdminNavbar active-tab="monitor" />
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
       <header>
         <h1 class="text-3xl font-semibold tracking-tight">
@@ -56,6 +53,5 @@ function created(awb: string) {
         </div>
       </div>
     </main>
-    <AdminFooter />
   </div>
 </template>

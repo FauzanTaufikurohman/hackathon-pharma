@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import AdminNavbar from '../../components/admin/AdminNavbar.vue'
 import ApiState from '../../components/layout/ApiState.vue'
 import { useApi, useMutation } from '../../services/useApi'
 import { query } from '../../services/api'
@@ -119,7 +118,6 @@ function submitSearch() {
 </script>
 <template>
   <div>
-    <AdminNavbar active-tab="users" />
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-6">
       <header class="flex flex-wrap items-center justify-between gap-4">
         <div>

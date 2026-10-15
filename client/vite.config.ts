@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
         "/api": {
           target:
             env.API_PROXY_TARGET ||
-            "https://vbulletin-experiences-stud-synthesis.trycloudflare.com",
+            "https://hence-viewpicture-enable-camcorders.trycloudflare.com",
           changeOrigin: true,
         },
       },

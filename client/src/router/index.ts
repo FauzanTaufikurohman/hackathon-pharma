@@ -16,6 +16,7 @@ import AdminThermalSimulationView from "../views/admin/AdminThermalSimulationVie
 import AdminReportsView from "../views/admin/AdminReportsView.vue";
 import AdminAccessManagementView from "../views/admin/AdminAccessManagementView.vue";
 import LoginView from "../views/auth/LoginView.vue";
+import NotFoundView from "../views/NotFoundView.vue";
 import { currentUser, restoreSession } from "../services/auth";
 import type { AppRole } from "../services/auth";
 
@@ -163,7 +164,8 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "/:pathMatch(.*)*",
-    redirect: "/",
+    name: "not-found",
+    component: NotFoundView,
   },
 ];
 
@@ -177,9 +179,10 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   await restoreSession();
-  if (to.name === "login") return true;
-
   const user = currentUser.value;
+  if (to.name === "login") {
+    return user ? roleHome[user.role] : true;
+  }
   if (!user) {
     return { name: "login", query: { redirect: to.fullPath } };
   }
