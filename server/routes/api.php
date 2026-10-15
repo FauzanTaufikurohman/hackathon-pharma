@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminShipmentsController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CheckerQueueController;
 use App\Http\Controllers\CourierDashboardController;
 use App\Http\Controllers\CourierDeliveryController;
 use App\Http\Controllers\CourierHandoverController;
@@ -26,6 +27,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/shipments/{awb}', [AdminShipmentsController::class, 'show']);
         Route::post('/admin/shipments/{awb}/cancel', [AdminShipmentsController::class, 'cancel']);
         Route::get('/admin/shipments/{awb}/inspection-photo', [AdminShipmentsController::class, 'inspectionPhoto'])->name('admin.inspection.photo');
+        Route::get('/checker/queue', [CheckerQueueController::class, 'queue']);
         Route::get('/courier/dashboard', [CourierDashboardController::class, 'show']);
         Route::get('/courier/tasks', [CourierTasksController::class, 'index']);
         Route::get('/courier/tasks/{awb}/handover', [CourierHandoverController::class, 'show']);
